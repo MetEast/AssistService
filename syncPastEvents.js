@@ -66,6 +66,8 @@ let updateOrder = async function(result, blockNumber) {
 }
 
 let orderForSaleJobCurrent = config.meteastContractDeploy,
+    orderForAuctionJobCurrent = config.meteastContractDeploy,
+    orderBidJobCurrent = config.meteastContractDeploy,
     orderFilledJobCurrent = config.meteastContractDeploy,
     orderCanceledJobCurrent = config.meteastContractDeploy,
     orderPriceChangedJobCurrent = config.meteastContractDeploy,
@@ -107,6 +109,72 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
         })
     });
 
+    schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '0 * * * * *'}, async () => {
+        if(orderForAuctionJobCurrent > currentHeight) {
+            console.log(`[OrderForAuction] Sync ${orderForAuctionJobCurrent} finished`)
+            return;
+        }
+        const tempBlockNumber = orderForAuctionJobCurrent + step
+        const toBlock = tempBlockNumber > currentHeight ? currentHeight : tempBlockNumber;
+
+        console.log(`[OrderForAuction] Sync ${orderForAuctionJobCurrent} ~ ${toBlock} ...`)
+
+        meteastContractWs.getPastEvents('OrderForAuction', {
+            fromBlock: orderForAuctionJobCurrent, toBlock
+        }).then(events => {
+            events.forEach(async event => {
+                let orderInfo = event.returnValues;
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
+                    tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+
+                console.log(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                await meteastDBService.insertOrderEvent(orderEventDetail);
+                await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'Auction');
+            })
+            orderForAuctionJobCurrent = toBlock + 1;
+        }).catch(error => {
+            console.log(error);
+            console.log("[OrderForAuction] Sync Ending ...")
+        })
+    });
+    
+    schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '0 * * * * *'}, async () => {
+        if(orderBidJobCurrent > currentHeight) {
+            console.log(`[OrderBid] Sync ${orderBidJobCurrent} finished`)
+            return;
+        }
+        const tempBlockNumber = orderBidJobCurrent + step
+        const toBlock = tempBlockNumber > currentHeight ? currentHeight : tempBlockNumber;
+
+        console.log(`[OrderBid] Sync ${orderBidJobCurrent} ~ ${toBlock} ...`)
+
+        meteastContractWs.getPastEvents('OrderBid', {
+            fromBlock: orderBidJobCurrent, toBlock
+        }).then(events => {
+            events.forEach(async event => {
+                let orderInfo = event.returnValues;
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
+                    tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+
+                console.log(`[OrderBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                await meteastDBService.insertOrderEvent(orderEventDetail);
+                await updateOrder(result, event.blockNumber);
+            })
+            orderBidJobCurrent = toBlock + 1;
+        }).catch(error => {
+            console.log(error);
+            console.log("[OrderBid] Sync Ending ...")
+        })
+    });
 
     schedule.scheduleJob({start: new Date(now + 2 * 60 * 1000), rule: '10 * * * * *'}, async () => {
         if(orderPriceChangedJobCurrent > currentHeight) {
