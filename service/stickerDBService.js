@@ -139,11 +139,10 @@ module.exports = {
                     result[i]['event'] = 'Burn';
                 }
                 if(result[i]['from'] != '0x0000000000000000000000000000000000000000' && result[i]['to'] != '0x0000000000000000000000000000000000000000') {
-                    if(result[i]['price'] == '')
+                    if(result[i]['memo'] == undefined || result[i]['memo'] == '')
                         result[i]['event'] = 'SafeTransferFrom';
                     else result[i]['event'] = 'SafeTransferFromWithMemo';
                 }
-                result[i]['price'] = '0';
             }
             if(result[i]['event'] == 'OrderFilled') {
                 result[i]['event'] = "BuyOrder";
@@ -588,29 +587,32 @@ module.exports = {
         let methodCondition = this.composeMethodCondition(method, "null", "null");
         let methodCondition_order = methodCondition['order'];
         let methodCondition_token = methodCondition['token'];
+        console.log(methodCondition_order, methodCondition_token);
         try {
             await mongoClient.connect();
-            let collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            let collection = mongoClient.db(config.dbName).collection('pasar_order_event');
             let rows = await collection.aggregate([
                 { $match: { $and: [methodCondition_order] }},
                 { $project:{'_id': 0, event: 1, tHash: 1, from: "$sellerAddr", to: "$buyerAddr", orderId: 1,
                 timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, royaltyFee: 1, data: 1, gasFee: 1} },
             ]).toArray();
-            await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
+            if(rows.length > 0)
+                await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
 
-            collection = mongoClient.db(config.dbName).collection('meteast_token_event');
+            collection = mongoClient.db(config.dbName).collection('pasar_token_event');
             rows = await collection.aggregate([
                 { $match: { $and: [methodCondition_token] } },
                 { $project: {'_id': 0, event: "notSetYet", tHash: "$txHash", from: 1, to: 1, gasFee: 1,
-                timestamp: 1, price: "$memo", tokenId: 1, blockNumber: 1, royaltyFee: "0"} }
+                timestamp: 1, memo: 1, tokenId: 1, blockNumber: 1, royaltyFee: "0"} }
             ]).toArray();
-            await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
+            if(rows.length > 0)
+                await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
             collection =  mongoClient.db(config.dbName).collection('token_temp');
-            let result = await collection.find({}).sort({blockNumber: parseInt(timeOrder)}).toArray();
+            let result = await collection.find().sort({blockNumber: parseInt(timeOrder)}).toArray();
             await collection.drop();
             let results = [];
-            let collection_token = mongoClient.db(config.dbName).collection('meteast_token');
-            let collection_platformFee = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
+            let collection_token = mongoClient.db(config.dbName).collection('pasar_token');
+            let collection_platformFee = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
             for(var i = (pageNum - 1) * pageSize; i < pageSize * pageNum; i++)
             {
                 if(i >= result.length)
@@ -627,6 +629,9 @@ module.exports = {
                     if(res != null) {
                         result[i]['platformfee'] = res['platformFee'];
                     }
+                }
+                if(result[i]['gasFee'] == null) {
+                    result[i]['gasFee'] = await this.getGasFee(result[i]['tHash']);
                 }
                 results.push(result[i]);
             }
@@ -784,14 +789,14 @@ module.exports = {
         let methodCondition_token = methodCondition['token'];
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            const collection = mongoClient.db(config.dbName).collection('pasar_order_event');
 
             let result = await collection.aggregate([
                 { $facet: {
                   "collection1": [
                     { $limit: 1 },
                     { $lookup: {
-                      from: "meteast_order_event",
+                      from: "pasar_order_event",
                       pipeline: [
                         { $project: {'_id': 0, event: 1, tHash: 1, from: "$sellerAddr", to: "$buyerAddr", data: 1, orderId: 1, gasFee: 1,
                             timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, royaltyFee: 1} },
@@ -803,10 +808,10 @@ module.exports = {
                   "collection2": [
                     { $limit: 1 },
                     { $lookup: {
-                      from: "meteast_token_event",
+                      from: "pasar_token_event",
                       pipeline: [
                         { $project: {'_id': 0, event: "notSetYet", tHash: "$txHash", from: 1, to: 1, gasFee: 1, 
-                            timestamp: 1, price: "$memo", tokenId: 1, blockNumber: 1, royaltyFee: "0"} },
+                            timestamp: 1, meemo: 1, tokenId: 1, blockNumber: 1, royaltyFee: "0"} },
                         { $match : {$and: [{tokenId : tokenId.toString()}, methodCondition_token]} }],
                       "as": "collection2"
                     }}
@@ -822,19 +827,22 @@ module.exports = {
                 }},
                 { $unwind: "$data" },
                 { $replaceRoot: { "newRoot": "$data" } },
-                { $lookup: {from: 'meteast_token', localField: 'tokenId', foreignField: 'tokenId', as: 'token'} },
+                { $lookup: {from: 'pasar_token', localField: 'tokenId', foreignField: 'tokenId', as: 'token'} },
                 { $unwind: "$token" },
                 { $project: {event: 1, tHash: 1, from: 1, to: 1, timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, data: 1, name: "$token.name"
                 , royalties: "$token.royalties", asset: "$token.asset", royaltyFee: 1, royaltyOwner: "$token.royaltyOwner", orderId: 1, gasFee: 1} },
                 { $sort: {blockNumber: parseInt(timeOrder)} }
             ]).toArray();
-            let collection_platformFee = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
+            let collection_platformFee = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
             for(var i = 0; i < result.length; i++) {
                 if(result[i]['event'] == 'OrderFilled') {
                     let res  = await collection_platformFee.findOne({$and:[{blockNumber: result[i]['blockNumber']}, {orderId: result[i]['orderId']}]});
                     if(res != null) {
                         result[i]['platformfee'] = res['platformFee'];
                     }
+                }
+                if(result[i]['gasFee'] == null) {
+                    result[i]['gasFee'] = await this.getGasFee(result[i]['tHash']);
                 }
             }
             result = this.verifyEvents(result);
@@ -963,20 +971,19 @@ module.exports = {
     getTranDetailsByWalletAddr: async function(walletAddr, method, timeOrder, keyword, pageNum, pageSize, performer) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         let methodCondition = this.composeMethodCondition(method, "walletAddr", walletAddr);
-
         let methodCondition_order = methodCondition['order'];
         let methodCondition_token = methodCondition['token'];
         let condition_performer = performer == "By" ? {from: walletAddr} : {to: walletAddr};
         let methodCondition_approval = (method == 'All' || method.indexOf('SetApprovalForAll') != -1) ? {event: 'SetApprovalForAll'}: {event: 'notSetApprovalForAll'}
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            const collection = mongoClient.db(config.dbName).collection('pasar_order_event');
             let result = await collection.aggregate([
                 { $facet: {
                   "collection1": [
                     { $limit: 1 },
                     { $lookup: {
-                      from: "meteast_order_event",
+                      from: "pasar_order_event",
                       pipeline: [
                         { $match : {$and: [methodCondition_order]} },
                         { $project: {'_id': 0, event: 1, tHash: 1, from: "$sellerAddr", to: "$buyerAddr", data: 1, gasFee: 1, 
@@ -988,11 +995,11 @@ module.exports = {
                   "collection2": [
                     { $limit: 1 },
                     { $lookup: {
-                      from: "meteast_token_event",
+                      from: "pasar_token_event",
                       pipeline: [
                         { $match : {$and: [methodCondition_token]} },
                         { $project: {'_id': 0, event: "notSetYet", tHash: "$txHash", from: 1, to: 1, gasFee: 1,
-                            timestamp: 1, price: "$memo", tokenId: 1, blockNumber: 1, royaltyFee: "0"} }
+                            timestamp: 1, memo: 1, tokenId: 1, blockNumber: 1, royaltyFee: "0"} }
                       ],
                       "as": "collection2"
                     }}
@@ -1000,7 +1007,7 @@ module.exports = {
                   "collection3": [
                     { $limit: 1 },
                     { $lookup: {
-                      from: "meteast_approval_event",
+                      from: "pasar_approval_event",
                       pipeline: [
                         { $match: {owner: walletAddr} },
                         { $project: {'_id': 0, event: 'SetApprovalForAll', tHash: "$transactionHash", from: '$owner', to: '$operator', gasFee: 1, timestamp: 1} },
@@ -1025,8 +1032,8 @@ module.exports = {
                 { $sort: {blockNumber: parseInt(timeOrder)} }
             ]).toArray();
             let results = [];
-            let collection_token = mongoClient.db(config.dbName).collection('meteast_token');
-            let collection_platformFee = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
+            let collection_token = mongoClient.db(config.dbName).collection('pasar_token');
+            let collection_platformFee = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
             let start = (pageNum - 1) * pageSize;
             let tempResult = [];
             for(var i = 0; i < result.length; i++) {
@@ -1050,6 +1057,10 @@ module.exports = {
                     if(res != null) {
                         result[i]['platformfee'] = res['platformFee'];
                     }
+                }
+                console.log(count)
+                if(result[i]['gasFee'] == null) {
+                    result[i]['gasFee'] = await this.getGasFee(result[i]['tHash']);
                 }
                 results.push(result[i]);
             }
