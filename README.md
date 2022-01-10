@@ -22,7 +22,7 @@ $ sudo pm2 install pm2-intercom
 
 ```bash
 $ mongo
-> use feeds_sources;
+> use meteast_sources;
 > db.meteast_order.createIndex({orderId: 1}, {unique: true});
 > db.meteast_token.createIndex({tokenId: 1}, {unique: true});
 ```

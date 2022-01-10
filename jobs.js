@@ -193,9 +193,9 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                //await meteastDBService.insertOrderEvent(orderEventDetail);
-                //await updateOrder(result, event.blockNumber);
-                // await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'Auction');
+                await meteastDBService.insertOrderEvent(orderEventDetail);
+                await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'Auction');
             })
         });
 
@@ -228,8 +228,8 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                //await meteastDBService.insertOrderEvent(orderEventDetail);
-                //await updateOrder(result, event.blockNumber);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
+                await updateOrder(result, event.blockNumber);
             })
         });
 

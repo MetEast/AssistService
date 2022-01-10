@@ -90,8 +90,9 @@ module.exports = {
             data = data.result;
             transactionFee = data.gasUsed * data.gasPrice / (10 ** 18);
         } catch (err) {
+            transactionFee = 0
         } finally {
-            return transactionFee;
+            return transactionFee == 0 ? await this.getGasFee(txHash): transactionFee;
         }
     },
     getLatestElaPrice: async function () {
@@ -123,9 +124,9 @@ module.exports = {
             data = data.result;
             timeStamp = data.timeStamp;
         } catch (err) {
-
+            timeStamp = 0;
         } finally {
-            return timeStamp;
+            return timeStamp == 0 ? await this.getTimeStamp(txHash): timeStamp;
         }
     },
     verifyEvents: function(result) {
