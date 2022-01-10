@@ -1,7 +1,7 @@
 let express = require('express');
 let router = express.Router();
 let indexDBService = require('../service/indexDBService');
-let pasarDBService = require('../service/pasarDBService');
+let meteastDBService = require('../service/meteastDBService');
 const BigNumber = require("bignumber.js");
 
 router.post('/register', function(req, res) {
@@ -83,7 +83,7 @@ router.get('/list', function(req, res) {
     })
 });
 
-router.get('/listPasarOrder', function(req, res) {
+router.get('/listmeteastOrder', function(req, res) {
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
     let blockNumberStr = req.query.blockNumber;
@@ -123,7 +123,7 @@ router.get('/listPasarOrder', function(req, res) {
         return;
     }
 
-    pasarDBService.listPasarOrder(pageNum, pageSize, blockNumber, endBlockNumber, orderState, sortType, sort, adult).then(result => {
+    meteastDBService.listmeteastOrder(pageNum, pageSize, blockNumber, endBlockNumber, orderState, sortType, sort, adult).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -159,7 +159,7 @@ router.get('/allSaleOrders', function (req, res) {
     }
 
 
-    pasarDBService.allSaleOrders(sortType, sort, pageNum, pageSize, adult).then(result => {
+    meteastDBService.allSaleOrders(sortType, sort, pageNum, pageSize, adult).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -185,7 +185,7 @@ router.get('/searchSaleOrders', function (req, res) {
         searchType = undefined;
     }
 
-    pasarDBService.searchSaleOrders(searchType, key, adult).then(result => {
+    meteastDBService.searchSaleOrders(searchType, key, adult).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -196,7 +196,7 @@ router.get('/searchSaleOrders', function (req, res) {
 router.get('/whitelist', function(req, res) {
     let address = req.query.address;
 
-    pasarDBService.getWhitelist(address).then(result => {
+    meteastDBService.getWhitelist(address).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -207,7 +207,7 @@ router.get('/whitelist', function(req, res) {
 router.get('/getDidByAddress', function(req, res) {
     let address = req.query.address;
 
-    pasarDBService.getDidByAddress(address).then(result => {
+    meteastDBService.getDidByAddress(address).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);

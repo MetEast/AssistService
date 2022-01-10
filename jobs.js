@@ -1,11 +1,11 @@
 const schedule = require('node-schedule');
 let Web3 = require('web3');
-let pasarDBService = require('./service/pasarDBService');
+let meteastDBService = require('./service/meteastDBService');
 let stickerDBService = require('./service/stickerDBService');
 let indexDBService = require('./service/indexDBService');
 let galleriaDbService = require('./service/galleriaDBService');
 let config = require('./config');
-let pasarContractABI = require('./contractABI/pasarABI');
+let meteastContractABI = require('./contractABI/meteastABI');
 let stickerContractABI = require('./contractABI/stickerABI');
 let galleriaContractABI = require('./contractABI/galleriaABI');
 let jobService = require('./service/jobService');
@@ -14,7 +14,7 @@ const BigNumber = require("bignumber.js");
 
 module.exports = {
     run: function() {
-        logger.info("========= Pasar Assist Service start =============")
+        logger.info("========= meteast Assist Service start =============")
 
         const burnAddress = '0x0000000000000000000000000000000000000000';
 
@@ -39,15 +39,17 @@ module.exports = {
             },
         })
         let web3Ws = new Web3(web3WsProvider);
-        let pasarContractWs = new web3Ws.eth.Contract(pasarContractABI, config.pasarContract);
+        let meteastContractWs = new web3Ws.eth.Contract(meteastContractABI, config.meteastContract);
         let stickerContractWs = new web3Ws.eth.Contract(stickerContractABI, config.stickerContract);
         let galleriaContractWs = new web3Ws.eth.Contract(galleriaContractABI, config.galleriaContract);
 
 
         let web3Rpc = new Web3(config.escRpcUrl);
-        let pasarContract = new web3Rpc.eth.Contract(pasarContractABI, config.pasarContract);
+        let meteastContract = new web3Rpc.eth.Contract(meteastContractABI, config.meteastContract);
         let stickerContract = new web3Rpc.eth.Contract(stickerContractABI, config.stickerContract);
 
+        let isGetOrderForAuctionJobRun = false;
+        let isGetOrderBidJobRun = false;
         let isGetForSaleOrderJobRun = false;
         let isGetForOrderPriceChangedJobRun = false;
         let isGetForOrderCancelledJobRun = false;
@@ -63,26 +65,26 @@ module.exports = {
 
         async function updateOrder(result, blockNumber) {
             try {
-                // let result = await pasarContract.methods.getOrderById(orderId).call();
+                // let result = await meteastContract.methods.getOrderById(orderId).call();
                 let orderId = result.orderId;
-                let pasarOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
+                let meteastOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
                     tokenId: result.tokenId, amount: result.amount, price:result.price, priceNumber: parseInt(result.price), endTime: result.endTime,
                     sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr, bids: result.bids, lastBidder: result.lastBidder,
                     lastBid: result.lastBid, filled: result.filled, royaltyOwner: result.royaltyOwner, royaltyFee: result.royaltyFee,
                     createTime: result.createTime, updateTime: result.updateTime, blockNumber}
 
                 if(result.orderState === "1" && blockNumber > config.upgradeBlock) {
-                    let extraInfo = await pasarContract.methods.getOrderExtraById(orderId).call();
+                    let extraInfo = await meteastContract.methods.getOrderExtraById(orderId).call();
                     if(extraInfo.sellerUri !== '') {
-                        pasarOrder.platformAddr = extraInfo.platformAddr;
-                        pasarOrder.platformFee = extraInfo.platformFee;
-                        pasarOrder.sellerUri = extraInfo.sellerUri;
-                        pasarOrder.sellerDid = await jobService.getInfoByIpfsUri(extraInfo.sellerUri);
+                        meteastOrder.platformAddr = extraInfo.platformAddr;
+                        meteastOrder.platformFee = extraInfo.platformFee;
+                        meteastOrder.sellerUri = extraInfo.sellerUri;
+                        meteastOrder.sellerDid = await jobService.getInfoByIpfsUri(extraInfo.sellerUri);
 
-                        await pasarDBService.replaceDid({address: result.sellerAddr, did: pasarOrder.sellerDid});
+                        await meteastDBService.replaceDid({address: result.sellerAddr, did: meteastOrder.sellerDid});
                     }
                 }
-                await pasarDBService.updateOrInsert(pasarOrder);
+                await meteastDBService.updateOrInsert(meteastOrder);
             } catch(error) {
                 console.log(error);
                 console.log(`[OrderForSale] Sync - getOrderById(${orderId}) at ${blockNumber} call error`);
@@ -103,13 +105,14 @@ module.exports = {
                 token.type = data.type;
                 token.name = data.name;
                 token.description = data.description;
+                token.status = 'Wait';
 
                 if(blockNumber > config.upgradeBlock) {
                     let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
                     token.didUri = extraInfo.didUri;
                     if(extraInfo.didUri !== '') {
                         token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                        await pasarDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                        await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
                     }
                 }
 
@@ -150,7 +153,7 @@ module.exports = {
                     token.didUri = extraInfo.didUri;
                     if(extraInfo.didUri !== '') {
                         token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                        await pasarDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                        await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
                     }
                 }
 
@@ -161,11 +164,80 @@ module.exports = {
             }
         }
 
+        let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForAuction');
+            if(isGetOrderForAuctionJobRun == false) {
+                //initial state
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForAuction');
+            } else {
+                lastHeight += 1;
+            }
+            isGetOrderForAuctionJobRun = true;
+
+            logger.info(`[OrderForAuction] Sync start from height: ${lastHeight}`);
+
+            meteastContractWs.events.OrderForAuction({
+                fromBlock: lastHeight
+            }).on("error", function (error) {
+                logger.info(error);
+                logger.info("[OrderForAuction] Sync Ending ...")
+                isGetOrderForAuctionJobRun = false;
+            }).on("data", async function (event) {
+                let orderInfo = event.returnValues;
+                console.log('OrderForAuction event data is ', event)
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
+                    tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+
+                logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                //await meteastDBService.insertOrderEvent(orderEventDetail);
+                //await updateOrder(result, event.blockNumber);
+                // await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'Auction');
+            })
+        });
+
+        let orderBidJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderBid');
+            if(isGetOrderBidJobRun == false) {
+                //initial state
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderBid');
+            } else {
+                lastHeight += 1;
+            }
+            isGetOrderBidJobRun = true;
+
+            logger.info(`[OrderBid] Sync start from height: ${lastHeight}`);
+
+            meteastContractWs.events.OrderBid({
+                fromBlock: lastHeight
+            }).on("error", function (error) {
+                logger.info(error);
+                logger.info("[OrderBid] Sync Ending ...")
+                isGetOrderBidJobRun = false;
+            }).on("data", async function (event) {
+                let orderInfo = event.returnValues;
+                console.log('OrderBid event data is ', event);
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
+                    tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+
+                logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                //await meteastDBService.insertOrderEvent(orderEventDetail);
+                //await updateOrder(result, event.blockNumber);
+            })
+        });
+
         let orderForSaleJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
-            let lastHeight = await pasarDBService.getLastPasarOrderSyncHeight('OrderForSale');
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForSale');
             if(isGetForSaleOrderJobRun == false) {
                 //initial state
-                stickerDBService.removePasarOrderByHeight(lastHeight, 'OrderForSale');
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForSale');
             } else {
                 lastHeight += 1;
             }
@@ -173,7 +245,7 @@ module.exports = {
 
             logger.info(`[OrderForSale] Sync start from height: ${lastHeight}`);
 
-            pasarContractWs.events.OrderForSale({
+            meteastContractWs.events.OrderForSale({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 logger.info(error);
@@ -181,7 +253,7 @@ module.exports = {
                 isGetForSaleOrderJobRun = false;
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -189,16 +261,16 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
         });
 
         let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 2 * 60 * 1000), async () => {
-            let lastHeight = await pasarDBService.getLastPasarOrderSyncHeight('OrderPriceChanged');
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderPriceChanged');
             if(isGetForOrderPriceChangedJobRun == false) {
                 //initial state
-                stickerDBService.removePasarOrderByHeight(lastHeight, 'OrderPriceChanged');
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderPriceChanged');
             } else {
                 lastHeight += 1;
             }
@@ -206,7 +278,7 @@ module.exports = {
 
             logger.info(`[OrderPriceChanged] Sync start from height: ${lastHeight}`);
 
-            pasarContractWs.events.OrderPriceChanged({
+            meteastContractWs.events.OrderPriceChanged({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderPriceChangedJobRun = false;
@@ -214,7 +286,7 @@ module.exports = {
                 logger.info("[OrderPriceChanged] Sync Ending ...");
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -223,16 +295,16 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderPriceChanged] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
         });
 
         let orderFilledJobId = schedule.scheduleJob(new Date(now + 3 * 60 * 1000), async () => {
-            let lastHeight = await pasarDBService.getLastPasarOrderSyncHeight('OrderFilled');
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderFilled');
             if(isGetForOrderFilledJobRun == false) {
                 //initial state
-                stickerDBService.removePasarOrderByHeight(lastHeight, 'OrderFilled');
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderFilled');
             } else {
                 lastHeight += 1;
             }
@@ -240,7 +312,7 @@ module.exports = {
 
             logger.info(`[OrderFilled] Sync start from height: ${lastHeight}`);
 
-            pasarContractWs.events.OrderFilled({
+            meteastContractWs.events.OrderFilled({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderFilledJobRun = false;
@@ -250,7 +322,7 @@ module.exports = {
 
                 let orderInfo = event.returnValues;
 
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -258,16 +330,16 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
         });
 
         let orderCanceledJobId = schedule.scheduleJob(new Date(now + 3 * 60 * 1000), async () => {
-            let lastHeight = await pasarDBService.getLastPasarOrderSyncHeight('OrderCanceled');
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderCanceled');
             if(isGetForOrderCancelledJobRun == false) {
                 //initial state
-                stickerDBService.removePasarOrderByHeight(lastHeight, 'OrderCanceled');
+                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderCanceled');
             } else {
                 lastHeight += 1;
             }
@@ -275,7 +347,7 @@ module.exports = {
 
             logger.info(`[OrderCanceled] Sync start from height: ${lastHeight}`);
 
-            pasarContractWs.events.OrderCanceled({
+            meteastContractWs.events.OrderCanceled({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderCancelledJobRun = false;
@@ -284,7 +356,7 @@ module.exports = {
             }).on("data", async function (event) {
 
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -292,13 +364,13 @@ module.exports = {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee};
 
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
         });
 
         let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 4 * 60 * 1000), async () => {
-            let lastHeight = await pasarDBService.getLastOrderPlatformFeeSyncHeight();
+            let lastHeight = await meteastDBService.getLastOrderPlatformFeeSyncHeight();
             if(isGetForPlatformFeeJobRun == false) {
                 //initial state
                 stickerDBService.removePlatformFeeByHeight(lastHeight);
@@ -309,7 +381,7 @@ module.exports = {
 
             logger.info(`[OrderPlatformFee] Sync start from height: ${lastHeight}`);
 
-            pasarContractWs.events.OrderPlatformFee({
+            meteastContractWs.events.OrderPlatformFee({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForPlatformFeeJobRun = false;
@@ -321,7 +393,7 @@ module.exports = {
                     txIndex: event.transactionIndex, platformAddr: orderInfo._platformAddress, platformFee: orderInfo._platformFee};
 
                 logger.info(`[OrderPlatformFee] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderPlatformFeeEvent(orderEventDetail);
+                await meteastDBService.insertOrderPlatformFeeEvent(orderEventDetail);
             })
         });
 
@@ -448,7 +520,7 @@ module.exports = {
                 } else if(from === burnAddress) {
                     await dealWithNewToken(blockNumber, tokenId)
                 } else {
-                    await stickerDBService.updateToken(tokenId, to, timestamp);
+                    await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
                 }
             })
         });
@@ -484,7 +556,7 @@ module.exports = {
                 let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
                 logger.info(`[TokenInfoWithMemo] transferToken: ${JSON.stringify(transferEvent)}`)
                 await stickerDBService.addEvent(transferEvent);
-                await stickerDBService.updateToken(tokenId, to, timestamp);
+                await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
             })
         });
 
@@ -498,6 +570,12 @@ module.exports = {
                     panelCreatedSyncJobId.reschedule(new Date(now + 4 * 60 * 1000));
                     panelRemovedSyncJobId.reschedule(new Date(now + 4 * 60 * 1000));
                 }
+            }
+            if(!isGetOrderForAuctionJobRun) {
+                orderForAuctionJobId.reschedule(new Date(now + 60 * 1000));
+            }
+            if(!isGetOrderBidJobRun) {
+                orderBidJobId.reschedule(new Date(now + 60 * 1000));
             }
             if(!isGetForOrderPriceChangedJobRun)
                 orderPriceChangedJobId.reschedule(new Date(now + 2 * 60 * 1000));
@@ -518,15 +596,15 @@ module.exports = {
         });
 
         /**
-         *  Pasar order volume sync check
+         *  meteast order volume sync check
          */
         schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
-            let orderCount = await pasarDBService.pasarOrderCount();
-            let orderCountContract = parseInt(await pasarContract.methods.getOrderCount().call());
+            let orderCount = await meteastDBService.meteastOrderCount();
+            let orderCountContract = parseInt(await meteastContract.methods.getOrderCount().call());
             logger.info(`[Order Count Check] DbCount: ${orderCount}   ContractCount: ${orderCountContract}`)
             if(orderCountContract !== orderCount) {
-                // await sendMail(`Pasar Order Sync [${config.serviceName}]`,
-                //     `pasar assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
+                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+                //     `meteast assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
                 //     recipients.join());
             }
         });
@@ -540,37 +618,40 @@ module.exports = {
             logger.info(`[Token Count Check] DbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`)
             if(stickerCountContract !== stickerCount) {
                 // await sendMail(`Sticker Sync [${config.serviceName}]`,
-                //     `pasar assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
+                //     `meteast assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
                 //     recipients.join());
             }
         });
 
         /**
-         *  Pasar order event volume check
+         *  meteast order event volume check
          */
-        let pasarOrderEventCheckBlockNumber = config.pasarContractDeploy;
+        let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
         schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/5 * * * *'}, async () => {
             let nowBlock = await web3Rpc.eth.getBlockNumber();
-            let fromBlock = pasarOrderEventCheckBlockNumber;
-            let tempBlock = pasarOrderEventCheckBlockNumber + 20000
+            let fromBlock = meteastOrderEventCheckBlockNumber;
+            let tempBlock = meteastOrderEventCheckBlockNumber + 20000
             let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
-            let orderCount = await pasarDBService.pasarOrderEventCount(fromBlock, toBlock);
+            let orderCount = await meteastDBService.meteastOrderEventCount(fromBlock, toBlock);
 
-            let orderForSaleEvent = await pasarContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
-            let orderFilledEvent = await pasarContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
-            let orderCanceled = await pasarContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
-            let orderPriceChanged = await pasarContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
-            let contractOrderCount = orderForSaleEvent.length + orderFilledEvent.length + orderCanceled.length + orderPriceChanged.length;
+            let orderForSaleEvent = await meteastContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
+            let orderFilledEvent = await meteastContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
+            let orderCanceled = await meteastContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
+            let orderPriceChanged = await meteastContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
+            let orderForAuctionEvent = await meteastContract.getPastEvents('OrderForAuction', {fromBlock, toBlock});
+            let orderBidEvent = await meteastContract.getPastEvents('OrderBid', {fromBlock, toBlock});
+
+            let contractOrderCount = orderForSaleEvent.length + orderFilledEvent.length + orderCanceled.length + orderPriceChanged.length + orderForAuctionEvent.length + orderBidEvent.length;
 
             if(orderCount !== contractOrderCount) {
                 logger.info(`Order Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
                 logger.info(`Order Event Count Check: DBEventCount: ${orderCount}    ContractEventCount: ${contractOrderCount}`);
-                // await sendMail(`Pasar Order Sync [${config.serviceName}]`,
-                //     `pasar assist sync service sync failed!\nDbEventCount: ${orderCount}   ContractEventCount: ${contractOrderCount}`,
+                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+                //     `meteast assist sync service sync failed!\nDbEventCount: ${orderCount}   ContractEventCount: ${contractOrderCount}`,
                 //     recipients.join());
             }
 
-            pasarOrderEventCheckBlockNumber = toBlock + 1;
+            meteastOrderEventCheckBlockNumber = toBlock + 1;
         });
 
         /**
@@ -590,8 +671,8 @@ module.exports = {
             if(stickerEventCountDB !== stickerEventCount) {
                 logger.info(`Sticker Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
                 logger.info(`Sticker Event Count Check: DBEventCount: ${stickerEventCountDB}    ContractEventCount: ${stickerEventCount}`);
-                // await sendMail(`Pasar Order Sync [${config.serviceName}]`,
-                //     `pasar assist sync service sync failed!\nDbEventCount: ${stickerEventCountDB}   ContractEventCount: ${stickerEventCount}`,
+                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+                //     `meteast assist sync service sync failed!\nDbEventCount: ${stickerEventCountDB}   ContractEventCount: ${stickerEventCount}`,
                 //     recipients.join());
             }
 

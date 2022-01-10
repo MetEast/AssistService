@@ -532,7 +532,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.BuyerInfo",
+        "internalType": "struct ImeteastInfo.BuyerInfo",
         "name": "",
         "type": "tuple"
       }
@@ -593,7 +593,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.BuyerInfo",
+        "internalType": "struct ImeteastInfo.BuyerInfo",
         "name": "",
         "type": "tuple"
       }
@@ -654,7 +654,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.BuyerInfo[]",
+        "internalType": "struct ImeteastInfo.BuyerInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -778,7 +778,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -889,7 +889,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1000,7 +1000,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1111,7 +1111,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1243,7 +1243,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1349,7 +1349,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1468,7 +1468,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1574,7 +1574,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1628,7 +1628,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarUpgraded.OrderExtraInfo",
+        "internalType": "struct ImeteastUpgraded.OrderExtraInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1669,7 +1669,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarUpgraded.OrderExtraInfo[]",
+        "internalType": "struct ImeteastUpgraded.OrderExtraInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1748,7 +1748,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.SellerInfo",
+        "internalType": "struct ImeteastInfo.SellerInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1809,7 +1809,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.SellerInfo",
+        "internalType": "struct ImeteastInfo.SellerInfo",
         "name": "",
         "type": "tuple"
       }
@@ -1870,7 +1870,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.SellerInfo[]",
+        "internalType": "struct ImeteastInfo.SellerInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -1994,7 +1994,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -2105,7 +2105,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -2216,7 +2216,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo",
+        "internalType": "struct ImeteastInfo.OrderInfo",
         "name": "",
         "type": "tuple"
       }
@@ -2327,7 +2327,7 @@ module.exports = [
             "type": "uint256"
           }
         ],
-        "internalType": "struct IPasarInfo.OrderInfo[]",
+        "internalType": "struct ImeteastInfo.OrderInfo[]",
         "name": "",
         "type": "tuple[]"
       }

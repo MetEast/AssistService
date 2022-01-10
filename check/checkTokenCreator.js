@@ -8,7 +8,7 @@ async function checkTokenHolder() {
     let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
     try {
         await mongoClient.connect();
-        const collection = mongoClient.db(config.dbName).collection('pasar_token');
+        const collection = mongoClient.db(config.dbName).collection('meteast_token');
         let result = await collection.find({}).sort({blockNumber: -1}).project({"_id": 0, tokenId: 1, royaltyOwner: 1}).toArray();
 
         let tokens = new Map();
@@ -16,7 +16,7 @@ async function checkTokenHolder() {
             tokens.set(item.tokenId, item.royaltyOwner);
         })
 
-        const collection2 = mongoClient.db(config.dbName).collection('pasar_token_event');
+        const collection2 = mongoClient.db(config.dbName).collection('meteast_token_event');
         let result2 = await collection2.find({ $or: [{from: burnAddress}, {to: burnAddress}]})
             .project({"_id": 0,tokenId:1, from: 1, to: 1, blockNumber: 1}).sort({blockNumber: 1}).toArray();
 
@@ -27,7 +27,7 @@ async function checkTokenHolder() {
             }
         })
 
-        console.log(`Pasar token: ${tokens.size}   Pasar token event: ${tokenEvents.size}`);
+        console.log(`meteast token: ${tokens.size}   meteast token event: ${tokenEvents.size}`);
         let i = 0;
         tokenEvents.forEach((value, key) => {
             if(value !== tokens.get(key)) {
@@ -48,8 +48,8 @@ checkTokenHolder().then(async result => {
     recipients.push('lifayi2008@163.com');
 
     if(result > 0) {
-        await sendMail(`Pasar Token Creator Check [${config.serviceName}]`,
-            `there are ${result} pasar token creator not match`,
+        await sendMail(`meteast Token Creator Check [${config.serviceName}]`,
+            `there are ${result} meteast token creator not match`,
             recipients.join());
     }
 })

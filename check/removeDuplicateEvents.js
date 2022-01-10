@@ -7,7 +7,7 @@ async function removeDuplicateDBItem() {
         let promises = [];
 
         await mongoClient.connect();
-        let collection1 = mongoClient.db(config.dbName).collection('pasar_token_event');
+        let collection1 = mongoClient.db(config.dbName).collection('meteast_token_event');
         let tokenEventDuplicate = await collection1.aggregate([
             {$group: {_id: {tokenId: "$tokenId", blockNumber:"$blockNumber"}, count: {$sum: 1}}},
             {$match: {"count": { "$gt": 1}}}
@@ -21,7 +21,7 @@ async function removeDuplicateDBItem() {
         })
 
 
-        let collection2 = mongoClient.db(config.dbName).collection('pasar_order_event');
+        let collection2 = mongoClient.db(config.dbName).collection('meteast_order_event');
         let orderEventDuplicate = await collection2.aggregate([
             {$group: {_id: {orderId: "$orderId", blockNumber:"$blockNumber"}, count: {$sum: 1}}},
             {$match: {"count": { "$gt": 1}}}

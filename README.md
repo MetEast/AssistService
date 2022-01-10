@@ -1,5 +1,5 @@
-# Pasar-Assist-Service
-The assist service keep synchrozing all collectibles from Pasar contract on bockchain to deployable server as an intermediate service for 3rd applications to browse all collectible data.
+# meteast-Assist-Service
+The assist service keep synchrozing all collectibles from meteast contract on bockchain to deployable server as an intermediate service for 3rd applications to browse all collectible data.
 
 ## 部署
 
@@ -23,24 +23,24 @@ $ sudo pm2 install pm2-intercom
 ```bash
 $ mongo
 > use feeds_sources;
-> db.pasar_order.createIndex({orderId: 1}, {unique: true});
-> db.pasar_token.createIndex({tokenId: 1}, {unique: true});
+> db.meteast_order.createIndex({orderId: 1}, {unique: true});
+> db.meteast_token.createIndex({tokenId: 1}, {unique: true});
 ```
 
 ### 运行服务
 
 ```bash
-git clone https://github.com/elastos-trinity/pasar-assist-service.git
-cd pasar-assist-service
+git clone https://github.com/elastos-trinity/meteast-assist-service.git
+cd meteast-assist-service
 npm install
 pm2 start bin/www
 ```
 
 ## API
 
-### Pasar API
+### meteast API
 
-调用URL: `https://example.com/pasar/api/v1`
+调用URL: `https://example.com/meteast/api/v1`
 
 1. 注册
 
@@ -105,7 +105,7 @@ response:     {"code": 200, "message": "success", data: {total: 100, result: [{}
 5. (分页)获取 `NFT Order`
 
 ```
-url:          /listPasarOrder
+url:          /listmeteastOrder
 method:       GET
 parameter:    pageNum (页码 从1开始 选填 默认1)
               pageSize (每页条目 大于0 选填 默认10)

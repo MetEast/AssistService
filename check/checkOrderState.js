@@ -6,10 +6,10 @@ async function checkOrderState() {
     let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
     try {
         await mongoClient.connect();
-        const collection = mongoClient.db(config.dbName).collection('pasar_order');
+        const collection = mongoClient.db(config.dbName).collection('meteast_order');
         let result = await collection.find({}).sort({blockNumber: -1}).project({"_id": 0, orderId: 1, orderState: 1}).toArray();
 
-        const collection2 = mongoClient.db(config.dbName).collection('pasar_order_event');
+        const collection2 = mongoClient.db(config.dbName).collection('meteast_order_event');
         let result2 = await collection2.aggregate([
             { $sort: {blockNumber: -1}},
             { $match: {event: {$in: ["OrderCanceled", "OrderFilled", "OrderForSale"]}}},
@@ -26,7 +26,7 @@ async function checkOrderState() {
         let i = 0;
         result.forEach(item => {
             if(item.orderState !== orderEvents.get(item.orderId)) {
-                console.log(`${item.orderId}:  pasar_order state: ${item.orderState} <==> pasar_event_order state: ${orderEvents.get(item.orderId)}`)
+                console.log(`${item.orderId}:  meteast_order state: ${item.orderState} <==> meteast_event_order state: ${orderEvents.get(item.orderId)}`)
                 i++
             }
         })
@@ -44,8 +44,8 @@ checkOrderState().then(async result => {
     recipients.push('lifayi2008@163.com');
 
     if(result > 0) {
-        await sendMail(`Pasar Order State Check [${config.serviceName}]`,
-            `there are ${result} pasar order state not match`,
+        await sendMail(`meteast Order State Check [${config.serviceName}]`,
+            `there are ${result} meteast order state not match`,
             recipients.join());
     }
 })

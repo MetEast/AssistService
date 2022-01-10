@@ -6,7 +6,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_panel_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_panel_event');
             let doc = await collection.findOne({event}, {sort:{blockNumber: -1}});
             if(doc) {
                 return doc.blockNumber
@@ -25,7 +25,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_panel_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_panel_event');
             await collection.insertOne(event);
         } catch (err) {
             logger.error(err);
@@ -38,7 +38,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_panel_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_panel_event');
 
             let total = await collection.aggregate([
                 { $group: {_id: "$panelId", doc: {$first: "$$ROOT"}}},
@@ -51,7 +51,7 @@ module.exports = {
                 { $sort: {panelId: -1, blockNumber: -1}},
                 { $group: {_id: "$panelId", doc: {$first: "$$ROOT"}}},
                 { $replaceRoot: { newRoot: "$doc"}},
-                { $lookup: {from: "pasar_token_galleria", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "meteast_token_galleria", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
                 { $match: {event: 'PanelCreated'}},
                 { $project: {"_id": 0, tokenId:1, blockNumber:1, panelId: 1, user: 1, amount: 1, fee: 1, did: 1,
@@ -75,14 +75,14 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_panel_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_panel_event');
 
             let result = await collection.aggregate([
                 { $sort: {panelId: -1, blockNumber: -1}},
                 { $group: {_id: "$panelId", doc: {$first: "$$ROOT"}}},
                 { $replaceRoot: { newRoot: "$doc"}},
                 { $match: {tokenId}},
-                { $lookup: {from: "pasar_token_galleria", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "meteast_token_galleria", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
                 { $project: {"_id": 0, tokenId:1, blockNumber:1, panelId: 1, user: 1, amount: 1, fee: 1, did: 1,
                         tokenIndex: "$token.tokenIndex", quantity: "$token.quantity", royalties: "$token.royalties",

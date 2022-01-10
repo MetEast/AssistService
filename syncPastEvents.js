@@ -1,9 +1,9 @@
 const schedule = require('node-schedule');
 let Web3 = require('web3');
-let pasarDBService = require('./service/pasarDBService');
+let meteastDBService = require('./service/meteastDBService');
 let stickerDBService = require('./service/stickerDBService');
 let config = require('./config');
-let pasarContractABI = require('./contractABI/pasarABI');
+let meteastContractABI = require('./contractABI/meteastABI');
 let stickerContractABI = require('./contractABI/stickerABI');
 let jobService = require('./service/jobService');
 const BigNumber = require("bignumber.js");
@@ -26,12 +26,12 @@ let web3WsProvider = new Web3.providers.WebsocketProvider(config.escWsUrl, {
     },
 })
 let web3Ws = new Web3(web3WsProvider);
-let pasarContractWs = new web3Ws.eth.Contract(pasarContractABI, config.pasarContract);
+let meteastContractWs = new web3Ws.eth.Contract(meteastContractABI, config.meteastContract);
 let stickerContractWs = new web3Ws.eth.Contract(stickerContractABI, config.stickerContract);
 
 
 let web3Rpc = new Web3(config.escRpcUrl);
-let pasarContract = new web3Rpc.eth.Contract(pasarContractABI, config.pasarContract);
+let meteastContract = new web3Rpc.eth.Contract(meteastContractABI, config.meteastContract);
 let stickerContract = new web3Rpc.eth.Contract(stickerContractABI, config.stickerContract);
 
 let now = Date.now();
@@ -40,35 +40,35 @@ const burnAddress = '0x0000000000000000000000000000000000000000';
 let updateOrder = async function(result, blockNumber) {
     try {
         let orderId = result.orderId;
-        let pasarOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
+        let meteastOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
             tokenId: result.tokenId, amount: result.amount, price:result.price, priceNumber: parseInt(result.price), endTime: result.endTime,
             sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr, bids: result.bids, lastBidder: result.lastBidder,
             lastBid: result.lastBid, filled: result.filled, royaltyOwner: result.royaltyOwner, royaltyFee: result.royaltyFee,
             createTime: result.createTime, updateTime: result.updateTime, blockNumber}
 
         if(result.orderState === "1" && blockNumber > config.upgradeBlock) {
-            let extraInfo = await pasarContract.methods.getOrderExtraById(orderId).call();
+            let extraInfo = await meteastContract.methods.getOrderExtraById(orderId).call();
             if(extraInfo.sellerUri !== '') {
-                pasarOrder.platformAddr = extraInfo.platformAddr;
-                pasarOrder.platformFee = extraInfo.platformFee;
-                pasarOrder.sellerUri = extraInfo.sellerUri;
-                pasarOrder.sellerDid = await jobService.getInfoByIpfsUri(extraInfo.sellerUri);
+                meteastOrder.platformAddr = extraInfo.platformAddr;
+                meteastOrder.platformFee = extraInfo.platformFee;
+                meteastOrder.sellerUri = extraInfo.sellerUri;
+                meteastOrder.sellerDid = await jobService.getInfoByIpfsUri(extraInfo.sellerUri);
 
-                await pasarDBService.replaceDid({address: result.sellerAddr, did: pasarOrder.sellerDid});
+                await meteastDBService.replaceDid({address: result.sellerAddr, did: meteastOrder.sellerDid});
             }
         }
 
-        await pasarDBService.updateOrInsert(pasarOrder);
+        await meteastDBService.updateOrInsert(meteastOrder);
     } catch(error) {
         console.log(error);
         console.log(`[OrderForSale] Sync - getOrderById(${orderId}) at ${blockNumber} call error`);
     }
 }
 
-let orderForSaleJobCurrent = config.pasarContractDeploy,
-    orderFilledJobCurrent = config.pasarContractDeploy,
-    orderCanceledJobCurrent = config.pasarContractDeploy,
-    orderPriceChangedJobCurrent = config.pasarContractDeploy,
+let orderForSaleJobCurrent = config.meteastContractDeploy,
+    orderFilledJobCurrent = config.meteastContractDeploy,
+    orderCanceledJobCurrent = config.meteastContractDeploy,
+    orderPriceChangedJobCurrent = config.meteastContractDeploy,
     tokenInfoSyncJobCurrent = config.stickerContractDeploy,
     tokenInfoMemoSyncJobCurrent = config.stickerContractDeploy;
 
@@ -84,12 +84,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderForSale] Sync ${orderForSaleJobCurrent} ~ ${toBlock} ...`)
 
-        pasarContractWs.getPastEvents('OrderForSale', {
+        meteastContractWs.getPastEvents('OrderForSale', {
             fromBlock: orderForSaleJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -97,7 +97,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 console.log(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
             orderForSaleJobCurrent = toBlock + 1;
@@ -119,12 +119,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderPriceChanged] Sync ${orderPriceChangedJobCurrent} ~ ${toBlock} ...`)
 
-        pasarContractWs.getPastEvents('OrderPriceChanged', {
+        meteastContractWs.getPastEvents('OrderPriceChanged', {
             fromBlock: orderPriceChangedJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -133,7 +133,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 console.log(`[OrderPriceChanged] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
 
@@ -155,12 +155,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderFilled] Sync ${orderFilledJobCurrent} ~ ${toBlock} ...`)
 
-        pasarContractWs.getPastEvents('OrderFilled', {
+        meteastContractWs.getPastEvents('OrderFilled', {
             fromBlock: orderFilledJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -168,7 +168,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
 
                 console.log(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
             orderFilledJobCurrent = toBlock + 1;
@@ -189,12 +189,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderCanceled] Sync ${orderCanceledJobCurrent} ~ ${toBlock} ...`)
 
-        pasarContractWs.getPastEvents('OrderCanceled', {
+        meteastContractWs.getPastEvents('OrderCanceled', {
             fromBlock: orderCanceledJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await pasarContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -202,7 +202,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee};
 
                 console.log(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
-                await pasarDBService.insertOrderEvent(orderEventDetail);
+                await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
             })
             orderCanceledJobCurrent = toBlock + 1;
@@ -269,7 +269,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                             token.didUri = extraInfo.didUri;
                             if(extraInfo.didUri !== '') {
                                 token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                                await pasarDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                                await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
                             }
                         }
 
@@ -298,7 +298,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                         console.log(e);
                     }
                 } else {
-                    await stickerDBService.updateToken(tokenId, to, timestamp);
+                    await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
                 }
             })
             tokenInfoSyncJobCurrent = toBlock + 1;
@@ -346,7 +346,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 let gasFee = await stickerDBService.getGasFee(txHash);
                 let transferEvent = {tokenId, blockNumber, timestamp,txHash, txIndex, from, to, value, memo, gasFee: gasFee}
                 await stickerDBService.addEvent(transferEvent);
-                await stickerDBService.updateToken(tokenId, to, timestamp);
+                await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
             })
             tokenInfoMemoSyncJobCurrent = toBlock + 1;
         }).catch(error => {

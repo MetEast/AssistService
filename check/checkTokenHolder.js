@@ -5,7 +5,7 @@ async function checkTokenHolder() {
     let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
     try {
         await mongoClient.connect();
-        const collection = mongoClient.db(config.dbName).collection('pasar_token');
+        const collection = mongoClient.db(config.dbName).collection('meteast_token');
         let result = await collection.find({}).sort({blockNumber: -1}).project({"_id": 0, tokenId: 1, holder: 1}).toArray();
 
         let tokenHolderMap = new Map();
@@ -13,7 +13,7 @@ async function checkTokenHolder() {
             tokenHolderMap.set(item.tokenId, item.holder);
         })
 
-        const collection2 = mongoClient.db(config.dbName).collection('pasar_token_event');
+        const collection2 = mongoClient.db(config.dbName).collection('meteast_token_event');
         let result2 = await collection2.aggregate([
             { $sort: {blockNumber: -1}},
             { $group: {_id: "$tokenId", doc: {$first: "$$ROOT"}}},

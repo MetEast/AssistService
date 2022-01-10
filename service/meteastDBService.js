@@ -2,16 +2,16 @@ let config = require('../config');
 let MongoClient = require('mongodb').MongoClient;
 
 module.exports = {
-    getLastPasarOrderSyncHeight: async function (event) {
+    getLastmeteastOrderSyncHeight: async function (event) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             let doc = await collection.findOne({event}, {sort:{blockNumber:-1}})
             if(doc) {
                 return doc.blockNumber
             } else {
-                return config.pasarContractDeploy - 1;
+                return config.meteastContractDeploy - 1;
             }
         } catch (err) {
             logger.error(err);
@@ -25,7 +25,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
             let doc = await collection.findOne({}, {sort:{blockNumber:-1}})
             if(doc) {
                 return doc.blockNumber
@@ -40,12 +40,12 @@ module.exports = {
         }
     },
 
-    updateOrInsert: async function (pasarOrder) {
-        let {orderId, ...rest} = pasarOrder;
+    updateOrInsert: async function (meteastOrder) {
+        let {orderId, ...rest} = meteastOrder;
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
             return await collection.updateOne({orderId}, {$set: rest}, {upsert: true});
         } catch (err) {
             logger.error(err);
@@ -59,7 +59,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_address_did');
+            const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             await collection.updateOne({address, "did.version": did.version, "did.did": did.did}, {$set: {did}}, {upsert: true});
         } catch (err) {
             logger.error(err);
@@ -73,7 +73,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             await collection.insertOne(orderEventDetail);
         } catch (err) {
             logger.error(err);
@@ -87,7 +87,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
             await collection.insertOne(orderEventDetail);
         } catch (err) {
             logger.error(err);
@@ -109,11 +109,11 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
 
             let pipeline = [
                 { $match: {orderState: "1"}},
-                { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
             ];
 
@@ -121,7 +121,7 @@ module.exports = {
             if(adult !== undefined) {
                 let pipeline2 = [
                     { $match: {orderState: "1"}},
-                    { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                    { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                     { $unwind: "$token"},
                     { $match: {"token.adult": adult}},
                     { $count: "total"}
@@ -156,7 +156,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
 
             let firstMatch = {}, match = {};
             if(adult !== undefined) {
@@ -184,7 +184,7 @@ module.exports = {
 
             let pipeline = [
                 { $match: firstMatch},
-                { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
             ];
 
@@ -205,11 +205,11 @@ module.exports = {
         }
     },
 
-    listPasarOrder: async function(pageNum=1, pageSize=10, blockNumber, endBlockNumber, orderState,sortType, sort, adult) {
+    listmeteastOrder: async function(pageNum=1, pageSize=10, blockNumber, endBlockNumber, orderState,sortType, sort, adult) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
 
             let latestBlockNumber = 0;
             if(sortType !== undefined && pageNum === 1) {
@@ -220,7 +220,7 @@ module.exports = {
 
             let pipeline = [
                 { $match: match},
-                { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
             ];
 
@@ -243,7 +243,7 @@ module.exports = {
             if(adult !== undefined) {
                 let pipeline2 = [
                     { $match: match},
-                    { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                    { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                     { $unwind: "$token"},
                     { $match: {"token.adult": adult}},
                     { $count: "total"}
@@ -278,7 +278,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_address_did');
+            const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             return await collection.find({address: {$in: addresses}}).project({"_id": 0}).toArray();
         } catch (err) {
             logger.error(err);
@@ -291,7 +291,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_address_did');
+            const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             let result =  await collection.findOne({address}, {"_id": 0, address: 1, did: 1});
             return {code: 200, message: 'success', data: result};
         } catch (err) {
@@ -305,7 +305,7 @@ module.exports = {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_whitelist');
+            const collection = mongoClient.db(config.dbName).collection('meteast_whitelist');
             let result =  await collection.find(address ? {address}: {}).project({"_id": 0}).toArray();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
@@ -315,11 +315,11 @@ module.exports = {
         }
     },
 
-    pasarOrderCount: async function() {
+    meteastOrderCount: async function() {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
             return await collection.find({}).count();
         } catch (err) {
             logger.error(err);
@@ -328,11 +328,11 @@ module.exports = {
         }
     },
 
-    pasarOrderEventCount: async function(startBlock, endBlock) {
+    meteastOrderEventCount: async function(startBlock, endBlock) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('pasar_order_event');
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             return await collection.find({blockNumber: {$gte: startBlock, $lte: endBlock}}).count();
         } catch (err) {
             logger.error(err);
