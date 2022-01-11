@@ -898,24 +898,23 @@ module.exports = {
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
-            let collection = client.db(config.dbName).collection('meteast_token_event');
+            let collection = client.db(config.dbName).collection('pasar_token_event');
 
             let result = await collection.aggregate([
-                { $match: {$and: [{tokenId: tokenId}, {to: {$ne: config.meteastContract}}] }},
+                { $match: {$and: [{tokenId: tokenId}, {to: {$ne: config.pasarContract}}] }},
                 { $sort: {tokenId: 1, blockNumber: -1}},
                 { $limit: 1},
                 { $group: {_id: "$tokenId", doc: {$first: "$$ROOT"}}},
                 { $replaceRoot: { newRoot: "$doc"}},
-                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $lookup: {from: "pasar_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
                 { $project: projectionToken}
             ]).toArray();
             result = result[0];
-            collection = client.db(config.dbName).collection('meteast_order_event');
-            let orderForSaleRecord = await collection.aggregate([
-                { $match: {$and: [{tokenId: tokenId}, {buyerAddr: '0x0000000000000000000000000000000000000000'}, {event: 'OrderForSale'}]} },
-                { $sort: {tokenId: 1, blockNumber: -1}}
-            ]).toArray();
+            collection = client.db(config.dbName).collection('pasar_order_event');
+            let orderForSaleRecord = await collection.find(
+                {$and: [{tokenId: tokenId}, {buyerAddr: '0x0000000000000000000000000000000000000000'}, {sellerAddr: result.holder}, {event: 'OrderForSale'}]}
+            ).toArray();
             if(orderForSaleRecord.length > 0) {
                 result['DateOnMarket'] = orderForSaleRecord[0]['timestamp'];
                 result['SaleType'] = orderForSaleRecord[0]['sellerAddr'] == result['royaltyOwner'] ? "Primary Sale": "Secondary Sale";
@@ -942,16 +941,26 @@ module.exports = {
                 addressCondition.push({"sellerAddr": new RegExp('^' + walletAddr)});
             else
                 addressCondition.push({"royaltyOwner": new RegExp('^' + walletAddr)});
-            let collection = client.db(config.dbName).collection('meteast_order');
-            await collection.find({}).forEach( function (x) {
-                x.updateTime = new Date(x.updateTime * 1000);
-                x.value = type == 1 ? parseInt(x.royaltyFee) : parseInt(x.price) * parseFloat(x.amount);
-                client.db(config.dbName).collection('token_temp').save(x);
-            });
-            collection =  client.db(config.dbName).collection('token_temp');
+            let collection = client.db(config.dbName).collection('pasar_order');
+            let rows = [];
             let result = await collection.aggregate([
-                { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$updateTime'}}} },
                 { $match: {$and : [{$or :[...addressCondition]}, { 'orderState': '2'}]} },
+                { $sort: {updateTime: 1}},
+                { $project: {"_id": 0, orderId: 1, price: 1, royaltyFee: 1, updateTime: 1, amount: 1} },
+                { $lookup: {from: "pasar_order_platform_fee", localField: "orderId", foreignField: "orderId", as: "platformFee"} },   
+            ]).toArray();
+            result.forEach(x => {
+                x.time = new Date(x.updateTime * 1000);
+                let platformFee = x.platformFee.length > 0 ? x.platformFee[0].platformFee: 0;
+                x.value = type == 1 ? parseInt(x.royaltyFee) : parseInt(x.price) * parseFloat(x.amount) - parseInt(platformFee);
+                rows.push(x);
+            });
+            if(rows.length > 0) {
+                await client.db(config.dbName).collection('token_temp').insertMany(rows);
+            }
+            collection =  client.db(config.dbName).collection('token_temp');
+            result = await collection.aggregate([
+                { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$time'}}} },
                 { $group: { "_id"  : { onlyDate: "$onlyDate"}, "value": {$sum: "$value"}} },
                 { $project: {_id: 0, onlyDate: "$_id.onlyDate", value:1} },
                 { $sort: {onlyDate: 1} },
