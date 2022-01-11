@@ -13,8 +13,8 @@ module.exports = {
     escWsUrl: 'wss://api-testnet.elastos.io/eth-ws',
     escRpcUrl: 'https://api-testnet.elastos.io/eth',
 
-    meteastContract: '0x02E8AD0687D583e2F6A7e5b82144025f30e26aA0',
-    stickerContract: '0x020c7303664bc88ae92cE3D380BF361E03B78B81',
+    meteastContract: '0x7c0c3c566beCBB454Ce867a67C0faAfBe1D24590',
+    stickerContract: '0x350D156C0D4b8E8437eaA81226d8c0638C5bCf94',
     galleriaContract: '',
     meteastContractDeploy: 7801378,
     stickerContractDeploy: 7744408,
