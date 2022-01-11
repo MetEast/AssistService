@@ -64,10 +64,9 @@ module.exports = {
         let recipients = [];
         recipients.push('lifayi2008@163.com');
 
-        async function updateOrder(result, blockNumber) {
+        async function updateOrder(result, blockNumber, orderId) {
             try {
                 // let result = await meteastContract.methods.getOrderById(orderId).call();
-                let orderId = result.orderId;
                 let meteastOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
                     tokenId: result.tokenId, amount: result.amount, price:result.price, priceNumber: parseInt(result.price), endTime: result.endTime,
                     sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr, bids: result.bids, lastBidder: result.lastBidder,
@@ -168,7 +167,7 @@ module.exports = {
             }
         }
 
-        let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+        let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 10 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForAuction');
             if(isGetOrderForAuctionJobRun == false) {
                 //initial state
@@ -198,12 +197,12 @@ module.exports = {
 
                 logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'ON AUCTION');
             })
         });
 
-        let orderBidJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+        let orderBidJobId = schedule.scheduleJob(new Date(now + 20 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderBid');
             if(isGetOrderBidJobRun == false) {
                 //initial state
@@ -233,12 +232,12 @@ module.exports = {
 
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'HAS BIDS');
             })
         });
 
-        let orderForSaleJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+        let orderForSaleJobId = schedule.scheduleJob(new Date(now + 30 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForSale');
             if(isGetForSaleOrderJobRun == false) {
                 //initial state
@@ -267,13 +266,13 @@ module.exports = {
 
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
                 await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'BUY NOW')
             })
         });
 
-        let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 2 * 60 * 1000), async () => {
+        let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 2 * 40 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderPriceChanged');
             if(isGetForOrderPriceChangedJobRun == false) {
                 //initial state
@@ -303,11 +302,11 @@ module.exports = {
 
                 logger.info(`[OrderPriceChanged] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
             })
         });
 
-        let orderFilledJobId = schedule.scheduleJob(new Date(now + 3 * 60 * 1000), async () => {
+        let orderFilledJobId = schedule.scheduleJob(new Date(now + 3 * 50 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderFilled');
             if(isGetForOrderFilledJobRun == false) {
                 //initial state
@@ -338,7 +337,7 @@ module.exports = {
 
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
             })
         });
@@ -373,12 +372,12 @@ module.exports = {
 
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await updateOrder(result, event.blockNumber);
+                await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NEW');
             })
         });
 
-        let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 4 * 60 * 1000), async () => {
+        let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastOrderPlatformFeeSyncHeight();
             if(isGetForPlatformFeeJobRun == false) {
                 //initial state
@@ -406,66 +405,8 @@ module.exports = {
             })
         });
 
-        let panelCreatedSyncJobId, panelRemovedSyncJobId;
-        if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
-            panelCreatedSyncJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
-                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelCreated');
-                logger.info(`[GalleriaPanelCreated] Sync Starting ... from block ${lastHeight + 1}`)
 
-                galleriaContractWs.events.PanelCreated({
-                    fromBlock: lastHeight + 1
-                }).on("error", function (error) {
-                    logger.info(error);
-                    logger.info("[GalleriaPanelCreated] Sync Ending ...");
-                    isGetTokenInfoWithMemoJobRun = 1
-                }).on("data", async function (event) {
-                    let user = event.returnValues._user;
-                    let panelId = event.returnValues._panelId;
-                    let tokenId = event.returnValues._tokenId;
-                    let amount = event.returnValues._amount;
-                    let fee = event.returnValues._fee;
-                    let didUri = event.returnValues.didUri;
-                    let blockNumber = event.blockNumber;
-                    let txHash = event.transactionHash;
-                    let txIndex = event.transactionIndex;
-                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
-                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, tokenId, amount, fee, didUri, gasFee: gasFee}
-
-                    let creatorCID = didUri.split(":")[2];
-                    let response = await fetch(config.ipfsNodeUrl + creatorCID);
-                    panelEvent.did = await response.json();
-
-                    logger.info(`[GalleriaPanelCreated] Panel Detail: ${JSON.stringify(panelEvent)}`)
-                    await galleriaDbService.addPanelEvent(panelEvent);
-                })
-            });
-
-            panelRemovedSyncJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
-                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelRemoved');
-                logger.info(`[GalleriaPanelRemoved] Sync Starting ... from block ${lastHeight + 1}`)
-
-                galleriaContractWs.events.PanelRemoved({
-                    fromBlock: lastHeight + 1
-                }).on("error", function (error) {
-                    logger.info(error);
-                    logger.info("[GalleriaPanelRemoved] Sync Ending ...");
-                    isGetTokenInfoWithMemoJobRun = 1
-                }).on("data", async function (event) {
-                    let user = event.returnValues._user;
-                    let panelId = event.returnValues._panelId;
-                    let blockNumber = event.blockNumber;
-                    let txHash = event.transactionHash;
-                    let txIndex = event.transactionIndex;
-                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
-                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, gasFee: gasFee}
-
-                    logger.info(`[GalleriaPanelRemoved] Panel Detail: ${JSON.stringify(panelEvent)}`)
-                    await galleriaDbService.addPanelEvent(panelEvent);
-                })
-            });
-        }
-
-        let approval  = schedule.scheduleJob(new Date(now + 10 * 1000), async()=> {
+        let approval  = schedule.scheduleJob(new Date(now + 80 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
             if(isGetApprovalRun == false) {
                 //initial state
@@ -487,7 +428,7 @@ module.exports = {
             });
         });
 
-        let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+        let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 90 * 1000), async () => {
             let lastHeight = await stickerDBService.getLastStickerSyncHeight();
             if(isGetTokenInfoJobRun == false) {
                 //initial state
@@ -534,7 +475,7 @@ module.exports = {
             })
         });
 
-        let tokenInfoWithMemoSyncJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
+        let tokenInfoWithMemoSyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
             let lastHeight = await stickerDBService.getLastStickerSyncHeight();
             if(isGetTokenInfoWithMemoJobRun == false) {
                 //initial state
@@ -568,6 +509,64 @@ module.exports = {
                 await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
             })
         });
+        let panelCreatedSyncJobId, panelRemovedSyncJobId;
+        if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
+            panelCreatedSyncJobId = schedule.scheduleJob(new Date(now + 110 * 1000), async () => {
+                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelCreated');
+                logger.info(`[GalleriaPanelCreated] Sync Starting ... from block ${lastHeight + 1}`)
+
+                galleriaContractWs.events.PanelCreated({
+                    fromBlock: lastHeight + 1
+                }).on("error", function (error) {
+                    logger.info(error);
+                    logger.info("[GalleriaPanelCreated] Sync Ending ...");
+                    isGetTokenInfoWithMemoJobRun = 1
+                }).on("data", async function (event) {
+                    let user = event.returnValues._user;
+                    let panelId = event.returnValues._panelId;
+                    let tokenId = event.returnValues._tokenId;
+                    let amount = event.returnValues._amount;
+                    let fee = event.returnValues._fee;
+                    let didUri = event.returnValues.didUri;
+                    let blockNumber = event.blockNumber;
+                    let txHash = event.transactionHash;
+                    let txIndex = event.transactionIndex;
+                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, tokenId, amount, fee, didUri, gasFee: gasFee}
+
+                    let creatorCID = didUri.split(":")[2];
+                    let response = await fetch(config.ipfsNodeUrl + creatorCID);
+                    panelEvent.did = await response.json();
+
+                    logger.info(`[GalleriaPanelCreated] Panel Detail: ${JSON.stringify(panelEvent)}`)
+                    await galleriaDbService.addPanelEvent(panelEvent);
+                })
+            });
+
+            panelRemovedSyncJobId = schedule.scheduleJob(new Date(now + 120 * 1000), async () => {
+                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelRemoved');
+                logger.info(`[GalleriaPanelRemoved] Sync Starting ... from block ${lastHeight + 1}`)
+
+                galleriaContractWs.events.PanelRemoved({
+                    fromBlock: lastHeight + 1
+                }).on("error", function (error) {
+                    logger.info(error);
+                    logger.info("[GalleriaPanelRemoved] Sync Ending ...");
+                    isGetTokenInfoWithMemoJobRun = 1
+                }).on("data", async function (event) {
+                    let user = event.returnValues._user;
+                    let panelId = event.returnValues._panelId;
+                    let blockNumber = event.blockNumber;
+                    let txHash = event.transactionHash;
+                    let txIndex = event.transactionIndex;
+                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, gasFee: gasFee}
+
+                    logger.info(`[GalleriaPanelRemoved] Panel Detail: ${JSON.stringify(panelEvent)}`)
+                    await galleriaDbService.addPanelEvent(panelEvent);
+                })
+            });
+        }
 
         schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
             let now = Date.now();
@@ -636,7 +635,7 @@ module.exports = {
          *  meteast order event volume check
          */
         let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
-        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/5 * * * *'}, async () => {
+        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
             let nowBlock = await web3Rpc.eth.getBlockNumber();
             let fromBlock = meteastOrderEventCheckBlockNumber;
             let tempBlock = meteastOrderEventCheckBlockNumber + 20000
@@ -667,7 +666,7 @@ module.exports = {
          *  Sticker transfer event volume check
          */
         let stickerEventCheckBlockNumber = config.stickerContractDeploy;
-        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/5 * * * *'}, async () => {
+        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
             let nowBlock = await web3Rpc.eth.getBlockNumber();
             let fromBlock = stickerEventCheckBlockNumber;
             let tempBlock = stickerEventCheckBlockNumber + 20000

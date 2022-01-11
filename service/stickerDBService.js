@@ -108,7 +108,7 @@ module.exports = {
         } catch (err) {
             latest_price = 0;
         } finally {
-            return latest_price;
+            return {code: 200, message: 'success', data: latest_price};
         }
     },
     getTimestamp: async function(txHash) {
