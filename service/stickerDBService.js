@@ -249,14 +249,35 @@ module.exports = {
         }
         return {'order': {$or:[...conditions_order_event]}, 'token':  {$or:[...conditions_token_event]}};
     },
-    listStickers: async function(pageNum, pageSize, timeOrder) {
+    listTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+        let condition = [];
+        let sort;
+        switch(orderType)
+        {
+            case 'price_l_to_h':
+                sort = {$sort: {price: -1}};
+                break;
+            case 'price_h_to_l':
+                sort = {$sort: {price: 1}};
+                break;
+            case 'mostviewed':
+                sort = {$sort: {views: -1}};
+                break;
+        }
+        let filter_status_arr = filter_status.split(',');
+        let or_condition = [];
+        filter_status_arr.forEach(ele => {
+            or_condition.push({status: ele});
+        });
+        condition.push({$or: or_condition});
+        condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
+        condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let total = await collection.find().count();
-            let result = await collection.find().sort({createTime: -1})
-                .project({"_id": 0}).sort({"blockNumber": timeOrder}).limit(pageSize).skip((pageNum-1)*pageSize).toArray();
+            let total = await collection.find({$and: condition}).count();
+            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).limit(pageSize).skip((pageNum-1)*pageSize).toArray();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -345,7 +366,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {holder, blockNumber, updateTime: timestamp, status: 'Wait'}});
+            await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {holder, blockNumber, updateTime: timestamp, status: 'NEW'}});
         } catch (err) {
             logger.error(err);
             throw new Error();
@@ -360,6 +381,19 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {status}});
+        } catch (err) {
+            logger.error(err);
+            throw new Error();
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    updateTokenPrice: async function (tokenId, blockNumber, price) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            await collection.updateOne({tokenId, blockNumber: {"$lte": blockNumber}}, {$set: {price: new BigNumber(price)}});
         } catch (err) {
             logger.error(err);
             throw new Error();

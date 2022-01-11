@@ -11,6 +11,7 @@ let galleriaContractABI = require('./contractABI/galleriaABI');
 let jobService = require('./service/jobService');
 let sendMail = require('./send_mail');
 const BigNumber = require("bignumber.js");
+const res = require('express/lib/response');
 
 module.exports = {
     run: function() {
@@ -105,7 +106,6 @@ module.exports = {
                 token.type = data.type;
                 token.name = data.name;
                 token.description = data.description;
-                token.status = 'Wait';
 
                 if(blockNumber > config.upgradeBlock) {
                     let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
@@ -134,6 +134,10 @@ module.exports = {
                     token.size = data.size;
                 }
                 token.adult = data.adult ? data.adult : false;
+                token.price = 0;
+                token.views = 0;
+                token.likes = 0;
+                token.status = 'NEW';
                 logger.info(`[TokenInfo] New token info: ${JSON.stringify(token)}`)
                 await stickerDBService.replaceToken(token);
             } catch (e) {
@@ -195,7 +199,7 @@ module.exports = {
                 logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'Auction');
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'ON AUCTION');
             })
         });
 
@@ -230,6 +234,7 @@ module.exports = {
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'HAS BIDS');
             })
         });
 
@@ -263,6 +268,8 @@ module.exports = {
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'BUY NOW')
             })
         });
 
@@ -332,6 +339,7 @@ module.exports = {
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
             })
         });
 
@@ -366,6 +374,7 @@ module.exports = {
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NEW');
             })
         });
 

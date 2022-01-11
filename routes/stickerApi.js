@@ -2,17 +2,23 @@ let express = require('express');
 let router = express.Router();
 let stickerDBService = require('../service/stickerDBService');
 const BigNumber = require('bignumber.js');
+const { filter } = require('mongodb/lib/core/connection/logger');
 
-router.get('/listStickers', function(req, res) {
+router.get('/listTokens', function(req, res) {
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
-    let timeOrderStr = req.query.timeOrder;
-    let pageNum, pageSize, timeOrder;
+    let keyword = req.query.keyword;
+    let orderType = req.query.orderType;
+    let filter_status = req.query.filter_status;
+    let filter_min_price = req.query.filter_status;
+    let filter_max_price = req.query.filter_min_price;
+    let pageNum, pageSize;
 
     try {
         pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
-        timeOrder = timeOrderStr ? parseInt(timeOrderStr) : -1; 
+        filter_min_price = filter_min_price ? filter_min_price : 0;
+        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -23,7 +29,7 @@ router.get('/listStickers', function(req, res) {
         return;
     }
 
-    stickerDBService.listStickers(pageNum, pageSize, timeOrder).then(result => {
+    stickerDBService.listTokens(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
