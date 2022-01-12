@@ -840,7 +840,7 @@ module.exports = {
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-        adult: "$token.adult"}
+        adult: "$token.adult", status: "$token.status"}
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -857,16 +857,14 @@ module.exports = {
                 { $project: projectionToken}
             ]).toArray();
             result = result[0];
-            collection = client.db(config.dbName).collection('meteast_order_event');
-            let orderForSaleRecord = await collection.find(
-                {$and: [{tokenId: tokenId}, {buyerAddr: '0x0000000000000000000000000000000000000000'}, {sellerAddr: result.holder}, {event: 'OrderForSale'}]}
-            ).toArray();
-            if(orderForSaleRecord.length > 0) {
-                result['DateOnMarket'] = orderForSaleRecord[0]['timestamp'];
-                result['SaleType'] = orderForSaleRecord[0]['sellerAddr'] == result['royaltyOwner'] ? "Primary Sale": "Secondary Sale";
-            } else {
-                result['DateOnMarket'] = "Not on sale";
-                result['SaleType'] = "Not on sale";
+            collection = client.db(config.dbName).collection('meteast_order');
+            if(result.status == 'ON AUCTION') {
+                let orderForAuctionRecord = await collection.find(
+                    {$and: [{tokenId: tokenId}, {sellerAddr: result.holder}]}
+                ).toArray();
+                if(orderForAuctionRecord.length > 0) {
+                    result.endTime = orderForAuctionRecord.endTime;
+                }
             }
             return {code: 200, message: 'success', data: result};
         } catch (err) {
