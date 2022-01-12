@@ -301,4 +301,39 @@ router.get('/getLatestElaPrice', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 });
+
+router.post('/incTokenViews', function(req, res) {
+    let params = req.body;
+    let tokenId = params.tokenId;
+    stickerDBService.incTokenViews(tokenId).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.post('/incTokenLikes', function(req, res) {
+    let params = req.body;
+    let tokenId = params.tokenId;
+    let address = params.address;
+    stickerDBService.incTokenLikes(tokenId, address).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.post('/decTokenLikes', function(req, res) {
+    let params = req.body;
+    let tokenId = params.tokenId;
+    let address = params.address;
+    stickerDBService.decTokenLikes(tokenId, address).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
 module.exports = router;
