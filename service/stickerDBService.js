@@ -645,8 +645,6 @@ module.exports = {
             let result = await collection.find().sort({blockNumber: parseInt(timeOrder)}).toArray();
             await collection.drop();
             let results = [];
-            let collection_token = mongoClient.db(config.dbName).collection('pasar_token');
-            let collection_platformFee = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
             for(var i = (pageNum - 1) * pageSize; i < pageSize * pageNum; i++)
             {
                 if(i >= result.length)
@@ -657,15 +655,6 @@ module.exports = {
                     result[i]['royalties'] = res['royalties'];
                     result[i]['asset'] = res['asset'];
                     result[i]['royaltyOwner'] = res['royaltyOwner'];
-                }
-                if(result[i]['event'] == 'OrderFilled') {
-                    let res  = await collection_platformFee.findOne({$and:[{blockNumber: result[i]['blockNumber']}, {orderId: result[i]['orderId']}]});
-                    if(res != null) {
-                        result[i]['platformfee'] = res['platformFee'];
-                    }
-                }
-                if(result[i]['gasFee'] == null) {
-                    result[i]['gasFee'] = await this.getGasFee(result[i]['tHash']);
                 }
                 results.push(result[i]);
             }
@@ -678,7 +667,6 @@ module.exports = {
             await mongoClient.close();
         }
     },
-
     nftnumber: async function() {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -713,36 +701,6 @@ module.exports = {
             await mongoClient.close();
         }
     },
-
-    // owneraddressnum: async function() {
-    //     let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-    //     try {
-    //         await mongoClient.connect();
-    //         let collection  = mongoClient.db(config.dbName).collection('meteast_token');
-    //         let tokens = await collection.find({}).toArray();
-    //         collection = mongoClient.db(config.dbName).collection('meteast_token_event');
-    //         let owners = [];
-    //         for (let i = 0; i < tokens.length; i++) {
-    //             const tokenId = tokens[i]['tokenId'];
-    //             let result = await collection.aggregate([
-    //                 { $match: {$and: [ {tokenId: tokenId}, {to: {$ne: config.meteastContract}} ]}},
-    //                 { $project: {_id: 0, to: 1, blockNumber: 1, tokenId: 1} },
-    //                 { $sort: {tokenId: 1, blockNumber: -1}},
-    //                 { $limit: 1},
-    //                 { $group: {_id: "$tokenId", doc: {$first: "$$ROOT"}}},
-    //                 { $replaceRoot: { newRoot: "$doc"}}
-    //             ]).toArray();
-    //             const owner = result[0]['to'];
-    //             if(owners.indexOf(owner) == -1 && owner != '0x0000000000000000000000000000000000000000')
-    //                 owners.push(owner);
-    //         }
-    //         return {code: 200, message: 'success', data: owners.length};
-    //     } catch (err) {
-    //         logger.error(err);
-    //     } finally {
-    //         await mongoClient.close();
-    //     }
-    // },
 
     owneraddressnum: async function() {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -867,18 +825,6 @@ module.exports = {
                 , royalties: "$token.royalties", asset: "$token.asset", royaltyFee: 1, royaltyOwner: "$token.royaltyOwner", orderId: 1, gasFee: 1} },
                 { $sort: {blockNumber: parseInt(timeOrder)} }
             ]).toArray();
-            let collection_platformFee = mongoClient.db(config.dbName).collection('pasar_order_platform_fee');
-            for(var i = 0; i < result.length; i++) {
-                if(result[i]['event'] == 'OrderFilled') {
-                    let res  = await collection_platformFee.findOne({$and:[{blockNumber: result[i]['blockNumber']}, {orderId: result[i]['orderId']}]});
-                    if(res != null) {
-                        result[i]['platformfee'] = res['platformFee'];
-                    }
-                }
-                if(result[i]['gasFee'] == null) {
-                    result[i]['gasFee'] = await this.getGasFee(result[i]['tHash']);
-                }
-            }
             result = this.verifyEvents(result);
             return {code: 200, message: 'success', data: result};
         } catch (err) {
