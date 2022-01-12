@@ -1152,5 +1152,27 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
+    },
+
+    getSoldPreviouslyBoughtCollectible: async function (selfAddr) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
+            const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
+            let sold_collectibles = await collection.aggregate([
+                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } }
+            ]).toArray();
+            let result = [];
+            sold_collectibles.forEach(ele => {
+                let record = await collection.find({tokenId: ele.tokenId}).toArray();
+                result.concat(record);
+            });
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
     }
 }
