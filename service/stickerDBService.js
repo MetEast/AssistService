@@ -1121,4 +1121,22 @@ module.exports = {
             await mongoClient.close();
         }
     },
+
+    getLatestBids: async function (tokenId, sellerAddr, buyerAddr) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            let result_self = await collection.find( { sellerAddr, tokenId, buyerAddr} ).toArray();
+            let result_others = await collection.aggregate([ 
+                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : tokenId}, {buyerAddr: {$ne: buyerAddr}} ] } }
+            ]).toArray();
+            let result = result_self.concat(result_others);
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(err)
+        } finally {
+            await mongoClient.close();
+        }
+    }
 }

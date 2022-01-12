@@ -336,4 +336,17 @@ router.post('/decTokenLikes', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 });
+
+router.get('/getLatestBids', function(req, res) {
+    let tokenId = req.query.tokenId;
+    let ownerAddr = req.query.owner;
+    let selfAddr = req.query.selfAddr;
+    
+    stickerDBService.getLatestBids(tokenId, ownerAddr, selfAddr).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
 module.exports = router;
