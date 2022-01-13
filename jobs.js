@@ -74,7 +74,7 @@ module.exports = {
                     createTime: result.createTime, updateTime: result.updateTime, blockNumber}
 
                 if(result.orderState === "1" && blockNumber > config.upgradeBlock) {
-                    let extraInfo = await meteastContract.methods.getOrderExtraById(orderId).call();
+                    let extraInfo = await stickerContract.methods.getOrderExtraById(orderId).call();
                     if(extraInfo.sellerUri !== '') {
                         meteastOrder.platformAddr = extraInfo.platformAddr;
                         meteastOrder.platformFee = extraInfo.platformFee;
@@ -93,7 +93,7 @@ module.exports = {
 
         async function dealWithNewToken(blockNumber,tokenId) {
             try {
-                let result = await stickerContract.methods.tokenInfo(tokenId).call();
+                let result = await meteastContract.methods.tokenInfo(tokenId).call();
                 let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: result.tokenSupply,
                     royalties:result.royaltyFee, royaltyOwner: result.royaltyOwner, holder: result.royaltyOwner,
                     createTime: result.createTime, updateTime: result.updateTime}
@@ -107,12 +107,12 @@ module.exports = {
                 token.description = data.description;
 
                 if(blockNumber > config.upgradeBlock) {
-                    let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
-                    token.didUri = extraInfo.didUri;
-                    if(extraInfo.didUri !== '') {
-                        token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                        await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
-                    }
+                    // let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
+                    // token.didUri = extraInfo.didUri;
+                    // if(extraInfo.didUri !== '') {
+                    //     token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
+                    //     await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                    // }
                 }
 
                 if(token.type === 'feeds-channel') {
@@ -147,17 +147,17 @@ module.exports = {
 
         async function updateToken(blockNumber,tokenId,to) {
             try {
-                let result = await stickerContract.methods.tokenInfo(tokenId).call();
+                let result = await meteastContract.methods.tokenInfo(tokenId).call();
                 let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: result.tokenSupply,
                     holder: to, updateTime: result.updateTime}
 
                 if(blockNumber > config.upgradeBlock) {
-                    let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
-                    token.didUri = extraInfo.didUri;
-                    if(extraInfo.didUri !== '') {
-                        token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                        await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
-                    }
+                    // let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
+                    // token.didUri = extraInfo.didUri;
+                    // if(extraInfo.didUri !== '') {
+                    //     token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
+                    //     await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                    // }
                 }
 
                 await stickerDBService.updateToken()
@@ -179,7 +179,7 @@ module.exports = {
 
             logger.info(`[OrderForAuction] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderForAuction({
+            stickerContractWs.events.OrderForAuction({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 logger.info(error);
@@ -188,7 +188,7 @@ module.exports = {
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
                 console.log('OrderForAuction event data is ', event)
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -214,7 +214,7 @@ module.exports = {
 
             logger.info(`[OrderBid] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderBid({
+            stickerContractWs.events.OrderBid({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 logger.info(error);
@@ -223,7 +223,7 @@ module.exports = {
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
                 console.log('OrderBid event data is ', event);
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -249,7 +249,7 @@ module.exports = {
 
             logger.info(`[OrderForSale] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderForSale({
+            stickerContractWs.events.OrderForSale({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 logger.info(error);
@@ -257,7 +257,7 @@ module.exports = {
                 isGetForSaleOrderJobRun = false;
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -284,7 +284,7 @@ module.exports = {
 
             logger.info(`[OrderPriceChanged] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderPriceChanged({
+            stickerContractWs.events.OrderPriceChanged({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderPriceChangedJobRun = false;
@@ -292,7 +292,7 @@ module.exports = {
                 logger.info("[OrderPriceChanged] Sync Ending ...");
             }).on("data", async function (event) {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -318,7 +318,7 @@ module.exports = {
 
             logger.info(`[OrderFilled] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderFilled({
+            stickerContractWs.events.OrderFilled({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderFilledJobRun = false;
@@ -328,7 +328,7 @@ module.exports = {
 
                 let orderInfo = event.returnValues;
 
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -354,7 +354,7 @@ module.exports = {
 
             logger.info(`[OrderCanceled] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderCanceled({
+            stickerContractWs.events.OrderCanceled({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForOrderCancelledJobRun = false;
@@ -363,7 +363,7 @@ module.exports = {
             }).on("data", async function (event) {
 
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -389,7 +389,7 @@ module.exports = {
 
             logger.info(`[OrderPlatformFee] Sync start from height: ${lastHeight}`);
 
-            meteastContractWs.events.OrderPlatformFee({
+            stickerContractWs.events.OrderPlatformFee({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 isGetForPlatformFeeJobRun = false;
@@ -416,7 +416,7 @@ module.exports = {
             }
             isGetApprovalRun = true;
             logger.info(`[approval] Sync Starting ... from block ${lastHeight + 1}`)
-            stickerContractWs.events.ApprovalForAll({
+            meteastContractWs.events.ApprovalForAll({
                 fromBlock: lastHeight
             }).on("error", function(error) {
                 logger.info(error);
@@ -439,7 +439,7 @@ module.exports = {
             isGetTokenInfoJobRun = true;
             logger.info(`[TokenInfo] Sync Starting ... from block ${lastHeight + 1}`)
 
-            stickerContractWs.events.TransferSingle({
+            meteastContractWs.events.Transfer({
                 fromBlock: lastHeight
             }).on("error", function (error) {
                 logger.info(error);
@@ -475,40 +475,39 @@ module.exports = {
             })
         });
 
-        let tokenInfoWithMemoSyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
-            let lastHeight = await stickerDBService.getLastStickerSyncHeight();
-            if(isGetTokenInfoWithMemoJobRun == false) {
-                //initial state
-                stickerDBService.removeTokenInfoByHeight(lastHeight);
-            } else {
-                lastHeight += 1;
-            }
-            isGetTokenInfoWithMemoJobRun = true;
-            logger.info(`[TokenInfoWithMemo] Sync Starting ... from block ${lastHeight + 1}`)
+        // let tokenInfoWithMemoSyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
+        //     let lastHeight = await stickerDBService.getLastStickerSyncHeight();
+        //     if(isGetTokenInfoWithMemoJobRun == false) {
+        //         //initial state
+        //         stickerDBService.removeTokenInfoByHeight(lastHeight);
+        //     } else {
+        //         lastHeight += 1;
+        //     }
+        //     isGetTokenInfoWithMemoJobRun = true;
+        //     logger.info(`[TokenInfoWithMemo] Sync Starting ... from block ${lastHeight + 1}`)
 
-            stickerContractWs.events.TransferSingleWithMemo({
-                fromBlock: lastHeight
-            }).on("error", function (error) {
-                logger.info(error);
-                logger.info("[TokenInfoWithMemo] Sync Ending ...");
-                isGetTokenInfoWithMemoJobRun = false
-            }).on("data", async function (event) {
-                let from = event.returnValues._from;
-                let to = event.returnValues._to;
-                let tokenId = event.returnValues._id;
-                let value = event.returnValues._value;
-                let memo = event.returnValues._memo ? event.returnValues._memo : "";
-                let blockNumber = event.blockNumber;
-                let txHash = event.transactionHash;
-                let txIndex = event.transactionIndex;
-                let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
-                let gasFee = await stickerDBService.getGasFee(txHash);
-                let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
-                logger.info(`[TokenInfoWithMemo] transferToken: ${JSON.stringify(transferEvent)}`)
-                await stickerDBService.addEvent(transferEvent);
-                await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
-            })
-        });
+        //     stickerContractWs.events.Transfer({
+        //         fromBlock: lastHeight
+        //     }).on("error", function (error) {
+        //         logger.info(error);
+        //         logger.info("[TokenInfoWithMemo] Sync Ending ...");
+        //         isGetTokenInfoWithMemoJobRun = false
+        //     }).on("data", async function (event) {
+        //         let from = event.returnValues._from;
+        //         let to = event.returnValues._to;
+        //         let tokenId = event.returnValues._id;
+        //         let value = event.returnValues._value;
+        //         let blockNumber = event.blockNumber;
+        //         let txHash = event.transactionHash;
+        //         let txIndex = event.transactionIndex;
+        //         let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
+        //         let gasFee = await stickerDBService.getGasFee(txHash);
+        //         let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
+        //         logger.info(`[TokenInfoWithMemo] transferToken: ${JSON.stringify(transferEvent)}`)
+        //         await stickerDBService.addEvent(transferEvent);
+        //         await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
+        //     })
+        // });
         let panelCreatedSyncJobId, panelRemovedSyncJobId;
         if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
             panelCreatedSyncJobId = schedule.scheduleJob(new Date(now + 110 * 1000), async () => {
@@ -594,98 +593,98 @@ module.exports = {
             if(!isGetTokenInfoJobRun) {
                 tokenInfoSyncJobId.reschedule(new Date(now + 60 * 1000))
             }
-            if(!isGetTokenInfoWithMemoJobRun) {
-                tokenInfoWithMemoSyncJobId.reschedule(new Date(now + 60 * 1000))
-            }
+            // if(!isGetTokenInfoWithMemoJobRun) {
+            //     tokenInfoWithMemoSyncJobId.reschedule(new Date(now + 60 * 1000))
+            // }
             if(!isGetApprovalRun)
                 approval.reschedule(new Date(now + 60 * 1000))
             if(!isGetForPlatformFeeJobRun)
                 orderPlatformFeeId.reschedule(new Date(now + 60 * 1000))
         });
 
-        /**
-         *  meteast order volume sync check
-         */
-        schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
-            let orderCount = await meteastDBService.meteastOrderCount();
-            let orderCountContract = parseInt(await meteastContract.methods.getOrderCount().call());
-            logger.info(`[Order Count Check] DbCount: ${orderCount}   ContractCount: ${orderCountContract}`)
-            if(orderCountContract !== orderCount) {
-                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
-                //     `meteast assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
-                //     recipients.join());
-            }
-        });
+        // /**
+        //  *  meteast order volume sync check
+        //  */
+        // schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
+        //     let orderCount = await meteastDBService.meteastOrderCount();
+        //     let orderCountContract = parseInt(await meteastContract.methods.getOrderCount().call());
+        //     logger.info(`[Order Count Check] DbCount: ${orderCount}   ContractCount: ${orderCountContract}`)
+        //     if(orderCountContract !== orderCount) {
+        //         // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+        //         //     `meteast assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
+        //         //     recipients.join());
+        //     }
+        // });
 
-        /**
-         *  Sticker volume sync check
-         */
-        schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
-            let stickerCount = await stickerDBService.stickerCount();
-            let stickerCountContract = parseInt(await stickerContract.methods.totalSupply().call());
-            logger.info(`[Token Count Check] DbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`)
-            if(stickerCountContract !== stickerCount) {
-                // await sendMail(`Sticker Sync [${config.serviceName}]`,
-                //     `meteast assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
-                //     recipients.join());
-            }
-        });
+        // /**
+        //  *  Sticker volume sync check
+        //  */
+        // schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
+        //     let stickerCount = await stickerDBService.stickerCount();
+        //     let stickerCountContract = parseInt(await stickerContract.methods.totalSupply().call());
+        //     logger.info(`[Token Count Check] DbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`)
+        //     if(stickerCountContract !== stickerCount) {
+        //         // await sendMail(`Sticker Sync [${config.serviceName}]`,
+        //         //     `meteast assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
+        //         //     recipients.join());
+        //     }
+        // });
 
-        /**
-         *  meteast order event volume check
-         */
-        let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
-        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
-            let nowBlock = await web3Rpc.eth.getBlockNumber();
-            let fromBlock = meteastOrderEventCheckBlockNumber;
-            let tempBlock = meteastOrderEventCheckBlockNumber + 20000
-            let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
-            let orderCount = await meteastDBService.meteastOrderEventCount(fromBlock, toBlock);
+        // /**
+        //  *  meteast order event volume check
+        //  */
+        // let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
+        // schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
+        //     let nowBlock = await web3Rpc.eth.getBlockNumber();
+        //     let fromBlock = meteastOrderEventCheckBlockNumber;
+        //     let tempBlock = meteastOrderEventCheckBlockNumber + 20000
+        //     let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
+        //     let orderCount = await meteastDBService.meteastOrderEventCount(fromBlock, toBlock);
 
-            let orderForSaleEvent = await meteastContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
-            let orderFilledEvent = await meteastContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
-            let orderCanceled = await meteastContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
-            let orderPriceChanged = await meteastContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
-            let orderForAuctionEvent = await meteastContract.getPastEvents('OrderForAuction', {fromBlock, toBlock});
-            let orderBidEvent = await meteastContract.getPastEvents('OrderBid', {fromBlock, toBlock});
+        //     let orderForSaleEvent = await meteastContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
+        //     let orderFilledEvent = await meteastContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
+        //     let orderCanceled = await meteastContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
+        //     let orderPriceChanged = await meteastContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
+        //     let orderForAuctionEvent = await meteastContract.getPastEvents('OrderForAuction', {fromBlock, toBlock});
+        //     let orderBidEvent = await meteastContract.getPastEvents('OrderBid', {fromBlock, toBlock});
 
-            let contractOrderCount = orderForSaleEvent.length + orderFilledEvent.length + orderCanceled.length + orderPriceChanged.length + orderForAuctionEvent.length + orderBidEvent.length;
+        //     let contractOrderCount = orderForSaleEvent.length + orderFilledEvent.length + orderCanceled.length + orderPriceChanged.length + orderForAuctionEvent.length + orderBidEvent.length;
 
-            if(orderCount !== contractOrderCount) {
-                logger.info(`Order Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
-                logger.info(`Order Event Count Check: DBEventCount: ${orderCount}    ContractEventCount: ${contractOrderCount}`);
-                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
-                //     `meteast assist sync service sync failed!\nDbEventCount: ${orderCount}   ContractEventCount: ${contractOrderCount}`,
-                //     recipients.join());
-            }
+        //     if(orderCount !== contractOrderCount) {
+        //         logger.info(`Order Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
+        //         logger.info(`Order Event Count Check: DBEventCount: ${orderCount}    ContractEventCount: ${contractOrderCount}`);
+        //         // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+        //         //     `meteast assist sync service sync failed!\nDbEventCount: ${orderCount}   ContractEventCount: ${contractOrderCount}`,
+        //         //     recipients.join());
+        //     }
 
-            meteastOrderEventCheckBlockNumber = toBlock + 1;
-        });
+        //     meteastOrderEventCheckBlockNumber = toBlock + 1;
+        // });
 
-        /**
-         *  Sticker transfer event volume check
-         */
-        let stickerEventCheckBlockNumber = config.stickerContractDeploy;
-        schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
-            let nowBlock = await web3Rpc.eth.getBlockNumber();
-            let fromBlock = stickerEventCheckBlockNumber;
-            let tempBlock = stickerEventCheckBlockNumber + 20000
-            let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
-            let stickerEventCountDB = await stickerDBService.stickerOrderEventCount(fromBlock, toBlock);
+        // /**
+        //  *  Sticker transfer event volume check
+        //  */
+        // let stickerEventCheckBlockNumber = config.stickerContractDeploy;
+        // schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
+        //     let nowBlock = await web3Rpc.eth.getBlockNumber();
+        //     let fromBlock = stickerEventCheckBlockNumber;
+        //     let tempBlock = stickerEventCheckBlockNumber + 20000
+        //     let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
+        //     let stickerEventCountDB = await stickerDBService.stickerOrderEventCount(fromBlock, toBlock);
 
-            let stickerEvent = await stickerContract.getPastEvents('TransferSingle', {fromBlock, toBlock});
-            let stickerEventCount = stickerEvent.length;
+        //     let stickerEvent = await stickerContract.getPastEvents('Transfer', {fromBlock, toBlock});
+        //     let stickerEventCount = stickerEvent.length;
 
-            if(stickerEventCountDB !== stickerEventCount) {
-                logger.info(`Sticker Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
-                logger.info(`Sticker Event Count Check: DBEventCount: ${stickerEventCountDB}    ContractEventCount: ${stickerEventCount}`);
-                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
-                //     `meteast assist sync service sync failed!\nDbEventCount: ${stickerEventCountDB}   ContractEventCount: ${stickerEventCount}`,
-                //     recipients.join());
-            }
+        //     if(stickerEventCountDB !== stickerEventCount) {
+        //         logger.info(`Sticker Event Count Check: StartBlock: ${fromBlock}    EndBlock: ${toBlock}`);
+        //         logger.info(`Sticker Event Count Check: DBEventCount: ${stickerEventCountDB}    ContractEventCount: ${stickerEventCount}`);
+        //         // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+        //         //     `meteast assist sync service sync failed!\nDbEventCount: ${stickerEventCountDB}   ContractEventCount: ${stickerEventCount}`,
+        //         //     recipients.join());
+        //     }
 
-            stickerEventCheckBlockNumber = toBlock + 1;
-        });
+        //     stickerEventCheckBlockNumber = toBlock + 1;
+        // });
 
         /**
          *  Get ELA price from CoinMarketCap

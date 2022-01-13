@@ -1163,10 +1163,11 @@ module.exports = {
                 { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
             let result = [];
-            sold_collectibles.forEach(ele => {
+            for(var i = 0; i < sold_collectibles.length; i++) {
+                let ele = sold_collectibles[i];
                 let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
                 result.push(record);
-            });
+            }
             return { code: 200, message: 'success', data: result };
         } catch (err) {
             logger.err(error);
