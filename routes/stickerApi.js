@@ -1,9 +1,16 @@
 let express = require('express');
 let router = express.Router();
 let stickerDBService = require('../service/stickerDBService');
+let userDBService = require('../service/userDBService');
+let authService = require('../service/authService');
 const BigNumber = require('bignumber.js');
 const { filter } = require('mongodb/lib/core/connection/logger');
-
+const config = require('../config');
+const jwt =  require('express-jwt');
+const jwt_config = {
+	algorithms: ['HS256'],
+	secret: 'shhhh', // TODO Put in process.env
+};
 router.get('/listTokens', function(req, res) {
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
@@ -395,4 +402,64 @@ router.get('/getBoughtNotSoldCollectible', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 })
+
+
+
+////////////////////////////////
+
+router.post('/auth', function(req, res) {
+    let params = req.body;
+    let signature = params.signature;
+    let publicAddress = params.address;
+    authService.create(signature, publicAddress).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.get('/user', function (req, res) {
+    let publicAddress = req.query.publicAddress;
+    userDBService.find(publicAddress).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.get('/user/:uesrId', function (req, res) {
+    let userId = req.params.userId;
+    let id = req.query.id;
+    userDBService.get(id, userId).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.post('/user', function(req, res) {
+    let params = req.body;
+    console.log('for auth', params)
+    userDBService.create(params).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.patch('/user/:uesrId', jwt(jwt_config), function (req, res) {
+    let userId = req.params.userId;
+    let id = req.query.id;
+    let params  = req.body
+    userDBService.patch(id, userId, params).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
 module.exports = router;
