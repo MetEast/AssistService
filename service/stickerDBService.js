@@ -1189,5 +1189,21 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
-    }
+    },
+    
+    getBoughtNotSoldCollectible: async function (selfAddr) {
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                { $match: {$and: [{royaltyOwner: {$ne: selfAddr}}, {holder: selfAddr}]} }
+            ]).toArray;
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }

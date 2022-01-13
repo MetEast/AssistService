@@ -377,4 +377,22 @@ router.get('/getForSaleFixedPriceCollectible', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 })
+
+router.get('/getForSaleFixedPriceCollectible', function(req, res) {
+    let selfAddr = req.query.selfAddr;
+    stickerDBService.getForSaleFixedPriceCollectible(selfAddr).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+})
+
+router.get('/getBoughtNotSoldCollectible', function(req, res) {
+    let selfAddr = req.query.selfAddr;
+    stickerDBService.getBoughtNotSoldCollectible(selfAddr).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+})
 module.exports = router;
