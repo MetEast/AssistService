@@ -1159,12 +1159,13 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
             const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
             let sold_collectibles = await collection.aggregate([
-                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } }
+                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
+                { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
             let result = [];
             sold_collectibles.forEach(ele => {
-                let record = await collection.find({tokenId: ele.tokenId}).toArray();
-                result.concat(record);
+                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
+                result.push(record);
             });
             return { code: 200, message: 'success', data: result };
         } catch (err) {
