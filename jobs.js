@@ -11,7 +11,9 @@ let galleriaContractABI = require('./contractABI/galleriaABI');
 let jobService = require('./service/jobService');
 let sendMail = require('./send_mail');
 const BigNumber = require("bignumber.js");
-const res = require('express/lib/response');
+const config_test = require("./config_test");
+config = config.curNetwork == 'testNet'? config_test : config;
+
 
 module.exports = {
     run: function() {
@@ -94,12 +96,12 @@ module.exports = {
         async function dealWithNewToken(blockNumber,tokenId) {
             try {
                 let result = await meteastContract.methods.tokenInfo(tokenId).call();
-                let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: result.tokenSupply,
+                console.log(result, 'herere');
+                let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: 1,
                     royalties:result.royaltyFee, royaltyOwner: result.royaltyOwner, holder: result.royaltyOwner,
                     createTime: result.createTime, updateTime: result.updateTime}
 
                 token.tokenIdHex = '0x' + new BigNumber(tokenId).toString(16);
-
                 let data = await jobService.getInfoByIpfsUri(result.tokenUri);
                 token.tokenJsonVersion = data.version;
                 token.type = data.type;
@@ -127,10 +129,10 @@ module.exports = {
                 if(token.type === 'feeds-video') {
                     token.video = data.video;
                 } else {
-                    token.thumbnail = data.thumbnail;
-                    token.asset = data.image;
-                    token.kind = data.kind;
-                    token.size = data.size;
+                    token.thumbnail = data.data.thumbnail;
+                    token.asset = data.data.image;
+                    token.kind = data.data.kind;
+                    token.size = data.data.size;
                 }
                 token.adult = data.adult ? data.adult : false;
                 token.price = 0;
@@ -456,9 +458,8 @@ module.exports = {
                 // if(from !== burnAddress && to !== burnAddress && blockNumber > config.upgradeBlock) {
                 //     return;
                 // }
-
-                let tokenId = event.returnValues._id;
-                let value = event.returnValues._value;
+                let tokenId = event.returnValues._tokenId;
+                let value = 1;
                 let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let transferEvent = {tokenId, blockNumber, timestamp,txHash, txIndex, from, to, value, gasFee: gasFee};
@@ -466,7 +467,7 @@ module.exports = {
                 await stickerDBService.replaceEvent(transferEvent);
 
                 if(to === burnAddress) {
-                    // await stickerDBService.burnToken(tokenId);
+                    await stickerDBService.burnToken(tokenId);
                 } else if(from === burnAddress) {
                     await dealWithNewToken(blockNumber, tokenId)
                 } else {

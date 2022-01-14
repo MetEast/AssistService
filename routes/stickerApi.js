@@ -293,6 +293,17 @@ router.get('/getTranDetailsByWalletAddr', function(req, res) {
     })
 });
 
+router.get('/getLatestBids', function(req, res) {
+    let tokenId = req.query.tokenId;
+    let ownerAddr = req.query.owner;
+    stickerDBService.getLatestBids(tokenId, ownerAddr).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 router.get('/getLatestElaPrice', function(req, res) {
     stickerDBService.getLatestElaPrice().then(result => {
         res.json(result);
@@ -302,97 +313,4 @@ router.get('/getLatestElaPrice', function(req, res) {
     })
 });
 
-router.post('/incTokenViews', function(req, res) {
-    let params = req.body;
-    let tokenId = params.tokenId;
-    stickerDBService.incTokenViews(tokenId).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.post('/incTokenLikes', function(req, res) {
-    let params = req.body;
-    let tokenId = params.tokenId;
-    let address = params.address;
-    stickerDBService.incTokenLikes(tokenId, address).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.post('/decTokenLikes', function(req, res) {
-    let params = req.body;
-    let tokenId = params.tokenId;
-    let address = params.address;
-    stickerDBService.decTokenLikes(tokenId, address).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.get('/getLatestBids', function(req, res) {
-    let tokenId = req.query.tokenId;
-    let ownerAddr = req.query.owner;
-    let selfAddr = req.query.selfAddr;
-    
-    stickerDBService.getLatestBids(tokenId, ownerAddr, selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.get('/getSelfCreateNotSoldCollectible', function(req, res) {
-    let selfAddr = req.query.selfAddr;
-    stickerDBService.getSelfCreateNotSoldCollectible(selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.get('/getSoldPreviouslyBoughtCollectible', function(req, res) {
-    let selfAddr = req.query.selfAddr;
-    stickerDBService.getSoldPreviouslyBoughtCollectible(selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        res.json({code: 500, message: 'server error'});
-    })
-});
-
-router.get('/getForSaleFixedPriceCollectible', function(req, res) {
-    let selfAddr = req.query.selfAddr;
-    stickerDBService.getForSaleFixedPriceCollectible(selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        res.json({code: 500, message: 'server error'});
-    })
-})
-
-router.get('/getForSaleFixedPriceCollectible', function(req, res) {
-    let selfAddr = req.query.selfAddr;
-    stickerDBService.getForSaleFixedPriceCollectible(selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        res.json({code: 500, message: 'server error'});
-    })
-})
-
-router.get('/getBoughtNotSoldCollectible', function(req, res) {
-    let selfAddr = req.query.selfAddr;
-    stickerDBService.getBoughtNotSoldCollectible(selfAddr).then(result => {
-        res.json(result);
-    }).catch(error => {
-        res.json({code: 500, message: 'server error'});
-    })
-})
 module.exports = router;

@@ -2,10 +2,11 @@ const fetch = require('node-fetch');
 const cookieParser = require("cookie-parser");
 const res = require("express/lib/response");
 const {MongoClient} = require("mongodb");
-const config = require("../config");
+let config = require("../config");
 const meteastDBService = require("./meteastDBService");
 const { ReplSet } = require('mongodb/lib/core');
-
+const config_test = require("../config_test");
+config = config.curNetwork == 'testNet'? config_test : config;
 module.exports = {
     getLastStickerSyncHeight: async function () {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -81,7 +82,7 @@ module.exports = {
         let transactionFee;
         try {
             const response = await fetch(
-                'https://esc.elastos.io/api?module=transaction&action=gettxinfo&txhash=' + txHash
+                config.elastos_transation_api_url + txHash
             );
             if (!response.ok) {
                 throw new Error(response.statusText);
@@ -96,7 +97,7 @@ module.exports = {
         }
     },
     getLatestElaPrice: async function () {
-        let latest_price_api_url = 'https://esc.elastos.io/api?module=stats&action=coinprice';
+        let latest_price_api_url = config.elastos_latest_price_api_url;
         let latest_price;
         try {
             const response = await fetch(latest_price_api_url);
@@ -115,7 +116,7 @@ module.exports = {
         let timeStamp;
         try {
             const response = await fetch(
-                'https://esc.elastos.io/api?module=transaction&action=gettxinfo&txhash=' + txHash
+                config.elastos_transation_api_url + txHash
             );
             if (!response.ok) {
                 throw new Error(response.statusText);
@@ -1061,150 +1062,20 @@ module.exports = {
         }
     },
 
-    incTokenViews: async function (tokenId) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).colletion('meteast_token');
-            let record = collection.findOne({tokenId});
-            if(record !== null) {
-                let views = parseInt(record.views) + 1;
-                await collection.updateOne({tokenId}, {$set: {views}});
-            }
-            return {code: 200, message: 'success'};
-        } catch (err) {
-            logger.error(err);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-    
-    incTokenLikes: async function (tokenId, address) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const token_collection = mongoClient.db(config.dbName).colletion('meteast_token');
-            const favor_collection = mongoClient.db(config.dbName).colletion('meteast_token_favor');
-            let record = token_collection.findOne({tokenId});
-            if(record !== null) {
-                let views = parseInt(record.views) + 1;
-                await token_collection.updateOne({tokenId}, {$set: {views}});
-                let rec = {address, tokenId};
-                favor_collection.insertOne(rec);
-            }
-            return {code: 200, message: 'success'};
-        } catch (err) {
-            logger.error(err);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-    
-    decTokenLikes: async function (tokenId, address) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const token_collection = mongoClient.db(config.dbName).colletion('meteast_token');
-            const favor_collection = mongoClient.db(config.dbName).colletion('meteast_token_favor');
-            let record = token_collection.findOne({tokenId});
-            if(record !== null) {
-                let likes = parseInt(record.likes) - 1;
-                await token_collection.updateOne({tokenId}, {$set: {likes}});
-                favor_collection.remove( { tokenId, address} );
-            }
-            return {code: 200, message: 'success'};
-        } catch (err) {
-            logger.error(err);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
-    getLatestBids: async function (tokenId, sellerAddr, buyerAddr) {
+    getLatestBids: async function (tokenId, sellerAddr) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
-            let result_self = await collection.find( { sellerAddr, tokenId, buyerAddr} ).toArray();
-            let result_others = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : tokenId}, {buyerAddr: {$ne: buyerAddr}} ] } }
+            let result = await collection.aggregate([ 
+                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : tokenId} ] } },
+                { $sort: {timestamp: -1} }
             ]).toArray();
-            let result = result_self.concat(result_others);
             return { code: 200, message: 'success', data: result };
         } catch (err) {
             logger.err(err)
         } finally {
             await mongoClient.close();
         }
-    },
-
-    getSelfCreateNotSoldCollectible: async function (selfAddr) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.find({royaltyOwner: selfAddr, holder: selfAddr}).toArray();
-            return { code: 200, message: 'success', data: result };
-        } catch (err) {
-            logger.err(err);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
-    getSoldPreviouslyBoughtCollectible: async function (selfAddr) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_order');
-            const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
-            let sold_collectibles = await collection.aggregate([
-                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
-                { $project: {"_id": 0, tokenId: 1} }
-            ]).toArray();
-            let result = [];
-            for(var i = 0; i < sold_collectibles.length; i++) {
-                let ele = sold_collectibles[i];
-                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
-                result.push(record);
-            }
-            return { code: 200, message: 'success', data: result };
-        } catch (err) {
-            logger.err(error);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-    
-    getForSaleFixedPriceCollectible: async function (selfAddr) {
-        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.aggregate([
-                { $match: {$and: [{status: 'BUY NOW'}, {holder: selfAddr}]} }
-            ]).toArray;
-            return { code: 200, message: 'success', data: result };
-        } catch (err) {
-            logger.err(error);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-    
-    getBoughtNotSoldCollectible: async function (selfAddr) {
-        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: {$ne: selfAddr}}, {holder: selfAddr}]} }
-            ]).toArray;
-            return { code: 200, message: 'success', data: result };
-        } catch (err) {
-            logger.err(error);
-        } finally {
-            await mongoClient.close();
-        }
-    },
+    }
 }

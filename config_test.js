@@ -1,29 +1,29 @@
 module.exports = {
     mongodb: 'mongodb://localhost:27017',
-    dbName: 'feeds_sources_test',
+    dbName: 'meteast_sources',
     dbUser: '',
     dbPass: '',
 
-    mailHost: '',
+    mailHost: 'smtp.qq.com',
     mailPort: 465,
-    mailUser: '',
+    mailUser: '445222754',
     mailPass: '',
-    mailFrom: '',
+    mailFrom: '445222754@qq.com',
 
     escWsUrl: 'wss://api-testnet.elastos.io/eth-ws',
     escRpcUrl: 'https://api-testnet.elastos.io/eth',
 
-    meteastContract: '0x2652d10A5e525959F7120b56f2D7a9cD0f6ee087',
-    stickerContract: '0xed1978c53731997f4DAfBA47C9b07957Ef6F3961',
-    galleriaContract: '0xF63f820F4a0bC6E966D61A4b20d24916713Ebb95',
-    meteastContractDeploy: 7377673,
-    stickerContractDeploy: 7377671,
-    galleriaContractDeploy: 9295355,
-
+    meteastContract: '0x7c0c3c566beCBB454Ce867a67C0faAfBe1D24590',
+    stickerContract: '0x350D156C0D4b8E8437eaA81226d8c0638C5bCf94',
+    galleriaContract: '',
+    meteastContractDeploy: 10143708,
+    stickerContractDeploy: 10143710,
+    galleriaContractDeploy: 0,
     ipfsNodeUrl: 'https://ipfs-test.trinity-feeds.app/ipfs/',
 
     serviceName: 'default',
-    upgradeBlock: 9090468,
-
+    upgradeBlock: 9607086,
+    elastos_transation_api_url: 'https://esc-testnet.elastos.io/api?module=transaction&action=gettxinfo&txhash=',
+    elastos_latest_price_api_url: 'https://esc-testnet.elastos.io/api?module=stats&action=coinprice',
     cmcApiKeys: []
 }
