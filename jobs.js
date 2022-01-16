@@ -341,6 +341,7 @@ module.exports = {
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NOT');
             })
         });
 
@@ -375,7 +376,7 @@ module.exports = {
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NEW');
+                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NOT');
             })
         });
 

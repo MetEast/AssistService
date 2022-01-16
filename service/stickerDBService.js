@@ -256,13 +256,25 @@ module.exports = {
         switch(orderType)
         {
             case 'price_l_to_h':
-                sort = {$sort: {price: -1}};
+                sort = {price: -1};
                 break;
             case 'price_h_to_l':
-                sort = {$sort: {price: 1}};
+                sort = {price: 1};
                 break;
             case 'mostviewed':
-                sort = {$sort: {views: -1}};
+                sort = {views: -1};
+                break;
+            case 'mostliked':
+                sort = {likes: -1};
+                break;
+            case 'mostrecent':
+                sort = {timestamp: -1};
+                break;
+            case 'oldest':
+                sort = {timestamp: 1};
+                break;
+            default:
+                sort = {timestamp: -1};
                 break;
         }
         let filter_status_arr = filter_status.split(',');
@@ -270,9 +282,11 @@ module.exports = {
         filter_status_arr.forEach(ele => {
             or_condition.push({status: ele});
         });
-        condition.push({$or: or_condition});
-        condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
+        if(or_condition.length > 0 && filter_status != '')
+            condition.push({$or: or_condition});
+        // condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
         condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
+        console.log(...condition);
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -382,6 +396,12 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {status}});
+            if(status == 'NOT') {
+                let collectible = await collection.findOne({tokenId: tokenId}).toArray();
+                if(collectible.royaltyOwner == collectible.holder) {
+                    await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: 'NEW'});
+                }
+            }
         } catch (err) {
             logger.error(err);
             throw new Error();
@@ -824,7 +844,9 @@ module.exports = {
                 { $unwind: "$token" },
                 { $project: {event: 1, tHash: 1, from: 1, to: 1, timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, data: 1, name: "$token.name"
                 , royalties: "$token.royalties", asset: "$token.asset", royaltyFee: 1, royaltyOwner: "$token.royaltyOwner", orderId: 1, gasFee: 1} },
-                { $sort: {blockNumber: parseInt(timeOrder)} }
+                { $sort: {blockNumber: parseInt(timeOrder)} },
+                { $skip: (pageNum - 1) * pageSize },
+                { $limit: pageSize }
             ]).toArray();
             result = this.verifyEvents(result);
             return {code: 200, message: 'success', data: result};
@@ -1062,14 +1084,16 @@ module.exports = {
         }
     },
 
-    getLatestBids: async function (tokenId, sellerAddr) {
+    getLatestBids: async function (tokenId, sellerAddr, pageNum, pageSize) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             let result = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : tokenId} ] } },
-                { $sort: {timestamp: -1} }
+                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : new RegExp(tokenId.toString())} ] } },
+                { $sort: {timestamp: -1} },
+                { $skip: (pageNum - 1) * pageSize },
+                { $limit: pageSize }
             ]).toArray();
             return { code: 200, message: 'success', data: result };
         } catch (err) {
