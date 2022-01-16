@@ -284,7 +284,7 @@ module.exports = {
         });
         if(or_condition.length > 0 && filter_status != '')
             condition.push({$or: or_condition});
-        // condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
+        condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
         condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
         console.log(...condition);
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -795,7 +795,7 @@ module.exports = {
         }
     },
 
-    getTranDetailsByTokenId: async function(tokenId, method, timeOrder) {
+    getTranDetailsByTokenId: async function(tokenId, method, timeOrder, pageNum, pageSize) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         let methodCondition = this.composeMethodCondition(method, "tokenId", tokenId);
         let methodCondition_order = methodCondition['order'];

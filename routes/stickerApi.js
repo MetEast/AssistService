@@ -219,8 +219,23 @@ router.get('/getTranDetailsByTokenId', function(req, res) {
     let tokenId = req.query.tokenId;
     let method = req.query.method;
     let timeOrder = req.query.timeOrder;
-    method = method ? method : 'All';
-    stickerDBService.getTranDetailsByTokenId(tokenId, method, timeOrder).then(result => {
+    method = method ? method : 'All';    
+    let pageNumStr = req.query.pageNum;
+    let pageSizeStr = req.query.pageSize;
+    let pageNum, pageSize;
+    try {
+        pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
+        pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
+        if(pageNum < 1 || pageSize < 1) {
+            res.json({code: 400, message: 'bad request'})
+            return;
+        }
+    }catch (e) {
+        console.log(e);
+        res.json({code: 400, message: 'bad request'});
+        return;
+    }
+    stickerDBService.getTranDetailsByTokenId(tokenId, method, timeOrder, pageNum, pageSize).then(result => {
       res.json(result);
     }).catch(error => {
         console.log(error);
@@ -298,8 +313,23 @@ router.get('/getTranDetailsByWalletAddr', function(req, res) {
 router.get('/getLatestBids', function(req, res) {
     let tokenId = req.query.tokenId;
     let ownerAddr = req.query.owner;
+    let pageNumStr = req.query.pageNum;
+    let pageSizeStr = req.query.pageSize;
     tokenId = tokenId ? tokenId : '';
-    stickerDBService.getLatestBids(tokenId, ownerAddr).then(result => {
+    let pageNum, pageSize;
+    try {
+        pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
+        pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
+        if(pageNum < 1 || pageSize < 1) {
+            res.json({code: 400, message: 'bad request'})
+            return;
+        }
+    }catch (e) {
+        console.log(e);
+        res.json({code: 400, message: 'bad request'});
+        return;
+    }
+    stickerDBService.getLatestBids(tokenId, ownerAddr, pageNum, pageSize).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
