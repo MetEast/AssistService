@@ -664,7 +664,8 @@ module.exports = {
                 await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
             collection =  mongoClient.db(config.dbName).collection('token_temp');
             let result = await collection.find().sort({blockNumber: parseInt(timeOrder)}).toArray();
-            await collection.drop();
+            if(result.length > 0)
+                await collection.drop();
             let results = [];
             for(var i = (pageNum - 1) * pageSize; i < pageSize * pageNum; i++)
             {
@@ -786,7 +787,8 @@ module.exports = {
             { $project: {_id: 0, tokenId : "$_id.tokenId", onlyDate: "$_id.onlyDate", price:1} },
             { $sort: {onlyDate: 1} }
             ]).toArray();
-            await collection.drop();
+            if(result.length > 0)
+                await collection.drop();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
@@ -932,7 +934,8 @@ module.exports = {
                 { $project: {_id: 0, onlyDate: "$_id.onlyDate", value:1} },
                 { $sort: {onlyDate: 1} },
             ]).toArray();
-            await collection.drop();
+            if(result.length > 0)
+                await collection.drop();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
