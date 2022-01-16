@@ -1090,7 +1090,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             let result = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : new RegExp(tokenId.toString())} ] } },
+                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
                 { $sort: {timestamp: -1} },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
