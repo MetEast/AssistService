@@ -900,6 +900,34 @@ module.exports = {
         }
     },
 
+    getCollectiblesByCreator: async function (creator) {
+        let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await client.connect();
+            let collection = client.db(config.dbName).collection('meteast_token');
+            let result = collection.aggregate([
+                { $match: {$and: [{royaltyOwner: creator.toString()}] }},
+            ]).toArray();
+            collection = client.db(config.dbName).collection('meteast_order');
+            for(var i = 0; i < result.length; i++) {
+                if(result[i].status == 'ON AUCTION') {
+                    let orderForAuctionRecord = await collection.find(
+                        {$and: [{tokenId: tokenId}, {sellerAddr: result[i].holder}]}
+                    ).toArray();
+                    if(orderForAuctionRecord.length > 0) {
+                        result[i].endTime = orderForAuctionRecord.endTime;
+                    }
+                }
+            }
+            return {code: 200, message: 'success', data: result};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await client.close();
+        }
+    },
+
     getTotalRoyaltyandTotalSaleByWalletAddr: async function(walletAddr, type) {
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
