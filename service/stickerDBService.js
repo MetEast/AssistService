@@ -1143,18 +1143,24 @@ module.exports = {
         }
     },
 
-    getLatestBids: async function (tokenId, sellerAddr, pageNum, pageSize) {
+    getLatestBids: async function (tokenId, sellerAddr, buyerAddr, pageNum, pageSize) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
-            let result = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
+            let result_mine = await collection.aggregate([ 
+                { $match: { $and: [{sellerAddr: sellerAddr}, {buyerAddr: buyerAddr}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
                 { $sort: {timestamp: -1} },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
-            return { code: 200, message: 'success', data: result };
+            let result_others = await collection.aggregate([ 
+                { $match: { $and: [{sellerAddr: sellerAddr}, {buyerAddr: {$ne: buyerAddr}}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
+                { $sort: {timestamp: -1} },
+                { $skip: (pageNum - 1) * pageSize },
+                { $limit: pageSize }
+            ]).toArray();
+            return { code: 200, message: 'success', data: {yours: result_mine, others: result_others} };
         } catch (err) {
             logger.err(err)
         } finally {
