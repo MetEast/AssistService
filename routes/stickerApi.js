@@ -376,4 +376,14 @@ router.get('/getAuctionOrdersByTokenId', function(req, res) {
     })
 });
 
+router.get('/getFixSaleOrdersByTokenId', function(req, res) {
+    let tokenId = res.query.tokenId;
+    stickerDBService.getFixSaleOrdersByTokenId(tokenId.toString()).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 module.exports = router;
