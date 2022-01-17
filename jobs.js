@@ -58,7 +58,7 @@ module.exports = {
         let isGetForOrderCancelledJobRun = false;
         let isGetForOrderFilledJobRun = false;
         let isGetTokenInfoJobRun = false;
-        let isGetTokenInfoWithMemoJobRun = false;
+        let isGetOrderDIDURIJobRun = false;
         let isGetForPlatformFeeJobRun = false;
         let isGetApprovalRun = false;
         let now = Date.now();
@@ -477,39 +477,34 @@ module.exports = {
             })
         });
 
-        // let tokenInfoWithMemoSyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
-        //     let lastHeight = await stickerDBService.getLastStickerSyncHeight();
-        //     if(isGetTokenInfoWithMemoJobRun == false) {
-        //         //initial state
-        //         stickerDBService.removeTokenInfoByHeight(lastHeight);
-        //     } else {
-        //         lastHeight += 1;
-        //     }
-        //     isGetTokenInfoWithMemoJobRun = true;
-        //     logger.info(`[TokenInfoWithMemo] Sync Starting ... from block ${lastHeight + 1}`)
+        let OrderDIDURISyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
+            let lastHeight = await stickerDBService.getLastStickerSyncHeight();
+            isGetOrderDIDURIJobRun = true;
+            logger.info(`[OrderDIDURI] Sync Starting ... from block ${lastHeight + 1}`)
 
-        //     stickerContractWs.events.Transfer({
-        //         fromBlock: lastHeight
-        //     }).on("error", function (error) {
-        //         logger.info(error);
-        //         logger.info("[TokenInfoWithMemo] Sync Ending ...");
-        //         isGetTokenInfoWithMemoJobRun = false
-        //     }).on("data", async function (event) {
-        //         let from = event.returnValues._from;
-        //         let to = event.returnValues._to;
-        //         let tokenId = event.returnValues._id;
-        //         let value = event.returnValues._value;
-        //         let blockNumber = event.blockNumber;
-        //         let txHash = event.transactionHash;
-        //         let txIndex = event.transactionIndex;
-        //         let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
-        //         let gasFee = await stickerDBService.getGasFee(txHash);
-        //         let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
-        //         logger.info(`[TokenInfoWithMemo] transferToken: ${JSON.stringify(transferEvent)}`)
-        //         await stickerDBService.addEvent(transferEvent);
-        //         await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
-        //     })
-        // });
+            stickerContractWs.events.OrderDIDURI({
+                fromBlock: lastHeight
+            }).on("error", function (error) {
+                logger.info(error);
+                logger.info("[OrderDIDURI] Sync Ending ...");
+                isGetOrderDIDURIJobRun = false
+            }).on("data", async function (event) {
+                console.log('OrderDIDURI data is as following', event);
+                // let from = event.returnValues._from;
+                // let to = event.returnValues._to;
+                // let tokenId = event.returnValues._id;
+                // let value = event.returnValues._value;
+                // let blockNumber = event.blockNumber;
+                // let txHash = event.transactionHash;
+                // let txIndex = event.transactionIndex;
+                // let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
+                // let gasFee = await stickerDBService.getGasFee(txHash);
+                // let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
+                // logger.info(`[OrderDIDURI] transferToken: ${JSON.stringify(transferEvent)}`)
+                // await stickerDBService.addEvent(transferEvent);
+                // await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
+            })
+        });
         let panelCreatedSyncJobId, panelRemovedSyncJobId;
         if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
             panelCreatedSyncJobId = schedule.scheduleJob(new Date(now + 110 * 1000), async () => {
@@ -521,7 +516,6 @@ module.exports = {
                 }).on("error", function (error) {
                     logger.info(error);
                     logger.info("[GalleriaPanelCreated] Sync Ending ...");
-                    isGetTokenInfoWithMemoJobRun = 1
                 }).on("data", async function (event) {
                     let user = event.returnValues._user;
                     let panelId = event.returnValues._panelId;

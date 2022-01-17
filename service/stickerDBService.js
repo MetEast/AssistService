@@ -1132,5 +1132,19 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
+    },
+
+    getViewsCountOfToken: async function (tokenId) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.findOne({tokenId}).toArray();
+            return {code: 200, message: 'success', data: result.views};
+        } catch (err) {
+            logger.err(err);
+        } finally {
+            await mongoClient.close();
+        }
     }
 }
