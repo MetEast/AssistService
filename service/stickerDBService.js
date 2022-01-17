@@ -1220,5 +1220,24 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
+    },
+
+    getEarnedByWalletAddress: async function (address) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_order');
+            let result = collection.aggregate([
+                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: sellerAddr}}, {orderState: '2'}]} },
+                { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
+                { $project: {_id: 0, tokenId : "$_id.royaltyOwner", price: 1} },
+            ]).toArray;
+            let profit = result.length > 0 ? result[0].price: 0
+            return {code: 200, message: 'success', data: profit};
+        } catch (err) {
+            logger.err(err);
+        } finally {
+            await mongoClient.close();
+        }
     }
 }
