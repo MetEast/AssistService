@@ -263,6 +263,16 @@ router.get('/getCollectiblesByCreator', function(req, res) {
     })
 });
 
+router.get('/getCollectiblesByNameDescription', function(req, res) {
+    let keyword = req.query.keyword;
+    stickerDBService.getCollectiblesByNameDescription(keyword).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 router.get('/getTotalRoyaltyandTotalSaleByWalletAddr', function(req, res) {
     let walletAddr = req.query.walletAddr;
     let type = req.query.type;
