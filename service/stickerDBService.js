@@ -1146,5 +1146,25 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
+    },
+
+    getAuctionOrdersByTokenId: async function (tokenId) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.findOne({tokenId}).toArray();
+            let sellerAddr = result.holder;
+            collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            result = collection.aggregate([
+                { $match: {$and: [{tokenId: tokenId}, {sellerAddr: sellerAddr}]} },
+                { $sort: {blockNumber: 1} }
+            ]).toArray();
+            return {code: 200, message: 'success', data: result};
+        } catch (err) {
+            logger.err(err);
+        } finally {
+            await mongoClient.close();
+        }
     }
 }
