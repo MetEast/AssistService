@@ -1168,20 +1168,6 @@ module.exports = {
         }
     },
 
-    getViewsCountOfToken: async function (tokenId) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection  = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.findOne({tokenId}).toArray();
-            return {code: 200, message: 'success', data: result.views};
-        } catch (err) {
-            logger.err(err);
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
     getAuctionOrdersByTokenId: async function (tokenId) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -1239,5 +1225,102 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
-    }
+    },
+
+
+    getSelfCreateNotSoldCollectible: async function (selfAddr) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                {$match: {$and: [{royaltyOwner: selfAddr}, {holder: selfAddr}]} }
+            ]).toArray();
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(err);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+    getSoldPreviouslyBoughtCollectible: async function (selfAddr) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
+            const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
+            let sold_collectibles = await collection.aggregate([
+                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
+                { $project: {"_id": 0, tokenId: 1} }
+            ]).toArray();
+            let result = [];
+            for(var i = 0; i < sold_collectibles.length; i++) {
+                let ele = sold_collectibles[i];
+                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
+                result.push(record);
+            }
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    
+    getForSaleFixedPriceCollectible: async function (selfAddr) {
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                { $match: {$and: [{status: 'BUY NOW'}, {holder: selfAddr}]} }
+            ]).toArray();
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    
+    getBoughtNotSoldCollectible: async function (selfAddr) {
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                { $match: {$and: [{royaltyOwner: {$ne: selfAddr}}, {holder: selfAddr}]} }
+            ]).toArray();
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    
+    getSoldCollectibles: async function (selfAddr) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_order');
+            const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
+            let sold_collectibles = await collection.aggregate([
+                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}] } },
+                { $project: {"_id": 0, tokenId: 1} }
+            ]).toArray();
+            let result = [];
+            for(var i = 0; i < sold_collectibles.length; i++) {
+                let ele = sold_collectibles[i];
+                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
+                result.push(record);
+            }
+            return { code: 200, message: 'success', data: result };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }
