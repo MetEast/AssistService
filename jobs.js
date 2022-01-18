@@ -589,9 +589,9 @@ module.exports = {
             if(!isGetTokenInfoJobRun) {
                 tokenInfoSyncJobId.reschedule(new Date(now + 60 * 1000))
             }
-            // if(!isGetTokenInfoWithMemoJobRun) {
-            //     tokenInfoWithMemoSyncJobId.reschedule(new Date(now + 60 * 1000))
-            // }
+            if(!isGetOrderDIDURIJobRun) {
+                OrderDIDURISyncJobId.reschedule(new Date(now + 100 * 1000))
+            }
             if(!isGetApprovalRun)
                 approval.reschedule(new Date(now + 60 * 1000))
             if(!isGetForPlatformFeeJobRun)
