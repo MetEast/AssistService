@@ -1,10 +1,8 @@
 let express = require('express');
 let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
-let indexRouter = require('./routes/index');
 let meteastApi = require('./routes/meteastApi');
 let stickerApi = require('./routes/stickerApi');
-let galleriaApi = require('./routes/galleriaApi');
 let apiV2 = require('./routes/apiV2');
 let jobs = require('./jobs');
 let log4js = require('log4js');
@@ -30,10 +28,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors());
-app.use('/feeds/api/v1', indexRouter);
 app.use('/meteast/api/v1', meteastApi);
 app.use('/sticker/api/v1', stickerApi);
-app.use('/galleria/api/v1', galleriaApi);
 app.use('/api/v2', apiV2);
 
 jobs.run()

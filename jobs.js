@@ -2,8 +2,6 @@ const schedule = require('node-schedule');
 let Web3 = require('web3');
 let meteastDBService = require('./service/meteastDBService');
 let stickerDBService = require('./service/stickerDBService');
-let indexDBService = require('./service/indexDBService');
-let galleriaDbService = require('./service/galleriaDBService');
 let config = require('./config');
 let meteastContractABI = require('./contractABI/meteastABI');
 let stickerContractABI = require('./contractABI/stickerABI');
@@ -505,74 +503,11 @@ module.exports = {
                 // await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
             })
         });
-        let panelCreatedSyncJobId, panelRemovedSyncJobId;
-        if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
-            panelCreatedSyncJobId = schedule.scheduleJob(new Date(now + 110 * 1000), async () => {
-                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelCreated');
-                logger.info(`[GalleriaPanelCreated] Sync Starting ... from block ${lastHeight + 1}`)
-
-                galleriaContractWs.events.PanelCreated({
-                    fromBlock: lastHeight + 1
-                }).on("error", function (error) {
-                    logger.info(error);
-                    logger.info("[GalleriaPanelCreated] Sync Ending ...");
-                }).on("data", async function (event) {
-                    let user = event.returnValues._user;
-                    let panelId = event.returnValues._panelId;
-                    let tokenId = event.returnValues._tokenId;
-                    let amount = event.returnValues._amount;
-                    let fee = event.returnValues._fee;
-                    let didUri = event.returnValues.didUri;
-                    let blockNumber = event.blockNumber;
-                    let txHash = event.transactionHash;
-                    let txIndex = event.transactionIndex;
-                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
-                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, tokenId, amount, fee, didUri, gasFee: gasFee}
-
-                    let creatorCID = didUri.split(":")[2];
-                    let response = await fetch(config.ipfsNodeUrl + creatorCID);
-                    panelEvent.did = await response.json();
-
-                    logger.info(`[GalleriaPanelCreated] Panel Detail: ${JSON.stringify(panelEvent)}`)
-                    await galleriaDbService.addPanelEvent(panelEvent);
-                })
-            });
-
-            panelRemovedSyncJobId = schedule.scheduleJob(new Date(now + 120 * 1000), async () => {
-                let lastHeight = await galleriaDbService.getLastPanelEventSyncHeight('PanelRemoved');
-                logger.info(`[GalleriaPanelRemoved] Sync Starting ... from block ${lastHeight + 1}`)
-
-                galleriaContractWs.events.PanelRemoved({
-                    fromBlock: lastHeight + 1
-                }).on("error", function (error) {
-                    logger.info(error);
-                    logger.info("[GalleriaPanelRemoved] Sync Ending ...");
-                    isGetTokenInfoWithMemoJobRun = 1
-                }).on("data", async function (event) {
-                    let user = event.returnValues._user;
-                    let panelId = event.returnValues._panelId;
-                    let blockNumber = event.blockNumber;
-                    let txHash = event.transactionHash;
-                    let txIndex = event.transactionIndex;
-                    let gasFee = await stickerDBService.getGasFee(event.transactionHash);
-                    let panelEvent = {panelId, user, event: event.event, blockNumber, txHash, txIndex, gasFee: gasFee}
-
-                    logger.info(`[GalleriaPanelRemoved] Panel Detail: ${JSON.stringify(panelEvent)}`)
-                    await galleriaDbService.addPanelEvent(panelEvent);
-                })
-            });
-        }
-
         schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
             let now = Date.now();
 
             if(!isGetForSaleOrderJobRun) {
                 orderForSaleJobId.reschedule(new Date(now + 60 * 1000));
-
-                if(config.galleriaContract !== '' && config.galleriaContractDeploy !== 0) {
-                    panelCreatedSyncJobId.reschedule(new Date(now + 4 * 60 * 1000));
-                    panelRemovedSyncJobId.reschedule(new Date(now + 4 * 60 * 1000));
-                }
             }
             if(!isGetOrderForAuctionJobRun) {
                 orderForAuctionJobId.reschedule(new Date(now + 60 * 1000));
