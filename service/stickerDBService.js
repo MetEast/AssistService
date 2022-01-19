@@ -1162,7 +1162,7 @@ module.exports = {
             ]).toArray();
             return { code: 200, message: 'success', data: {yours: result_mine, others: result_others} };
         } catch (err) {
-            logger.err(err)
+            logger.error(err)
         } finally {
             await mongoClient.close();
         }
@@ -1182,7 +1182,7 @@ module.exports = {
             ]).toArray();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
-            logger.err(err);
+            logger.error(err);
         } finally {
             await mongoClient.close();
         }
@@ -1202,7 +1202,7 @@ module.exports = {
             ]).toArray();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
-            logger.err(err);
+            logger.error(err);
         } finally {
             await mongoClient.close();
         }
@@ -1221,7 +1221,7 @@ module.exports = {
             let profit = result.length > 0 ? result[0].price: 0
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
-            logger.err(err);
+            logger.error(err);
         } finally {
             await mongoClient.close();
         }
@@ -1238,7 +1238,7 @@ module.exports = {
             ]).toArray();
             return { code: 200, message: 'success', data: result };
         } catch (err) {
-            logger.err(err);
+            logger.error(err);
         } finally {
             await mongoClient.close();
         }
