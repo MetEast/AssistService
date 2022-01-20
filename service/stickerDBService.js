@@ -397,7 +397,7 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {status}});
             if(status == 'NOT') {
-                let collectible = await collection.findOne({tokenId: tokenId}).toArray();
+                let collectible = await collection.findOne({tokenId: tokenId});
                 if(collectible.royaltyOwner == collectible.holder) {
                     await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: 'NEW'});
                 }
@@ -1173,7 +1173,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.findOne({tokenId}).toArray();
+            let result = await collection.findOne({tokenId});
             let sellerAddr = result.holder;
             collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             result = collection.aggregate([
@@ -1193,7 +1193,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.findOne({tokenId}).toArray();
+            let result = await collection.findOne({tokenId});
             let sellerAddr = result.holder;
             collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             result = collection.aggregate([
