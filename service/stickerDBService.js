@@ -1176,7 +1176,7 @@ module.exports = {
             let result = await collection.findOne({tokenId});
             let sellerAddr = result.holder;
             collection = mongoClient.db(config.dbName).collection('meteast_order_event');
-            result = collection.aggregate([
+            result = await collection.aggregate([
                 { $match: {$and: [{tokenId: tokenId}, {sellerAddr: sellerAddr}, {$or: [{event: 'OrderForAuction'}, {event: 'OrderBid'}]}]} },
                 { $sort: {blockNumber: 1} }
             ]).toArray();
@@ -1196,7 +1196,7 @@ module.exports = {
             let result = await collection.findOne({tokenId});
             let sellerAddr = result.holder;
             collection = mongoClient.db(config.dbName).collection('meteast_order_event');
-            result = collection.aggregate([
+            result = await  collection.aggregate([
                 { $match: {$and: [{tokenId: tokenId}, {sellerAddr: sellerAddr}, {$or: [{event: 'OrderForSale'}, {event: 'OrderPriceChanged'}]}]} },
                 { $sort: {blockNumber: 1} }
             ]).toArray();
@@ -1213,7 +1213,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
-            let result = collection.aggregate([
+            let result = await collection.aggregate([
                 { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: sellerAddr}}, {orderState: '2'}]} },
                 { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
                 { $project: {_id: 0, tokenId : "$_id.royaltyOwner", price: 1} },
