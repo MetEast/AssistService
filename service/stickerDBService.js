@@ -1216,9 +1216,9 @@ module.exports = {
             let result = await collection.aggregate([
                 { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: sellerAddr}}, {orderState: '2'}]} },
                 { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
-                { $project: {_id: 0, tokenId : "$_id.royaltyOwner", price: 1} },
+                { $project: {_id: 0, royaltyOwner : "$_id.royaltyOwner", profit: 1} },
             ]).toArray;
-            let profit = result.length > 0 ? result[0].price: 0
+            let profit = result.length > 0 ? result[0].profit: 0
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
