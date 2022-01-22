@@ -105,7 +105,11 @@ module.exports = {
                 token.type = data.type;
                 token.name = data.name;
                 token.description = data.description;
-
+                if(data.creator) {
+                    token.authorName = data.creator.name;
+                    token.authorDid = data.creator.did;
+                    token.authorDescription = data.creator.description;
+                }
                 if(blockNumber > config.upgradeBlock) {
                     // let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
                     // token.didUri = extraInfo.didUri;
