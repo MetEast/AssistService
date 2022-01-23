@@ -250,8 +250,8 @@ module.exports = {
         }
         return {'order': {$or:[...conditions_order_event]}, 'token':  {$or:[...conditions_token_event]}};
     },
-    listTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
-        let condition = [];
+
+    composeSort: function(orderType) {
         let sort;
         switch(orderType)
         {
@@ -277,6 +277,12 @@ module.exports = {
                 sort = {timestamp: -1};
                 break;
         }
+        return sort;
+    },
+
+    composeCondition: function(keyword, filter_status, filter_min_price, filter_max_price) {
+        let condition = [];
+        
         let filter_status_arr = filter_status.split(',');
         let or_condition = [];
         filter_status_arr.forEach(ele => {
@@ -286,13 +292,29 @@ module.exports = {
             condition.push({$or: or_condition});
         condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
         condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
-        console.log(...condition);
+        console.log(...condition)
+    },
+
+    paginateRows: function(rows, pageNum, pageSize) {
+        let result = [];
+        for(var i = (pageNum - 1) * pageSize; i < pageSize * pageNum; i++) {
+            if(i >= rows.length)
+                break;
+            result.push(rows[i]);
+        }
+        return result;
+    },
+
+    listTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+        
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
             let total = await collection.find({$and: condition}).count();
-            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).limit(pageSize).skip((pageNum-1)*pageSize).toArray();
+            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).skip((pageNum-1)*pageSize).limit(pageSize).toArray();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -1252,15 +1274,21 @@ module.exports = {
         }
     },
 
-    getSelfCreateNotSoldCollectible: async function (selfAddr) {
+    getSelfCreateNotSoldCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({royaltyOwner: selfAddr});
+        condition.push({holder: selfAddr});
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                {$match: {$and: [{royaltyOwner: selfAddr}, {holder: selfAddr}]} }
-            ]).toArray();
-            return { code: 200, message: 'success', data: result };
+                {$match: {$and: condition} }
+            ]).sort(sort).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
         } finally {
@@ -1274,6 +1302,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
             const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
+            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let sold_collectibles = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
                 { $project: {"_id": 0, tokenId: 1} }
@@ -1281,10 +1310,18 @@ module.exports = {
             let result = [];
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
-                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
+                let temp_condition = condition;
+                temp_condition.push({tokenId: ele.tokenId});
+                let record = await collection_token.findOne({$and: temp_condition});
                 result.push(record);
             }
-            return { code: 200, message: 'success', data: result };
+            await collection_temp.insertMany(result);
+            let total = result.length;
+            let result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0) {
+                await collection_temp.drop();
+            }
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
         } finally {
@@ -1292,15 +1329,21 @@ module.exports = {
         }
     },
     
-    getForSaleFixedPriceCollectible: async function (selfAddr) {
+    getForSaleFixedPriceCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({status: 'BUY NOW'});
+        condition.push({holder: selfAddr});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: [{status: 'BUY NOW'}, {holder: selfAddr}]} }
-            ]).toArray();
-            return { code: 200, message: 'success', data: result };
+                { $match: {$and: condition} }
+            ]).sort(sort).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
         } finally {
@@ -1308,15 +1351,21 @@ module.exports = {
         }
     },
     
-    getBoughtNotSoldCollectible: async function (selfAddr) {
+    getBoughtNotSoldCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({royaltyOwner: {$ne: selfAddr}});
+        condition.push({holder: selfAddr});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: {$ne: selfAddr}}, {holder: selfAddr}]} }
-            ]).toArray();
-            return { code: 200, message: 'success', data: result };
+                { $match: {$and: condition} }
+            ]).sort(sort).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
         } finally {
@@ -1324,12 +1373,15 @@ module.exports = {
         }
     },
     
-    getSoldCollectibles: async function (selfAddr) {
+    getSoldCollectibles: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);    
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
             const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
+            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let sold_collectibles = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}] } },
                 { $project: {"_id": 0, tokenId: 1} }
@@ -1337,10 +1389,61 @@ module.exports = {
             let result = [];
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
-                let record = await collection_token.find({tokenId: ele.tokenId}).toArray();
+                let temp_condition = condition;
+                temp_condition.push({tokenId: ele.tokenId});
+                let record = await collection_token.findOne({$and: temp_condition});
                 result.push(record);
             }
-            return { code: 200, message: 'success', data: result };
+            await collection_temp.insertMany(result);
+            let total = result.length;
+            let result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0) {
+                await collection_temp.drop();
+            }
+            return { code: 200, message: 'success', data: {total, result} };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    
+    getOwnCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({holder: selfAddr});
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                { $match: {$and: condition} }
+            ]).sort(sort).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+    getCollectiblesByTokenIds: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, str_tokenIds) {
+        let tokenIds = str_tokenIds.split(',');
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({tokenId: {$in: tokenIds}});
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                { $match: {$and: condition} }
+            ]).sort(sort).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
         } finally {
