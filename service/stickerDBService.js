@@ -293,6 +293,7 @@ module.exports = {
         condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
         condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
         console.log(...condition)
+        return condition;
     },
 
     paginateRows: function(rows, pageNum, pageSize) {
