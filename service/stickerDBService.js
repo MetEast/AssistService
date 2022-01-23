@@ -1251,7 +1251,7 @@ module.exports = {
 
     getTodayEarnedByWalletAddress: async function (address) {
         var now = Date.now() / 1000;
-        var start_today = Date.now();
+        var start_today = new Date();
         start_today.setHours(0);
         start_today.setMinutes(0);
         start_today.setSeconds(0);
