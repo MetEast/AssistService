@@ -1236,7 +1236,7 @@ module.exports = {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: sellerAddr}}, {orderState: '2'}]} },
+                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}]} },
                 { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
                 { $project: {_id: 0, royaltyOwner : "$_id.royaltyOwner", profit: 1} },
             ]).toArray();
@@ -1261,7 +1261,7 @@ module.exports = {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: sellerAddr}}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
+                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
                 { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
                 { $project: {_id: 0, royaltyOwner : "$_id.royaltyOwner", profit: 1} },
             ]).toArray();
@@ -1317,7 +1317,7 @@ module.exports = {
             }
             await collection_temp.insertMany(result);
             let total = result.length;
-            let result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0) {
                 await collection_temp.drop();
             }
@@ -1396,7 +1396,7 @@ module.exports = {
             }
             await collection_temp.insertMany(result);
             let total = result.length;
-            let result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0) {
                 await collection_temp.drop();
             }
