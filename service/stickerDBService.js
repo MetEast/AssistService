@@ -290,9 +290,8 @@ module.exports = {
         });
         if(or_condition.length > 0 && filter_status != '')
             condition.push({$or: or_condition});
-        condition.push({$and: [{price: {$gte: filter_min_price}}, {price: {$lte: filter_max_price}}]});
+        condition.push({$and: [{priceCalculated: {$gte: filter_min_price}}, {priceCalculated: {$lte: filter_max_price}}]});
         condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
-        console.log(...condition)
         return condition;
     },
 
@@ -314,8 +313,27 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let total = await collection.find({$and: condition}).count();
-            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).skip((pageNum-1)*pageSize).limit(pageSize).toArray();
+            let total = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} }
+            ]).toArray();
+            total = total.length;
+            let result = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: { $and: condition } },
+                { $project: {'_id': 0} },
+                { $sort: sort },
+                { $skip:  (pageNum-1)*pageSize },
+                { $limit: pageSize }
+            ]).toArray();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -1285,8 +1303,14 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                {$match: {$and: condition} }
-            ]).sort(sort).toArray();
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };
@@ -1297,7 +1321,9 @@ module.exports = {
         }
     },
 
-    getSoldPreviouslyBoughtCollectible: async function (selfAddr) {
+    getSoldPreviouslyBoughtCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
         try {
             await mongoClient.connect();
@@ -1313,8 +1339,16 @@ module.exports = {
                 let ele = sold_collectibles[i];
                 let temp_condition = condition;
                 temp_condition.push({tokenId: ele.tokenId});
-                let record = await collection_token.findOne({$and: temp_condition});
-                result.push(record);
+                let record = await collection_token.aggregate([
+                    {
+                        $addFields: {
+                           "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                        }
+                    },
+                    { $match: {$and: temp_condition} }
+                ]);
+                if(record.length > 0)
+                    result.push(record);
             }
             if(sold_collectibles.length > 0)
                 await collection_temp.insertMany(result);
@@ -1341,8 +1375,14 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: condition} }
-            ]).sort(sort).toArray();
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };
@@ -1363,8 +1403,14 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: condition} }
-            ]).sort(sort).toArray();
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };
@@ -1390,13 +1436,20 @@ module.exports = {
                 { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
             let result = [];
-            console.log(sold_collectibles.length);
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
                 let temp_condition = condition;
                 temp_condition.push({tokenId: ele.tokenId});
-                let record = await collection_token.findOne({$and: temp_condition});
-                result.push(record);
+                let record = await collection_token.aggregate([
+                    {
+                        $addFields: {
+                           "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                        }
+                    },
+                    { $match: {$and: temp_condition} }
+                ]).toArray();
+                if(record.length > 0)
+                    result.push(record[0]);
             }
             if(result.length > 0)
                 await collection_temp.insertMany(result);
@@ -1422,8 +1475,14 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: condition} }
-            ]).sort(sort).toArray();
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };
@@ -1444,8 +1503,14 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                { $match: {$and: condition} }
-            ]).sort(sort).toArray();
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };
@@ -1465,8 +1530,27 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let total = await collection.find({$and: condition}).count();
-            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).skip((pageNum-1)*pageSize).limit(pageSize).toArray();
+            let total = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} }
+            ]).toArray();
+            total = total.length;
+            let result = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $project: {'_id': 0} },
+                { $sort: sort },
+                { $skip:  (pageNum-1)*pageSize},
+                { $limit: pageSize }
+            ]).toArray();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
