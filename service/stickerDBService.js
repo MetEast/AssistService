@@ -1395,7 +1395,6 @@ module.exports = {
                 let ele = sold_collectibles[i];
                 let temp_condition = condition;
                 temp_condition.push({tokenId: ele.tokenId});
-                console.log(i);
                 let record = await collection_token.findOne({$and: temp_condition});
                 result.push(record);
             }
