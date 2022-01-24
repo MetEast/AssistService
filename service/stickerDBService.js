@@ -1316,7 +1316,8 @@ module.exports = {
                 let record = await collection_token.findOne({$and: temp_condition});
                 result.push(record);
             }
-            await collection_temp.insertMany(result);
+            if(sold_collectibles.length > 0)
+                await collection_temp.insertMany(result);
             let total = result.length;
             result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0) {
@@ -1377,6 +1378,7 @@ module.exports = {
     getSoldCollectibles: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);    
+
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
         try {
             await mongoClient.connect();
@@ -1388,14 +1390,17 @@ module.exports = {
                 { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
             let result = [];
+            console.log(sold_collectibles.length);
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
                 let temp_condition = condition;
                 temp_condition.push({tokenId: ele.tokenId});
+                console.log(i);
                 let record = await collection_token.findOne({$and: temp_condition});
                 result.push(record);
             }
-            await collection_temp.insertMany(result);
+            if(result.length > 0)
+                await collection_temp.insertMany(result);
             let total = result.length;
             result = await collection_temp.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0) {
@@ -1449,6 +1454,26 @@ module.exports = {
             logger.err(error);
         } finally {
             await mongoClient.close();
+        }
+    },
+
+    listMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+        
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({status: {$ne: 'NEW'}});
+        let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await client.connect();
+            const collection = client.db(config.dbName).collection('meteast_token');
+            let total = await collection.find({$and: condition}).count();
+            let result = await collection.find({$and: condition}).project({"_id": 0}).sort(sort).skip((pageNum-1)*pageSize).limit(pageSize).toArray();
+            return {code: 200, message: 'success', data: {total, result}};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await client.close();
         }
     },
 }

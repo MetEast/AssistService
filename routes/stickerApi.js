@@ -657,4 +657,39 @@ router.get('/getCollectiblesByTokenIds', function(req, res) {
     })
 });
 
+router.get('/listMarketTokens', function(req, res) {
+    let pageNumStr = req.query.pageNum;
+    let pageSizeStr = req.query.pageSize;
+    let keyword = req.query.keyword;
+    let orderType = req.query.orderType;
+    let filter_status = req.query.filter_status;
+    let filter_min_price = req.query.filter_status;
+    let filter_max_price = req.query.filter_min_price;
+    let pageNum, pageSize;
+
+    try {
+        pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
+        pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
+        keyword = keyword ? keyword : '';
+        filter_status = filter_status ? filter_status : '';
+        filter_min_price = filter_min_price ? filter_min_price : 0;
+        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        if(pageNum < 1 || pageSize < 1) {
+            res.json({code: 400, message: 'bad request'})
+            return;
+        }
+    }catch (e) {
+        console.log(e);
+        res.json({code: 400, message: 'bad request'});
+        return;
+    }
+
+    stickerDBService.listMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 module.exports = router;
