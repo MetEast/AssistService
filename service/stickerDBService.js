@@ -268,13 +268,13 @@ module.exports = {
                 sort = {likes: -1};
                 break;
             case 'mostrecent':
-                sort = {timestamp: -1};
+                sort = {createTime: -1};
                 break;
             case 'oldest':
-                sort = {timestamp: 1};
+                sort = {createTime: 1};
                 break;
             default:
-                sort = {timestamp: -1};
+                sort = {createTime: -1};
                 break;
         }
         return sort;
@@ -313,27 +313,41 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let total = await collection.aggregate([
-                {
-                    $addFields: {
-                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
-                    }
-                },
-                { $match: {$and: condition} }
-            ]).toArray();
-            total = total.length;
+            const temp_collection = client.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: { $and: condition } },
-                { $project: {'_id': 0} },
-                { $sort: sort },
-                { $skip:  (pageNum-1)*pageSize },
-                { $limit: pageSize }
+                { $match: {$and: condition} },
+                { $project: {'_id': 0} }
             ]).toArray();
+
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+            console.log(tokenPopularity);
+            for(var i = 0; i < result.length; i++) {
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
+            }
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -1311,8 +1325,9 @@ module.exports = {
                 { $match: {$and: condition} }
             ]).toArray();
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1369,8 +1384,9 @@ module.exports = {
                     { $match: {$and: temp_condition} }
                 ]);
                 if(record.length > 0) {
-                    record[0]['views'] = tokenPopularity.record[0]['tokenId'].views ? tokenPopularity.record[0]['tokenId'].views: 0;
-                    record[0]['likes'] = tokenPopularity.record[0]['tokenId'].likes ? tokenPopularity.record[0]['tokenId'].likes: 0;
+                    const tokenID = record[0]['tokenId'];
+                    record[0]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                    record[0]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
                     result.push(record[0]);
                 }
             }
@@ -1421,8 +1437,9 @@ module.exports = {
             let tokenPopularity = data.data;
 
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1470,8 +1487,9 @@ module.exports = {
             let tokenPopularity = data.data;
 
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1527,8 +1545,9 @@ module.exports = {
                     { $match: {$and: temp_condition} }
                 ]).toArray();
                 if(record.length > 0) {
-                    record[0]['views'] = tokenPopularity.record[0]['tokenId'].views ? tokenPopularity.record[0]['tokenId'].views: 0;
-                    record[0]['likes'] = tokenPopularity.record[0]['tokenId'].likes ? tokenPopularity.record[0]['tokenId'].likes: 0;
+                    const tokenID = record[0]['tokenId'];
+                    record[0]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                    record[0]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
                     result.push(record[0]);
                 }
             }
@@ -1578,8 +1597,9 @@ module.exports = {
             let tokenPopularity = data.data;
 
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1623,8 +1643,9 @@ module.exports = {
                 { $match: {$and: condition} }
             ]).toArray();
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1674,8 +1695,9 @@ module.exports = {
             let tokenPopularity = data.data;
 
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
@@ -1729,8 +1751,9 @@ module.exports = {
                 { $project: {'_id': 0} }
             ]).toArray();
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
             let total = result.length;
             if(total > 0)
