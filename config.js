@@ -25,6 +25,7 @@ module.exports = {
     upgradeBlock: 9607086,
     elastos_transation_api_url: 'https://esc.elastos.io/api?module=transaction&action=gettxinfo&txhash=',
     elastos_latest_price_api_url: 'https://esc.elastos.io/api?module=stats&action=coinprice',
+    centralAppUrl: 'https://backend-test.meteast.io/api/v1',
     cmcApiKeys: [],
     curNetwork: 'testNet'
 }

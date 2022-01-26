@@ -1559,4 +1559,39 @@ module.exports = {
             await client.close();
         }
     },
+
+    getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, str_tokenIds, did, address) {
+        const response = await fetch(
+            config.centralAppUrl + '/api/v1?did=' + did
+        );
+        let data = await response.json();
+        if(data.code == 200) {
+            return {code: 200, message: 'centralized app invalid response'}
+        }
+        let tokenIds = data.data;
+        let sort = this.composeSort(orderType);
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({tokenId: {$in: tokenIds}});
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $sort: sort }
+            ]).toArray();
+            let total = result.length;
+            result = this.paginateRows(result, pageNum, pageSize);
+            return { code: 200, message: 'success', data: {total, result} };
+        } catch (err) {
+            logger.err(error);
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }
