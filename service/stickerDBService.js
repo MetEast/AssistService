@@ -1560,15 +1560,25 @@ module.exports = {
         }
     },
 
-    getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, str_tokenIds, did, address) {
+    getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did) {
         const response = await fetch(
-            config.centralAppUrl + '/api/v1?did=' + did
+            config.centralAppUrl + '/api/v1/' + 'getFavoritesCollectible' + '?did=' + did
         );
         let data = await response.json();
-        if(data.code == 200) {
-            return {code: 200, message: 'centralized app invalid response'}
+        if(data.code != 200) {
+            return {code: 500, message: 'centralized app invalid response'}
         }
         let tokenIds = data.data;
+
+        const response = await fetch(
+            config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+        );
+        data = await response.json();
+        if(data.code != 200) {
+            return {code: 500, message: 'centralized app invalid response'}
+        }
+        let tokenPopularity = data.data;
+        
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({tokenId: {$in: tokenIds}});
@@ -1576,6 +1586,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1583,8 +1594,14 @@ module.exports = {
                     }
                 },
                 { $match: {$and: condition} },
-                { $sort: sort }
+                { $project: {'_id': 0} }
             ]).toArray();
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.record['tokenId'].views ? tokenPopularity.record['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.record['tokenId'].likes ? tokenPopularity.record['tokenId'].likes: 0;
+            }
+            await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).toArray();
             let total = result.length;
             result = this.paginateRows(result, pageNum, pageSize);
             return { code: 200, message: 'success', data: {total, result} };

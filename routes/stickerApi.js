@@ -694,7 +694,6 @@ router.get('/listMarketTokens', function(req, res) {
 
 router.get('/getFavoritesCollectible', function(req, res) {
     let did = req.query.did;
-    let address = req.query.address;
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
     let keyword = req.query.keyword;
@@ -720,7 +719,7 @@ router.get('/getFavoritesCollectible', function(req, res) {
         res.json({code: 400, message: 'bad request'});
         return;
     }
-    stickerDBService.getFavoritesCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did, address).then(result => {
+    stickerDBService.getFavoritesCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
