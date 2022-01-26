@@ -1308,11 +1308,18 @@ module.exports = {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: {$and: condition} },
-                { $sort: sort }
+                { $match: {$and: condition} }
             ]).toArray();
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -1334,6 +1341,20 @@ module.exports = {
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
                 { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
+
+            let tokenIds = [];
+            sold_collectibles.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
             let result = [];
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
@@ -1347,8 +1368,11 @@ module.exports = {
                     },
                     { $match: {$and: temp_condition} }
                 ]);
-                if(record.length > 0)
-                    result.push(record);
+                if(record.length > 0) {
+                    record[0]['views'] = tokenPopularity.record[0]['tokenId'].views ? tokenPopularity.record[0]['tokenId'].views: 0;
+                    record[0]['likes'] = tokenPopularity.record[0]['tokenId'].likes ? tokenPopularity.record[0]['tokenId'].likes: 0;
+                    result.push(record[0]);
+                }
             }
             if(sold_collectibles.length > 0)
                 await collection_temp.insertMany(result);
@@ -1374,17 +1398,38 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: {$and: condition} },
-                { $sort: sort }
+                { $match: {$and: condition} }
             ]).toArray();
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
@@ -1402,17 +1447,38 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: {$and: condition} },
-                { $sort: sort }
+                { $match: {$and: condition} }
             ]).toArray();
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
@@ -1435,6 +1501,18 @@ module.exports = {
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}] } },
                 { $project: {"_id": 0, tokenId: 1} }
             ]).toArray();
+            let tokenIds = [];
+            sold_collectibles.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
             let result = [];
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
@@ -1448,8 +1526,11 @@ module.exports = {
                     },
                     { $match: {$and: temp_condition} }
                 ]).toArray();
-                if(record.length > 0)
+                if(record.length > 0) {
+                    record[0]['views'] = tokenPopularity.record[0]['tokenId'].views ? tokenPopularity.record[0]['tokenId'].views: 0;
+                    record[0]['likes'] = tokenPopularity.record[0]['tokenId'].likes ? tokenPopularity.record[0]['tokenId'].likes: 0;
                     result.push(record[0]);
+                }
             }
             if(result.length > 0)
                 await collection_temp.insertMany(result);
@@ -1474,17 +1555,38 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: {$and: condition} },
-                { $sort: sort }
+                { $match: {$and: condition} }
             ]).toArray();
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
@@ -1495,6 +1597,15 @@ module.exports = {
 
     getCollectiblesByTokenIds: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, str_tokenIds) {
         let tokenIds = str_tokenIds.split(',');
+
+        const response = await fetch(
+            config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+        );
+        const data = await response.json();
+        if(data.code != 200) {
+            return {code: 500, message: 'centralized app invalid response'}
+        }
+        let tokenPopularity = data.data;
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({tokenId: {$in: tokenIds}});
@@ -1502,17 +1613,25 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
                        "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
                     }
                 },
-                { $match: {$and: condition} },
-                { $sort: sort }
+                { $match: {$and: condition} }
             ]).toArray();
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
