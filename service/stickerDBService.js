@@ -1530,15 +1530,7 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let total = await collection.aggregate([
-                {
-                    $addFields: {
-                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
-                    }
-                },
-                { $match: {$and: condition} }
-            ]).toArray();
-            total = total.length;
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1546,11 +1538,32 @@ module.exports = {
                     }
                 },
                 { $match: {$and: condition} },
-                { $project: {'_id': 0} },
-                { $sort: sort },
-                { $skip:  (pageNum-1)*pageSize},
-                { $limit: pageSize }
+                { $project: {'_id': 0} }
             ]).toArray();
+
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
+            for(var i = 0; i < result.length; i++) {
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
+            }
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -1561,7 +1574,7 @@ module.exports = {
     },
 
     getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did) {
-        const response = await fetch(
+        let response = await fetch(
             config.centralAppUrl + '/api/v1/' + 'getFavoritesCollectible' + '?did=' + did
         );
         let data = await response.json();
@@ -1570,7 +1583,7 @@ module.exports = {
         }
         let tokenIds = data.data;
 
-        const response = await fetch(
+        response = await fetch(
             config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
         );
         data = await response.json();
@@ -1597,13 +1610,15 @@ module.exports = {
                 { $project: {'_id': 0} }
             ]).toArray();
             for(var i = 0; i < result.length; i++) {
-                result[i]['views'] = tokenPopularity.record['tokenId'].views ? tokenPopularity.record['tokenId'].views: 0;
-                result[i]['likes'] = tokenPopularity.record['tokenId'].likes ? tokenPopularity.record['tokenId'].likes: 0;
+                result[i]['views'] = tokenPopularity.result[i]['tokenId'].views ? tokenPopularity.result[i]['tokenId'].views: 0;
+                result[i]['likes'] = tokenPopularity.result[i]['tokenId'].likes ? tokenPopularity.result[i]['tokenId'].likes: 0;
             }
-            await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).toArray();
             let total = result.length;
-            result = this.paginateRows(result, pageNum, pageSize);
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
