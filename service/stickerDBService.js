@@ -946,6 +946,21 @@ module.exports = {
                     result.endTime = orderForAuctionRecord.endTime;
                 }
             }
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+            
+            result['views'] = tokenPopularity[tokenId]? tokenPopularity[tokenId].views: 0;
+            result['likes'] = tokenPopularity[tokenId]? tokenPopularity[tokenId].likes: 0;
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
