@@ -408,8 +408,7 @@ router.get('/getTodayEarnedByWalletAddress', function(req, res) {
 });
 
 router.get('/getSelfCreateNotSoldCollectible', function(req, res) {
-    let selfAddr = req.query.address;
-    selfAddr = selfAddr.toString();
+    let selfAddr = req.query.selfAddr;
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
     let keyword = req.query.keyword;
