@@ -947,9 +947,7 @@ module.exports = {
                 }
             }
             let tokenIds = [];
-            result.forEach(ele => {
-                tokenIds.push(ele.tokenId);
-            });
+            tokenIds.push(result.tokenId);
             const response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
