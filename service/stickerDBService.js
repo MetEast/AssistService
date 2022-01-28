@@ -943,7 +943,14 @@ module.exports = {
                     {$and: [{tokenId: tokenId}, {sellerAddr: result.holder}]}
                 ).toArray();
                 if(orderForAuctionRecord.length > 0) {
-                    result.endTime = orderForAuctionRecord.endTime;
+                    result.endTime = orderForAuctionRecord[0].endTime;
+                }
+                let orderRecord = await collection.find(
+                    { $and: [{tokenId: tokenId}, {sellerAddr: result.holder}, {$or: [{event: 'OrderForAuction'}, {event: 'OrderForSale'}]}] },
+                    { $sort: {blockNumber: -1} }
+                ).toArray();
+                if(orderRecord.length > 0) {
+                    result.orderId = orderRecord[0].orderId;
                 }
             }
             let tokenIds = [];
