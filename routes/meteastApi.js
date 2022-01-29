@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 let meteastDBService = require('../service/meteastDBService');
-const BigNumber = require("bignumber.js");
 
 router.get('/listmeteastOrder', function(req, res) {
     let pageNumStr = req.query.pageNum;
@@ -98,7 +97,7 @@ router.get('/searchSaleOrders', function (req, res) {
     }
 
     if(key.startsWith('0x') && key.length > 42) {
-        key = new BigNumber(key).toFormat({prefix:""});
+        key = BigInt(key).toFormat({prefix:""});
     }
 
     if(!['tokenId', 'royaltyAddress', 'ownerAddress', 'name', 'description'].includes(searchType)) {

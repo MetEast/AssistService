@@ -8,7 +8,6 @@ let stickerContractABI = require('./contractABI/stickerABI');
 let galleriaContractABI = require('./contractABI/galleriaABI');
 let jobService = require('./service/jobService');
 let sendMail = require('./send_mail');
-const BigNumber = require("bignumber.js");
 const config_test = require("./config_test");
 config = config.curNetwork == 'testNet'? config_test : config;
 
@@ -99,7 +98,7 @@ module.exports = {
                     royalties:result.royaltyFee, royaltyOwner: result.royaltyOwner, holder: result.royaltyOwner,
                     createTime: result.createTime, updateTime: result.updateTime}
 
-                token.tokenIdHex = '0x' + new BigNumber(tokenId).toString(16);
+                token.tokenIdHex = '0x' + BigInt(tokenId).toString(16);
                 let data = await jobService.getInfoByIpfsUri(result.tokenUri);
                 token.tokenJsonVersion = data.version;
                 token.type = data.type;

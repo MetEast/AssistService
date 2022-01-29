@@ -469,7 +469,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId, blockNumber: {"$lte": blockNumber}}, {$set: {price: new BigNumber(price)}});
+            await collection.updateOne({tokenId, blockNumber: {"$lte": blockNumber}}, {$set: {price: BigInt(price)}});
         } catch (err) {
             logger.error(err);
             throw new Error();

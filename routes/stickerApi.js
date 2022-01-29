@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 let stickerDBService = require('../service/stickerDBService');
-const BigNumber = require('bignumber.js');
 const { filter } = require('mongodb/lib/core/connection/logger');
 
 router.get('/listTokens', function(req, res) {
@@ -48,7 +47,7 @@ router.get('/search', function(req, res) {
     }
 
     if(keyword.startsWith('0x') && keyword.length > 42) {
-        keyword = new BigNumber(keyword).toFormat({prefix:""});
+        keyword = BigInt(keyword).toFormat({prefix:""});
     }
 
     stickerDBService.search(keyword).then(result => {
@@ -104,7 +103,7 @@ router.get('/tokenTrans', function(req, res) {
     }
 
     if(tokenId.startsWith('0x') && tokenId.length > 42) {
-        tokenId = new BigNumber(tokenId).toFormat({prefix:""});
+        tokenId = BigInt(tokenId).toFormat({prefix:""});
     }
 
     stickerDBService.tokenTrans(tokenId).then(result => {
