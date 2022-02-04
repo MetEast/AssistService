@@ -390,9 +390,8 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId}, {$set: {
-                    royaltyOwner: '0x0000000000000000000000000000000000000000',
                     holder: '0x0000000000000000000000000000000000000000'
-                }});
+            }});
         } catch (err) {
             logger.error(err);
             throw new Error();

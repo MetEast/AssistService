@@ -26,6 +26,7 @@ module.exports = {
     elastos_transation_api_url: 'https://esc-testnet.elastos.io/api?module=transaction&action=gettxinfo&txhash=',
     elastos_latest_price_api_url: 'https://esc-testnet.elastos.io/api?module=stats&action=coinprice',
     centralAppUrl: 'https://backend-test.meteast.io',
+    burnAddress: '0x0000000000000000000000000000000000000000',
     // centralAppUrl: 'http://localhost:3002',
     cmcApiKeys: []
 }

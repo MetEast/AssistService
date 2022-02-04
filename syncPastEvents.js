@@ -34,7 +34,7 @@ let meteastContract = new web3Rpc.eth.Contract(meteastContractABI, config.meteas
 let stickerContract = new web3Rpc.eth.Contract(stickerContractABI, config.stickerContract);
 
 let now = Date.now();
-const burnAddress = '0x0000000000000000000000000000000000000000';
+const burnAddress = config.burnAddress;
 
 let updateOrder = async function(result, blockNumber, orderId) {
     try {

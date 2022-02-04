@@ -2,7 +2,7 @@ const {MongoClient} = require("mongodb");
 const config = require("../config");
 const sendMail = require("../send_mail");
 
-let burnAddress = '0x0000000000000000000000000000000000000000';
+let burnAddress = config.burnAddress;
 
 async function checkTokenHolder() {
     let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});

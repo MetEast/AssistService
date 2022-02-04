@@ -16,7 +16,7 @@ module.exports = {
     run: function() {
         logger.info("========= meteast Assist Service start =============")
 
-        const burnAddress = '0x0000000000000000000000000000000000000000';
+        const burnAddress = config.burnAddress;
 
         let web3WsProvider = new Web3.providers.WebsocketProvider(config.escWsUrl, {
             //timeout: 30000, // ms
