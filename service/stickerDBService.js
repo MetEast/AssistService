@@ -133,13 +133,13 @@ module.exports = {
     verifyEvents: function(result) {
         for(var i = 0; i < result.length; i++) {
             if(result[i]['event'] == undefined || result[i]['event'] == "notSetYet") {
-                if(result[i]['from'] == '0x0000000000000000000000000000000000000000') {
+                if(result[i]['from'] == config.burnAddress) {
                     result[i]['event'] = 'Mint';
                 }
-                if(result[i]['to'] == '0x0000000000000000000000000000000000000000') {
+                if(result[i]['to'] == config.burnAddress) {
                     result[i]['event'] = 'Burn';
                 }
-                if(result[i]['from'] != '0x0000000000000000000000000000000000000000' && result[i]['to'] != '0x0000000000000000000000000000000000000000') {
+                if(result[i]['from'] != config.burnAddress && result[i]['to'] != config.burnAddress) {
                     if(result[i]['memo'] == undefined || result[i]['memo'] == '')
                         result[i]['event'] = 'SafeTransferFrom';
                     else result[i]['event'] = 'SafeTransferFromWithMemo';
@@ -171,7 +171,7 @@ module.exports = {
             switch(method)
             {
                 case "Mint":
-                    methodCondition_token.push({'from': "0x0000000000000000000000000000000000000000"});
+                    methodCondition_token.push({'from': config.burnAddress});
                     if(requestType == "walletAddr") {
                         methodCondition_token.push({'to': data});
                     }
@@ -182,8 +182,8 @@ module.exports = {
                         methodCondition_token.push({$or: [{'from': data}, {'to': data}]});
                     }
                     else {
-                        methodCondition_token.push({'from': {$ne: "0x0000000000000000000000000000000000000000"}});
-                        methodCondition_token.push({'to': {$ne: "0x0000000000000000000000000000000000000000"}});
+                        methodCondition_token.push({'from': {$ne: config.burnAddress}});
+                        methodCondition_token.push({'to': {$ne: config.burnAddress}});
                     }
                     methodCondition_order.push({'event': 'notSetYet'});
                     break;
@@ -192,14 +192,14 @@ module.exports = {
                         methodCondition_token.push({$or: [{'from': data}, {'to': data}]});
                     }
                     else {
-                        methodCondition_token.push({'from': {$ne: "0x0000000000000000000000000000000000000000"}});
-                        methodCondition_token.push({'to': {$ne: "0x0000000000000000000000000000000000000000"}});
+                        methodCondition_token.push({'from': {$ne: config.burnAddress}});
+                        methodCondition_token.push({'to': {$ne: config.burnAddress}});
                     }
                     methodCondition_order.push({'event': 'notSetYet'});
                     methodCondition_token.push({'memo': {$ne: ''}});
                     break;
                 case 'Burn':
-                    methodCondition_token.push({'to': "0x0000000000000000000000000000000000000000"});
+                    methodCondition_token.push({'to': config.burnAddress});
                     if(requestType == "walletAddr") {
                         methodCondition_token.push({'from': data});
                     }
@@ -390,7 +390,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId}, {$set: {
-                    holder: '0x0000000000000000000000000000000000000000'
+                    holder: config.burnAddress
             }});
         } catch (err) {
             logger.error(err);
@@ -1086,9 +1086,9 @@ module.exports = {
                 tokens.push(ele['tokenId']);
             });
             let collection = mongoClient.db(config.dbName).collection('meteast_token_event');
-            let mint_collectibles = await collection.find({$and: [{from: '0x0000000000000000000000000000000000000000'}, {to: walletAddr}]}).toArray();
+            let mint_collectibles = await collection.find({$and: [{from: config.burnAddress}, {to: walletAddr}]}).toArray();
 
-            let burn_collectibles = await collection.find({$and: [{to: '0x0000000000000000000000000000000000000000'}, {from: walletAddr}, {tokenId: {$in: tokens}}]}).toArray();
+            let burn_collectibles = await collection.find({$and: [{to: config.burnAddress}, {from: walletAddr}, {tokenId: {$in: tokens}}]}).toArray();
 
             collection = mongoClient.db(config.dbName).collection('meteast_order');
             let count_sold = await collection.find({sellerAddr: walletAddr, orderState: '2'}).count();
