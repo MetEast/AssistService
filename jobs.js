@@ -536,51 +536,51 @@ module.exports = {
                 orderPlatformFeeId.reschedule(new Date(now + 60 * 1000))
         });
 
-        // /**
-        //  *  meteast order volume sync check
-        //  */
-        // schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
-        //     let orderCount = await meteastDBService.meteastOrderCount();
-        //     let orderCountContract = parseInt(await meteastContract.methods.getOrderCount().call());
-        //     logger.info(`[Order Count Check] DbCount: ${orderCount}   ContractCount: ${orderCountContract}`)
-        //     if(orderCountContract !== orderCount) {
-        //         // await sendMail(`meteast Order Sync [${config.serviceName}]`,
-        //         //     `meteast assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
-        //         //     recipients.join());
-        //     }
-        // });
+        /**
+         *  meteast order volume sync check
+         */
+        schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
+            let orderCount = await meteastDBService.meteastOrderCount();
+            let orderCountContract = parseInt(await stickerContract.methods.getOrderCount().call());
+            logger.info(`[Order Count Check] DbCount: ${orderCount}   ContractCount: ${orderCountContract}`)
+            if(orderCountContract !== orderCount) {
+                // await sendMail(`meteast Order Sync [${config.serviceName}]`,
+                //     `meteast assist sync service sync failed!\nDbCount: ${orderCount}   ContractCount: ${orderCountContract}`,
+                //     recipients.join());
+            }
+        });
 
-        // /**
-        //  *  Sticker volume sync check
-        //  */
-        // schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
-        //     let stickerCount = await stickerDBService.stickerCount();
-        //     let stickerCountContract = parseInt(await stickerContract.methods.totalSupply().call());
-        //     logger.info(`[Token Count Check] DbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`)
-        //     if(stickerCountContract !== stickerCount) {
-        //         // await sendMail(`Sticker Sync [${config.serviceName}]`,
-        //         //     `meteast assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
-        //         //     recipients.join());
-        //     }
-        // });
+        /**
+         *  Sticker volume sync check
+         */
+        schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '*/2 * * * *'}, async () => {
+            let stickerCount = await stickerDBService.stickerCount();
+            let stickerCountContract = parseInt(await meteastContract.methods.totalSupply().call());
+            logger.info(`[Token Count Check] DbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`)
+            if(stickerCountContract !== stickerCount) {
+                // await sendMail(`Sticker Sync [${config.serviceName}]`,
+                //     `meteast assist sync service sync failed!\nDbCount: ${stickerCount}   ContractCount: ${stickerCountContract}`,
+                //     recipients.join());
+            }
+        });
 
-        // /**
-        //  *  meteast order event volume check
-        //  */
-        // let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
-        // schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
+        /**
+         *  meteast order event volume check
+         */
+        let meteastOrderEventCheckBlockNumber = config.meteastContractDeploy;
+        // schedule.scheduleJob({start: new Date(now + 3 * 60 * 1000), rule: '*/2 * * * *'}, async () => {
         //     let nowBlock = await web3Rpc.eth.getBlockNumber();
         //     let fromBlock = meteastOrderEventCheckBlockNumber;
         //     let tempBlock = meteastOrderEventCheckBlockNumber + 20000
         //     let toBlock =  tempBlock > nowBlock ? nowBlock : tempBlock;
         //     let orderCount = await meteastDBService.meteastOrderEventCount(fromBlock, toBlock);
 
-        //     let orderForSaleEvent = await meteastContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
-        //     let orderFilledEvent = await meteastContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
-        //     let orderCanceled = await meteastContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
-        //     let orderPriceChanged = await meteastContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
-        //     let orderForAuctionEvent = await meteastContract.getPastEvents('OrderForAuction', {fromBlock, toBlock});
-        //     let orderBidEvent = await meteastContract.getPastEvents('OrderBid', {fromBlock, toBlock});
+        //     let orderForSaleEvent = await stickerContract.getPastEvents('OrderForSale', {fromBlock, toBlock});
+        //     let orderFilledEvent = await stickerContract.getPastEvents('OrderFilled', {fromBlock, toBlock});
+        //     let orderCanceled = await stickerContract.getPastEvents('OrderCanceled', {fromBlock, toBlock});
+        //     let orderPriceChanged = await stickerContract.getPastEvents('OrderPriceChanged', {fromBlock, toBlock});
+        //     let orderForAuctionEvent = await stickerContract.getPastEvents('OrderForAuction', {fromBlock, toBlock});
+        //     let orderBidEvent = await stickerContract.getPastEvents('OrderBid', {fromBlock, toBlock});
 
         //     let contractOrderCount = orderForSaleEvent.length + orderFilledEvent.length + orderCanceled.length + orderPriceChanged.length + orderForAuctionEvent.length + orderBidEvent.length;
 
@@ -595,9 +595,9 @@ module.exports = {
         //     meteastOrderEventCheckBlockNumber = toBlock + 1;
         // });
 
-        // /**
-        //  *  Sticker transfer event volume check
-        //  */
+        /**
+         *  Sticker transfer event volume check
+         */
         // let stickerEventCheckBlockNumber = config.stickerContractDeploy;
         // schedule.scheduleJob({start: new Date(now + 10* 60 * 1000), rule: '*/2 * * * *'}, async () => {
         //     let nowBlock = await web3Rpc.eth.getBlockNumber();
