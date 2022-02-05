@@ -313,7 +313,7 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            const temp_collection = client.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = client.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -700,13 +700,14 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            let temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
             let rows = await collection.aggregate([
                 { $match: { $and: [methodCondition_order] }},
                 { $project:{'_id': 0, event: 1, tHash: 1, from: "$sellerAddr", to: "$buyerAddr", orderId: 1,
                 timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, royaltyFee: 1, data: 1, gasFee: 1} },
             ]).toArray();
             if(rows.length > 0)
-                await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
+                await temp_collection.insertMany(rows);
 
             collection = mongoClient.db(config.dbName).collection('meteast_token_event');
             rows = await collection.aggregate([
@@ -715,11 +716,10 @@ module.exports = {
                 timestamp: 1, memo: 1, tokenId: 1, blockNumber: 1, royaltyFee: "0"} }
             ]).toArray();
             if(rows.length > 0)
-                await mongoClient.db(config.dbName).collection('token_temp').insertMany(rows);
-            collection =  mongoClient.db(config.dbName).collection('token_temp');
-            let result = await collection.find().sort({blockNumber: parseInt(timeOrder)}).toArray();
+                await temp_collection.insertMany(rows);
+            let result = await temp_collection.find().sort({blockNumber: parseInt(timeOrder)}).toArray();
             if(result.length > 0)
-                await collection.drop();
+                await temp_collection.drop();
             let results = [];
             for(var i = (pageNum - 1) * pageSize; i < pageSize * pageNum; i++)
             {
@@ -828,13 +828,13 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection = mongoClient.db(config.dbName).collection('meteast_order');
+            let temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
             await collection.find({"tokenId": tokenId}).forEach( function (x) {
                 x.updateTime = new Date(x.updateTime * 1000);
                 x.price = parseInt(x.price);
-                mongoClient.db(config.dbName).collection('token_temp').save(x);
+                temp_collection.save(x);
             });
-            collection =  mongoClient.db(config.dbName).collection('token_temp');
-            let result = await collection.aggregate([
+            let result = await temp_collection.aggregate([
             { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$updateTime'}}} },
             { $match: {$and : [{"tokenId": new RegExp('^' + tokenId)}, { 'orderState': '2'}]} },
             { $group: { "_id"  : { tokenId: "$tokenId", onlyDate: "$onlyDate"}, "price": {$sum: "$price"}} },
@@ -842,7 +842,7 @@ module.exports = {
             { $sort: {onlyDate: 1} }
             ]).toArray();
             if(result.length > 0)
-                await collection.drop();
+                await temp_collection.drop();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
@@ -1041,6 +1041,7 @@ module.exports = {
             else
                 addressCondition.push({"royaltyOwner": new RegExp('^' + walletAddr)});
             let collection = client.db(config.dbName).collection('meteast_order');
+            let temp_collection = client.db(config.dbName).collection('token_temp_' + Date.now().toString());
             let rows = [];
             let result = await collection.aggregate([
                 { $match: {$and : [{$or :[...addressCondition]}, { 'orderState': '2'}]} },
@@ -1055,17 +1056,16 @@ module.exports = {
                 rows.push(x);
             });
             if(rows.length > 0) {
-                await client.db(config.dbName).collection('token_temp').insertMany(rows);
+                await temp_collection.insertMany(rows);
             }
-            collection =  client.db(config.dbName).collection('token_temp');
-            result = await collection.aggregate([
+            result = await temp_collection.aggregate([
                 { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$time'}}} },
                 { $group: { "_id"  : { onlyDate: "$onlyDate"}, "value": {$sum: "$value"}} },
                 { $project: {_id: 0, onlyDate: "$_id.onlyDate", value:1} },
                 { $sort: {onlyDate: 1} },
             ]).toArray();
             if(result.length > 0)
-                await collection.drop();
+                await temp_collection.drop();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
@@ -1335,6 +1335,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1370,7 +1371,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
             const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
-            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let sold_collectibles = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}, {royaltyOwner: {$ne: selfAddr}}] } },
                 { $project: {"_id": 0, tokenId: 1} }
@@ -1433,7 +1434,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1483,7 +1484,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1533,7 +1534,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
             const collection_token = mongoClient.db(config.dbName).collection('meteast_token');
-            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const collection_temp = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let sold_collectibles = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}] } },
                 { $project: {"_id": 0, tokenId: 1} }
@@ -1593,7 +1594,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1689,7 +1690,7 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -1759,7 +1760,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp');
+            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
