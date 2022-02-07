@@ -73,6 +73,7 @@ let orderForSaleJobCurrent = config.meteastContractDeploy,
     tokenInfoSyncJobCurrent = config.stickerContractDeploy,
     tokenInfoMemoSyncJobCurrent = config.stickerContractDeploy;
     approvalJobCurrent = config.meteastContractDeploy;
+    orderPlatformFeeJobCurrent = config.stickerContractDeploy;
 const step = 20000;
 web3Rpc.eth.getBlockNumber().then(currentHeight => {
     schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '0 * * * * *'}, async () => {
@@ -443,7 +444,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[ApprovalForAll] Sync ${approvalJobCurrent} ~ ${toBlock} ...`)
 
-        pasarContractWs.getPastEvents('ApprovalForAll', {
+        meteastContractWs.getPastEvents('ApprovalForAll', {
             fromBlock: approvalJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
@@ -453,6 +454,33 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
         }).catch( error => {
             console.log(error);
             console.log("[ApprovalForAll] Sync Ending ...");
+        })
+    });
+
+    schedule.scheduleJob({start: new Date(now + 9 * 60 * 1000), rule: '30 * * * * *'}, async () => {
+        if(orderPlatformFeeJobCurrent > currentHeight) {
+            console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} finished`)
+            return;
+        }
+
+        const tempBlockNumber = orderPlatformFeeJobCurrent + step
+        const toBlock = tempBlockNumber > currentHeight ? currentHeight : tempBlockNumber;
+
+        console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} ~ ${toBlock} ...`)
+
+        stickerContractWs.getPastEvents('OrderPlatformFee', {
+            fromBlock: orderPlatformFeeJobCurrent, toBlock
+        }).then(events => {
+            events.forEach(async event => {
+                let orderInfo = event.returnValues;
+                let orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
+                    txIndex: event.transactionIndex, platformAddr: orderInfo._platformAddress, platformFee: orderInfo._platformFee};
+                await meteastDBService.insertOrderPlatformFeeEvent(orderEventDetail);
+            })
+            orderPlatformFeeJobCurrent = toBlock + 1;
+        }).catch( error => {
+            console.log(error);
+            console.log("[OrderPlatformFee] Sync Ending ...");
         })
     });
 })

@@ -127,7 +127,7 @@ module.exports = {
         } catch (err) {
             timeStamp = 0;
         } finally {
-            return timeStamp == 0 ? await this.getTimeStamp(txHash): timeStamp;
+            return timeStamp == 0 ? await this.getTimestamp(txHash): timeStamp;
         }
     },
     verifyEvents: function(result) {
