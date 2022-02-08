@@ -93,7 +93,6 @@ module.exports = {
         async function dealWithNewToken(blockNumber,tokenId) {
             try {
                 let result = await meteastContract.methods.tokenInfo(tokenId).call();
-                console.log(result, 'herere');
                 let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: 1,
                     royalties:result.royaltyFee, royaltyOwner: result.royaltyOwner, holder: result.royaltyOwner,
                     createTime: result.createTime, updateTime: result.updateTime}
@@ -130,10 +129,19 @@ module.exports = {
                 if(token.type === 'feeds-video') {
                     token.video = data.video;
                 } else {
-                    token.thumbnail = data.data.thumbnail;
-                    token.asset = data.data.image;
-                    token.kind = data.data.kind;
-                    token.size = data.data.size;
+                    if(parseInt(token.tokenJsonVersion) == 1) {
+                        token.thumbnail = data.thumbnail;
+                        token.asset = data.image;
+                        token.kind = data.kind;
+                        token.size = data.size;
+                    }else {
+                        token.thumbnail = data.data.thumbnail;
+                        token.asset = data.data.image;
+                        token.kind = data.data.kind;
+                        token.size = data.data.size;
+                        if(data.properties !== undefined)
+                            token.properties = data.properties;
+                    }
                 }
                 token.adult = data.adult ? data.adult : false;
                 token.price = 0;
