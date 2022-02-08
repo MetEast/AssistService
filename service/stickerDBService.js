@@ -739,6 +739,7 @@ module.exports = {
             return {code: 200, message: 'success', data: {total, results}};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -759,6 +760,7 @@ module.exports = {
             return {code: 200, message: 'success', data: (result.length == 0 ? 0 : result[0]['value'])};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -773,6 +775,7 @@ module.exports = {
             return {code: 200, message: 'success', data: total};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -792,6 +795,7 @@ module.exports = {
             return {code: 200, message: 'success', data: owners.length};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -818,6 +822,7 @@ module.exports = {
           return result;
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -846,6 +851,7 @@ module.exports = {
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -908,6 +914,7 @@ module.exports = {
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1212,6 +1219,7 @@ module.exports = {
             return {code: 200, message: 'success', data: {total, results}};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1237,6 +1245,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {yours: result_mine, others: result_others} };
         } catch (err) {
             logger.error(err)
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1257,6 +1266,7 @@ module.exports = {
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1277,6 +1287,7 @@ module.exports = {
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1296,6 +1307,7 @@ module.exports = {
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1321,6 +1333,7 @@ module.exports = {
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1358,6 +1371,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1420,6 +1434,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1470,6 +1485,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1520,6 +1536,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1581,6 +1598,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1630,6 +1648,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1676,6 +1695,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -1784,6 +1804,7 @@ module.exports = {
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.err(error);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
