@@ -6,7 +6,8 @@ let config = require('./config');
 let meteastContractABI = require('./contractABI/meteastABI');
 let stickerContractABI = require('./contractABI/stickerABI');
 let jobService = require('./service/jobService');
-
+const config_test = require("./config_test");
+config = config.curNetwork == 'testNet'? config_test : config;
 global.fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 let web3WsProvider = new Web3.providers.WebsocketProvider(config.escWsUrl, {
@@ -71,7 +72,7 @@ let orderForSaleJobCurrent = config.meteastContractDeploy,
     orderCanceledJobCurrent = config.meteastContractDeploy,
     orderPriceChangedJobCurrent = config.meteastContractDeploy,
     tokenInfoSyncJobCurrent = config.stickerContractDeploy,
-    tokenInfoMemoSyncJobCurrent = config.stickerContractDeploy;
+    // tokenInfoMemoSyncJobCurrent = config.stickerContractDeploy;
     approvalJobCurrent = config.meteastContractDeploy;
     orderPlatformFeeJobCurrent = config.stickerContractDeploy;
 const step = 20000;
@@ -86,12 +87,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderForSale] Sync ${orderForSaleJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderForSale', {
+        stickerContractWs.getPastEvents('OrderForSale', {
             fromBlock: orderForSaleJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -119,12 +120,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderForAuction] Sync ${orderForAuctionJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderForAuction', {
+        stickerContractWs.getPastEvents('OrderForAuction', {
             fromBlock: orderForAuctionJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -152,12 +153,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderBid] Sync ${orderBidJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderBid', {
+        stickerContractWs.getPastEvents('OrderBid', {
             fromBlock: orderBidJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -186,12 +187,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderPriceChanged] Sync ${orderPriceChangedJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderPriceChanged', {
+        stickerContractWs.getPastEvents('OrderPriceChanged', {
             fromBlock: orderPriceChangedJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -222,12 +223,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderFilled] Sync ${orderFilledJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderFilled', {
+        stickerContractWs.getPastEvents('OrderFilled', {
             fromBlock: orderFilledJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -256,12 +257,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[OrderCanceled] Sync ${orderCanceledJobCurrent} ~ ${toBlock} ...`)
 
-        meteastContractWs.getPastEvents('OrderCanceled', {
+        stickerContractWs.getPastEvents('OrderCanceled', {
             fromBlock: orderCanceledJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
                 let orderInfo = event.returnValues;
-                let result = await meteastContract.methods.getOrderById(orderInfo._orderId).call();
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -293,7 +294,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
         console.log(`[TokenInfo] Sync ${tokenInfoSyncJobCurrent} ~ ${toBlock} ...`)
 
-        stickerContractWs.getPastEvents('TransferSingle', {
+        meteastContractWs.getPastEvents('Transfer', {
             fromBlock: tokenInfoSyncJobCurrent, toBlock
         }).then(events => {
             events.forEach(async event => {
@@ -303,12 +304,12 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 let from = event.returnValues._from;
                 let to = event.returnValues._to;
 
-                if(from !== burnAddress && to !== burnAddress && blockNumber > config.upgradeBlock) {
-                    return;
-                }
+                // if(from !== burnAddress && to !== burnAddress && blockNumber > config.upgradeBlock) {
+                //     return;
+                // }
 
-                let tokenId = event.returnValues._id;
-                let value = event.returnValues._value;
+                let tokenId = event.returnValues._tokenId;
+                let value = 1;
                 let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
                 let gasFee = await stickerDBService.getGasFee(txHash);
                 let transferEvent = {tokenId, blockNumber, timestamp,txHash, txIndex, from, to, value, gasFee: gasFee}
@@ -318,7 +319,9 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                     // await stickerDBService.burnToken(tokenId);
                 } else if(from === burnAddress) {
                     try {
-                        let result = await stickerContract.methods.tokenInfo(tokenId).call();
+                        console.log(tokenId);
+                        let result = await meteastContract.methods.tokenInfo(tokenId).call();
+                        console.log(result);
                         let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: result.tokenSupply,
                             royalties:result.royaltyFee, royaltyOwner: result.royaltyOwner, holder: result.royaltyOwner,
                             createTime: result.createTime, updateTime: result.updateTime}
@@ -330,14 +333,19 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                         token.type = data.type;
                         token.name = data.name;
                         token.description = data.description;
-
+                        if(data.creator) {
+                            token.authorName = data.creator.name;
+                            token.authorDid = data.creator.did;
+                            token.authorDescription = data.creator.description;
+                            await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.authorDid});
+                        }
                         if(blockNumber > config.upgradeBlock) {
-                            let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
-                            token.didUri = extraInfo.didUri;
-                            if(extraInfo.didUri !== '') {
-                                token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                                await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
-                            }
+                            // let extraInfo = await meteastContract.methods.tokenExtraInfo(tokenId).call();
+                            // token.didUri = extraInfo.didUri;
+                            // if(extraInfo.didUri !== '') {
+                            //     token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
+                            //     await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
+                            // }
                         }
 
                         if(token.type === 'feeds-channel') {
@@ -352,19 +360,23 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                         if(token.type === 'feeds-video') {
                             token.video = data.video;
                         } else {
-                            if(parseInt(token.tokenJsonVersion) == 1) {
-                                token.thumbnail = data.thumbnail;
-                                token.asset = data.image;
-                                token.kind = data.kind;
-                                token.size = data.size;
-                            }else {
-                                token.thumbnail = data.data.thumbnail;
-                                token.asset = data.data.image;
-                                token.kind = data.data.kind;
-                                token.size = data.data.size;
-                                if(data.properties !== undefined)
-                                    token.properties = data.properties;
-                            }
+                            token.thumbnail = data.data.thumbnail;
+                            token.asset = data.data.image;
+                            token.kind = data.data.kind;
+                            token.size = data.data.size;
+                            // if(parseInt(token.tokenJsonVersion) == 1) {
+                            //     token.thumbnail = data.thumbnail;
+                            //     token.asset = data.image;
+                            //     token.kind = data.kind;
+                            //     token.size = data.size;
+                            // }else {
+                            //     token.thumbnail = data.data.thumbnail;
+                            //     token.asset = data.data.image;
+                            //     token.kind = data.data.kind;
+                            //     token.size = data.data.size;
+                            //     if(data.properties !== undefined)
+                            //         token.properties = data.properties;
+                            // }
                         }
                         token.price = 0;
                         token.marketTime = null;
@@ -389,52 +401,52 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
         })
     });
 
-    /**
-     * transferSingleWithMemo event
-     */
-    schedule.scheduleJob({start: new Date(now + 3 * 60 * 1000), rule: '50 * * * * *'}, async () => {
-        if(tokenInfoMemoSyncJobCurrent <= config.upgradeBlock && tokenInfoMemoSyncJobCurrent <= currentHeight) {
-            const tempBlockNumber = tokenInfoMemoSyncJobCurrent + step
-            const toBlock = Math.min(tempBlockNumber, currentHeight, config.upgradeBlock);
-            console.log(`[TokenInfoMemo] ${tokenInfoMemoSyncJobCurrent} ~ ${toBlock} Sync have not start yet!`)
-            tokenInfoMemoSyncJobCurrent = toBlock + 1;
-            return;
-        }
+    // /**
+    //  * transferSingleWithMemo event
+    //  */
+    // schedule.scheduleJob({start: new Date(now + 3 * 60 * 1000), rule: '50 * * * * *'}, async () => {
+    //     if(tokenInfoMemoSyncJobCurrent <= config.upgradeBlock && tokenInfoMemoSyncJobCurrent <= currentHeight) {
+    //         const tempBlockNumber = tokenInfoMemoSyncJobCurrent + step
+    //         const toBlock = Math.min(tempBlockNumber, currentHeight, config.upgradeBlock);
+    //         console.log(`[TokenInfoMemo] ${tokenInfoMemoSyncJobCurrent} ~ ${toBlock} Sync have not start yet!`)
+    //         tokenInfoMemoSyncJobCurrent = toBlock + 1;
+    //         return;
+    //     }
 
-        if(tokenInfoMemoSyncJobCurrent > currentHeight) {
-            console.log(`[TokenInfoMemo] Sync ${tokenInfoMemoSyncJobCurrent} finished`)
-            return;
-        }
+    //     if(tokenInfoMemoSyncJobCurrent > currentHeight) {
+    //         console.log(`[TokenInfoMemo] Sync ${tokenInfoMemoSyncJobCurrent} finished`)
+    //         return;
+    //     }
 
-        const tempBlockNumber = tokenInfoMemoSyncJobCurrent + step
-        const toBlock = Math.min(tempBlockNumber, currentHeight);
+    //     const tempBlockNumber = tokenInfoMemoSyncJobCurrent + step
+    //     const toBlock = Math.min(tempBlockNumber, currentHeight);
 
-        console.log(`[TokenInfoMemo] Sync ${tokenInfoMemoSyncJobCurrent} ~ ${toBlock} ...`)
+    //     console.log(`[TokenInfoMemo] Sync ${tokenInfoMemoSyncJobCurrent} ~ ${toBlock} ...`)
 
-        stickerContractWs.getPastEvents('TransferSingleWithMemo', {
-            fromBlock: tokenInfoMemoSyncJobCurrent, toBlock
-        }).then(events => {
-            events.forEach(async event => {
-                let from = event.returnValues._from;
-                let to = event.returnValues._to;
-                let tokenId = event.returnValues._id;
-                let value = event.returnValues._value;
-                let memo = event.returnValues._memo ? event.returnValues._memo : "";
-                let blockNumber = event.blockNumber;
-                let txHash = event.transactionHash;
-                let txIndex = event.transactionIndex;
-                let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
-                let gasFee = await stickerDBService.getGasFee(txHash);
-                let transferEvent = {tokenId, blockNumber, timestamp,txHash, txIndex, from, to, value, memo, gasFee: gasFee}
-                await stickerDBService.addEvent(transferEvent);
-                await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
-            })
-            tokenInfoMemoSyncJobCurrent = toBlock + 1;
-        }).catch(error => {
-            console.log(error);
-            console.log("[TokenInfo] Sync Ending ...");
-        })
-    })
+    //     meteastContractWs.getPastEvents('TransferSingleWithMemo', {
+    //         fromBlock: tokenInfoMemoSyncJobCurrent, toBlock
+    //     }).then(events => {
+    //         events.forEach(async event => {
+    //             let from = event.returnValues._from;
+    //             let to = event.returnValues._to;
+    //             let tokenId = event.returnValues._id;
+    //             let value = event.returnValues._value;
+    //             let memo = event.returnValues._memo ? event.returnValues._memo : "";
+    //             let blockNumber = event.blockNumber;
+    //             let txHash = event.transactionHash;
+    //             let txIndex = event.transactionIndex;
+    //             let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
+    //             let gasFee = await stickerDBService.getGasFee(txHash);
+    //             let transferEvent = {tokenId, blockNumber, timestamp,txHash, txIndex, from, to, value, memo, gasFee: gasFee}
+    //             await stickerDBService.addEvent(transferEvent);
+    //             await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
+    //         })
+    //         tokenInfoMemoSyncJobCurrent = toBlock + 1;
+    //     }).catch(error => {
+    //         console.log(error);
+    //         console.log("[TokenInfo] Sync Ending ...");
+    //     })
+    // })
 
 
     schedule.scheduleJob({start: new Date(now + 6 * 60 * 1000), rule: '30 * * * * *'}, async () => {

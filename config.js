@@ -19,7 +19,7 @@ module.exports = {
     meteastContractDeploy: 10143708,
     stickerContractDeploy: 10143708,
     galleriaContractDeploy: 0,
-    ipfsNodeUrl: 'https://ipfs.trinity-feeds.app/ipfs/',
+    ipfsNodeUrl: 'https://ipfs.meteast.io/ipfs/',
 
     serviceName: 'default',
     upgradeBlock: 9607086,

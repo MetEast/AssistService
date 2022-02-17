@@ -1,5 +1,7 @@
 let config = require('../config');
 let MongoClient = require('mongodb').MongoClient;
+const config_test = require("../config_test");
+config = config.curNetwork == 'testNet'? config_test : config;
 
 module.exports = {
     getLastmeteastOrderSyncHeight: async function (event) {
@@ -60,7 +62,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
-            await collection.updateOne({address, "did.version": did.version, "did.did": did.did}, {$set: {did}}, {upsert: true});
+            await collection.updateOne({address: address}, {$set: {did: did}}, {upsert: true});
         } catch (err) {
             logger.error(err);
             throw new Error();

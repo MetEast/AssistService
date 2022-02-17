@@ -323,7 +323,7 @@ module.exports = {
                 { $match: {$and: condition} },
                 { $project: {'_id': 0} }
             ]).toArray();
-
+            console.log(result);
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);

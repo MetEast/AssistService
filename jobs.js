@@ -103,10 +103,12 @@ module.exports = {
                 token.type = data.type;
                 token.name = data.name;
                 token.description = data.description;
+                token.tokenUri = result.tokenUri;
                 if(data.creator) {
                     token.authorName = data.creator.name;
                     token.authorDid = data.creator.did;
                     token.authorDescription = data.creator.description;
+                    await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.authorDid});
                 }
                 if(blockNumber > config.upgradeBlock) {
                     // let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
@@ -129,19 +131,23 @@ module.exports = {
                 if(token.type === 'feeds-video') {
                     token.video = data.video;
                 } else {
-                    if(parseInt(token.tokenJsonVersion) == 1) {
-                        token.thumbnail = data.thumbnail;
-                        token.asset = data.image;
-                        token.kind = data.kind;
-                        token.size = data.size;
-                    }else {
-                        token.thumbnail = data.data.thumbnail;
-                        token.asset = data.data.image;
-                        token.kind = data.data.kind;
-                        token.size = data.data.size;
-                        if(data.properties !== undefined)
-                            token.properties = data.properties;
-                    }
+                    token.thumbnail = data.data.thumbnail;
+                    token.asset = data.data.image;
+                    token.kind = data.data.kind;
+                    token.size = data.data.size;
+                    // if(parseInt(token.tokenJsonVersion) == 1) {
+                    //     token.thumbnail = data.thumbnail;
+                    //     token.asset = data.image;
+                    //     token.kind = data.kind;
+                    //     token.size = data.size;
+                    // }else {
+                    //     token.thumbnail = data.data.thumbnail;
+                    //     token.asset = data.data.image;
+                    //     token.kind = data.data.kind;
+                    //     token.size = data.data.size;
+                    //     if(data.properties !== undefined)
+                    //         token.properties = data.properties;
+                    // }
                 }
                 token.adult = data.adult ? data.adult : false;
                 token.price = 0;
