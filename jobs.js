@@ -185,7 +185,7 @@ module.exports = {
             }
         }
 
-        let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 10 * 1000), async () => {
+        let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 30 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForAuction');
             // if(isGetOrderForAuctionJobRun == false) {
             //     //initial state
@@ -220,7 +220,7 @@ module.exports = {
             })
         });
 
-        let orderBidJobId = schedule.scheduleJob(new Date(now + 20 * 1000), async () => {
+        let orderBidJobId = schedule.scheduleJob(new Date(now + 40 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderBid');
             // if(isGetOrderBidJobRun == false) {
             //     //initial state
@@ -255,7 +255,7 @@ module.exports = {
             })
         });
 
-        let orderForSaleJobId = schedule.scheduleJob(new Date(now + 30 * 1000), async () => {
+        let orderForSaleJobId = schedule.scheduleJob(new Date(now + 50 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForSale');
             // if(isGetForSaleOrderJobRun == false) {
             //     //initial state
@@ -289,7 +289,7 @@ module.exports = {
             })
         });
 
-        let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 2 * 40 * 1000), async () => {
+        let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderPriceChanged');
             // if(isGetForOrderPriceChangedJobRun == false) {
             //     //initial state
@@ -324,7 +324,7 @@ module.exports = {
             })
         });
 
-        let orderFilledJobId = schedule.scheduleJob(new Date(now + 3 * 50 * 1000), async () => {
+        let orderFilledJobId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderFilled');
             // if(isGetForOrderFilledJobRun == false) {
             //     //initial state
@@ -360,7 +360,7 @@ module.exports = {
             })
         });
 
-        let orderCanceledJobId = schedule.scheduleJob(new Date(now + 3 * 60 * 1000), async () => {
+        let orderCanceledJobId = schedule.scheduleJob(new Date(now + 80 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderCanceled');
             // if(isGetForOrderCancelledJobRun == false) {
             //     //initial state
@@ -395,7 +395,7 @@ module.exports = {
             })
         });
 
-        let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
+        let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 90 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastOrderPlatformFeeSyncHeight();
             // if(isGetForPlatformFeeJobRun == false) {
             //     //initial state
@@ -424,7 +424,7 @@ module.exports = {
         });
 
 
-        let approval  = schedule.scheduleJob(new Date(now + 80 * 1000), async()=> {
+        let approval  = schedule.scheduleJob(new Date(now + 100 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
             // if(isGetApprovalRun == false) {
             //     //initial state
@@ -446,7 +446,7 @@ module.exports = {
             });
         });
 
-        let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 90 * 1000), async () => {
+        let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 10 * 1000), async () => {
             let lastHeight = await stickerDBService.getLastStickerSyncHeight();
             // if(isGetTokenInfoJobRun == false) {
             //     //initial state

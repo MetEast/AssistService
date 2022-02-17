@@ -1760,7 +1760,7 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
+            const temp_collection = client.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
                     $addFields: {
