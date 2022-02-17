@@ -18,8 +18,8 @@ router.get('/listTokens', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -422,8 +422,8 @@ router.get('/getSelfCreateNotSoldCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -458,8 +458,8 @@ router.get('/getSoldPreviouslyBoughtCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -494,8 +494,8 @@ router.get('/getForSaleFixedPriceCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -529,8 +529,8 @@ router.get('/getSoldCollectibles', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -564,8 +564,8 @@ router.get('/getBoughtNotSoldCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -600,8 +600,8 @@ router.get('/getOwnCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -636,8 +636,8 @@ router.get('/getCollectiblesByTokenIds', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -670,8 +670,8 @@ router.get('/listMarketTokens', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -706,8 +706,8 @@ router.get('/getFavoritesCollectible', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? filter_min_price : 0;
-        filter_max_price = filter_max_price ? filter_max_price : 99999999999999999999999999;
+        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
