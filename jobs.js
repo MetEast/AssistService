@@ -145,8 +145,9 @@ module.exports = {
                 }
                 token.adult = data.adult ? data.adult : false;
                 token.price = 0;
-                token.views = 0;
-                token.likes = 0;
+                token.marketTime = null;
+                token.endTime = null;
+                token.orderId = null;
                 token.status = 'NEW';
                 logger.info(`[TokenInfo] New token info: ${JSON.stringify(token)}`)
                 await stickerDBService.replaceToken(token);
@@ -180,12 +181,12 @@ module.exports = {
 
         let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 10 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForAuction');
-            if(isGetOrderForAuctionJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForAuction');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetOrderForAuctionJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForAuction');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetOrderForAuctionJobRun = true;
 
             logger.info(`[OrderForAuction] Sync start from height: ${lastHeight}`);
@@ -209,18 +210,18 @@ module.exports = {
                 logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'ON AUCTION');
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'ON AUCTION');
             })
         });
 
         let orderBidJobId = schedule.scheduleJob(new Date(now + 20 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderBid');
-            if(isGetOrderBidJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderBid');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetOrderBidJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderBid');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetOrderBidJobRun = true;
 
             logger.info(`[OrderBid] Sync start from height: ${lastHeight}`);
@@ -244,18 +245,18 @@ module.exports = {
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'HAS BIDS');
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'HAS BIDS');
             })
         });
 
         let orderForSaleJobId = schedule.scheduleJob(new Date(now + 30 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForSale');
-            if(isGetForSaleOrderJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForSale');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetForSaleOrderJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderForSale');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetForSaleOrderJobRun = true;
 
             logger.info(`[OrderForSale] Sync start from height: ${lastHeight}`);
@@ -278,19 +279,18 @@ module.exports = {
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'BUY NOW')
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW');
             })
         });
 
         let orderPriceChangedJobId = schedule.scheduleJob(new Date(now + 2 * 40 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderPriceChanged');
-            if(isGetForOrderPriceChangedJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderPriceChanged');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetForOrderPriceChangedJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderPriceChanged');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetForOrderPriceChangedJobRun = true;
 
             logger.info(`[OrderPriceChanged] Sync start from height: ${lastHeight}`);
@@ -314,17 +314,18 @@ module.exports = {
                 logger.info(`[OrderPriceChanged] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'PRICE CHANGED');
             })
         });
 
         let orderFilledJobId = schedule.scheduleJob(new Date(now + 3 * 50 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderFilled');
-            if(isGetForOrderFilledJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderFilled');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetForOrderFilledJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderFilled');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetForOrderFilledJobRun = true;
 
             logger.info(`[OrderFilled] Sync start from height: ${lastHeight}`);
@@ -349,19 +350,18 @@ module.exports = {
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NOT');
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW');
             })
         });
 
         let orderCanceledJobId = schedule.scheduleJob(new Date(now + 3 * 60 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderCanceled');
-            if(isGetForOrderCancelledJobRun == false) {
-                //initial state
-                stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderCanceled');
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetForOrderCancelledJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removemeteastOrderByHeight(lastHeight, 'OrderCanceled');
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetForOrderCancelledJobRun = true;
 
             logger.info(`[OrderCanceled] Sync start from height: ${lastHeight}`);
@@ -385,18 +385,18 @@ module.exports = {
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NOT');
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW');
             })
         });
 
         let orderPlatformFeeId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastOrderPlatformFeeSyncHeight();
-            if(isGetForPlatformFeeJobRun == false) {
-                //initial state
-                stickerDBService.removePlatformFeeByHeight(lastHeight);
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetForPlatformFeeJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removePlatformFeeByHeight(lastHeight);
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetForPlatformFeeJobRun = true;
 
             logger.info(`[OrderPlatformFee] Sync start from height: ${lastHeight}`);
@@ -420,12 +420,12 @@ module.exports = {
 
         let approval  = schedule.scheduleJob(new Date(now + 80 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
-            if(isGetApprovalRun == false) {
-                //initial state
-                stickerDBService.removeApprovalByHeight(lastHeight);
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetApprovalRun == false) {
+            //     //initial state
+            //     stickerDBService.removeApprovalByHeight(lastHeight);
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetApprovalRun = true;
             logger.info(`[approval] Sync Starting ... from block ${lastHeight + 1}`)
             meteastContractWs.events.ApprovalForAll({
@@ -442,12 +442,12 @@ module.exports = {
 
         let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 90 * 1000), async () => {
             let lastHeight = await stickerDBService.getLastStickerSyncHeight();
-            if(isGetTokenInfoJobRun == false) {
-                //initial state
-                stickerDBService.removeTokenInfoByHeight(lastHeight);
-            } else {
-                lastHeight += 1;
-            }
+            // if(isGetTokenInfoJobRun == false) {
+            //     //initial state
+            //     stickerDBService.removeTokenInfoByHeight(lastHeight);
+            // } else {
+            //     lastHeight += 1;
+            // }
             isGetTokenInfoJobRun = true;
             logger.info(`[TokenInfo] Sync Starting ... from block ${lastHeight + 1}`)
 

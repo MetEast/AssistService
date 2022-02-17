@@ -1,6 +1,6 @@
 module.exports = {
     mongodb: 'mongodb://localhost:27017',
-    dbName: 'meteast_sources',
+    dbName: 'meteast_sources_test',
     dbUser: '',
     dbPass: '',
 
@@ -17,7 +17,7 @@ module.exports = {
     stickerContract: '0x350D156C0D4b8E8437eaA81226d8c0638C5bCf94',
     galleriaContract: '',
     meteastContractDeploy: 10143708,
-    stickerContractDeploy: 10143710,
+    stickerContractDeploy: 10143708,
     galleriaContractDeploy: 0,
     ipfsNodeUrl: 'https://ipfs-test.trinity-feeds.app/ipfs/',
 

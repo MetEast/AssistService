@@ -435,7 +435,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {holder, blockNumber, updateTime: timestamp, status: 'NEW'}});
+            await collection.updateOne({tokenId}, {$set: {holder, blockNumber, updateTime: timestamp, status: 'NEW'}});
         } catch (err) {
             logger.error(err);
             throw new Error();
@@ -444,18 +444,12 @@ module.exports = {
         }
     },
 
-    updateTokenStatus: async function (tokenId, blockNumber, status) {
+    updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: {status}});
-            if(status == 'NOT') {
-                let collectible = await collection.findOne({tokenId: tokenId});
-                if(collectible.royaltyOwner == collectible.holder) {
-                    await collection.updateOne({tokenId, blockNumber: {"$lt": blockNumber}}, {$set: 'NEW'});
-                }
-            }
+            await collection.updateOne({tokenId}, {$set: {status, price, orderId, marketTime, endTime}});
         } catch (err) {
             logger.error(err);
             throw new Error();
@@ -472,6 +466,69 @@ module.exports = {
         } catch (err) {
             logger.error(err);
             throw new Error();
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+
+
+    updateTokens: async function(){
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const token_event_collection = mongoClient.db(config.dbName).collection('meteast_token_event');
+            const token_collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const order_event_collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            const order_collection = mongoClient.db(config.dbName).collection('meteast_order');
+            let tokens = await token_collection.find({}).toArray();
+            console.log(tokens.length);
+            for(var i = 0; i < tokens.length; i++) {
+                let token = tokens[i];
+                let token_event = await token_event_collection.find({$and: [{to: {$ne: config.pasarContract}}, {tokenId: token['tokenId']}]}).sort({blockNumber: -1}).limit(1).toArray();
+                let holder, price = 0, orderId = null, marketTime = null, endTime = null, status = "NEW";
+                if(token_event.length > 0)
+                    holder = token_event[0]['to'];
+                else holder = token.royaltyOwner;
+                let order_event = await order_event_collection.find({tokenId: token['tokenId']}).sort({blockNumber: -1}).limit(1).toArray();
+                if(order_event.length > 0) {
+                    order_event = order_event[0];
+                    price = parseInt(order_event['price']);
+                    orderId = order_event['orderId'];
+                    let order = await order_collection.findOne({orderId});
+                    if(order) {
+                        marketTime = order['createTime'];
+                        endTime = order['endTime'];
+                    }
+                    switch(order_event['event'])
+                    {
+                        case 'OrderForSale':
+                            status = 'BUY NOW';
+                            break;
+                        case 'OrderPriceChanged':
+                            status = 'PRICE CHANGED';
+                            break;
+                        case 'OrderFilled':
+                            status = 'NEW';
+                            break;
+                        case 'OrderCanceled':
+                            status = 'NEW';
+                            break;
+                        case 'OrderForAuction':
+                            status = 'ON AUCTION';
+                            break;
+                        case 'OrderBid':
+                            status = 'HAS BIDS';
+                            break;
+                    }   
+                }
+                await token_collection.updateOne({ tokenId: token['tokenId']}, {$set: {holder, price, orderId, status, marketTime, endTime}});
+            }
+            console.log('successull done');
+            return {code: 200, message: 'sucess'}; 
+        } catch(err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
         }
@@ -749,15 +806,8 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.aggregate([
-                {
-                    $group: {
-                        _id  : "$status",
-                        value: {$sum: 1 }
-                    }
-                }
-            ]).toArray();
-            return {code: 200, message: 'success', data: (result.length == 0 ? 0 : result[0]['value'])};
+            let result = await collection.find({ holder: {$ne: config.burnAddress} }).count();
+            return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
@@ -1443,7 +1493,7 @@ module.exports = {
     getForSaleFixedPriceCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        condition.push({status: 'BUY NOW'});
+        condition.push({$or: [{status: 'PRICE CHANGEd'}, {status: 'BUY NOW'}]});
         condition.push({holder: selfAddr});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {

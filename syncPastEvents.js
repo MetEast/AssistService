@@ -101,8 +101,6 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'BUY NOW')
             })
             orderForSaleJobCurrent = toBlock + 1;
         }).catch(error => {
@@ -136,7 +134,6 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'ON AUCTION');
             })
             orderForAuctionJobCurrent = toBlock + 1;
         }).catch(error => {
@@ -170,7 +167,6 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'HAS BIDS');
             })
             orderBidJobCurrent = toBlock + 1;
         }).catch(error => {
@@ -240,7 +236,6 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
 
                 console.log(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
-                await stickerDBService.updateTokenPrice(result.tokenId, event.blockNumber, result.price);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
             })
             orderFilledJobCurrent = toBlock + 1;
@@ -276,7 +271,6 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, event.blockNumber, 'NEW');
             })
             orderCanceledJobCurrent = toBlock + 1;
         }).catch( error => {
@@ -372,9 +366,10 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                                     token.properties = data.properties;
                             }
                         }
-                        token.likes = 0;
-                        token.views = 0;
                         token.price = 0;
+                        token.marketTime = null;
+                        token.endTime = null;
+                        token.orderId = null;
                         token.status = 'NEW';
                         token.adult = data.adult ? data.adult : false;
                         console.log(`[TokenInfo] New token info: ${JSON.stringify(token)}`)
