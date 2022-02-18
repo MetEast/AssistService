@@ -488,7 +488,7 @@ module.exports = {
             console.log(tokens.length);
             for(var i = 0; i < tokens.length; i++) {
                 let token = tokens[i];
-                let token_event = await token_event_collection.find({$and: [{to: {$ne: config.pasarContract}}, {tokenId: token['tokenId']}]}).sort({blockNumber: -1}).limit(1).toArray();
+                let token_event = await token_event_collection.find({$and: [{to: {$ne: config.stickerContract}}, {tokenId: token['tokenId']}]}).sort({blockNumber: -1}).limit(1).toArray();
                 let holder, price = 0, orderId = null, marketTime = null, endTime = null, status = "NEW";
                 if(token_event.length > 0)
                     holder = token_event[0]['to'];
@@ -1517,7 +1517,7 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        condition.push({$or: [{status: 'PRICE CHANGEd'}, {status: 'BUY NOW'}]});
+        condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}]});
         condition.push({holder: selfAddr});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -1532,6 +1532,7 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
+            console.log(result)
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
@@ -1556,7 +1557,7 @@ module.exports = {
             result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0)
                 await temp_collection.drop();
-            return { code: 200, message: 'success', data: {total, result} };
+            return { code: 200, message: 'success', data: {condition, total, result} };
         } catch (err) {
             logger.err(error);
             return {code: 500, message: 'server error'};
