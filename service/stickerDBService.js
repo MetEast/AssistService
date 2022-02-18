@@ -1413,6 +1413,18 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
             for(var i = 0; i < result.length; i++) {
                 const tokenID = result[i]['tokenId'];
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
@@ -1822,7 +1834,7 @@ module.exports = {
             result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0)
                 await temp_collection.drop();
-            return {code: 200, message: 'success', data: {condition, total, result}};
+            return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
