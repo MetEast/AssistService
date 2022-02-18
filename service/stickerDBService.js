@@ -431,7 +431,7 @@ module.exports = {
     },
 
     updateToken: async function (tokenId, holder, timestamp, blockNumber) {
-        if(holder == config.meteastContract)
+        if(holder == config.stickerContract)
             return;
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -986,7 +986,7 @@ module.exports = {
             let collection = client.db(config.dbName).collection('meteast_token_event');
 
             let result = await collection.aggregate([
-                { $match: {$and: [{tokenId: tokenId}, {to: {$ne: config.meteastContract}}] }},
+                { $match: {$and: [{tokenId: tokenId}, {to: {$ne: config.stickerContract}}] }},
                 { $sort: {tokenId: 1, blockNumber: -1}},
                 { $limit: 1},
                 { $group: {_id: "$tokenId", doc: {$first: "$$ROOT"}}},
