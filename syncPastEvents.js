@@ -74,7 +74,6 @@ let orderForSaleJobCurrent = config.meteastContractDeploy,
     tokenInfoSyncJobCurrent = config.stickerContractDeploy,
     // tokenInfoMemoSyncJobCurrent = config.stickerContractDeploy;
     approvalJobCurrent = config.meteastContractDeploy;
-    orderPlatformFeeJobCurrent = config.stickerContractDeploy;
 const step = 20000;
 web3Rpc.eth.getBlockNumber().then(currentHeight => {
     schedule.scheduleJob({start: new Date(now + 60 * 1000), rule: '0 * * * * *'}, async () => {
@@ -383,7 +382,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                         token.endTime = null;
                         token.orderId = null;
                         token.status = 'NEW';
-                        token.adult = data.adult ? data.adult : false;
+                        token.category = data.category ? data.category : 'other';
                         console.log(`[TokenInfo] New token info: ${JSON.stringify(token)}`)
                         await stickerDBService.replaceToken(token);
                     } catch (e) {
@@ -473,30 +472,30 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
         })
     });
 
-    schedule.scheduleJob({start: new Date(now + 9 * 60 * 1000), rule: '30 * * * * *'}, async () => {
-        if(orderPlatformFeeJobCurrent > currentHeight) {
-            console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} finished`)
-            return;
-        }
+    // schedule.scheduleJob({start: new Date(now + 9 * 60 * 1000), rule: '30 * * * * *'}, async () => {
+    //     if(orderPlatformFeeJobCurrent > currentHeight) {
+    //         console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} finished`)
+    //         return;
+    //     }
 
-        const tempBlockNumber = orderPlatformFeeJobCurrent + step
-        const toBlock = tempBlockNumber > currentHeight ? currentHeight : tempBlockNumber;
+    //     const tempBlockNumber = orderPlatformFeeJobCurrent + step
+    //     const toBlock = tempBlockNumber > currentHeight ? currentHeight : tempBlockNumber;
 
-        console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} ~ ${toBlock} ...`)
+    //     console.log(`[OrderPlatformFee] Sync ${orderPlatformFeeJobCurrent} ~ ${toBlock} ...`)
 
-        stickerContractWs.getPastEvents('OrderPlatformFee', {
-            fromBlock: orderPlatformFeeJobCurrent, toBlock
-        }).then(events => {
-            events.forEach(async event => {
-                let orderInfo = event.returnValues;
-                let orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
-                    txIndex: event.transactionIndex, platformAddr: orderInfo._platformAddress, platformFee: orderInfo._platformFee};
-                await meteastDBService.insertOrderPlatformFeeEvent(orderEventDetail);
-            })
-            orderPlatformFeeJobCurrent = toBlock + 1;
-        }).catch( error => {
-            console.log(error);
-            console.log("[OrderPlatformFee] Sync Ending ...");
-        })
-    });
+    //     stickerContractWs.getPastEvents('OrderPlatformFee', {
+    //         fromBlock: orderPlatformFeeJobCurrent, toBlock
+    //     }).then(events => {
+    //         events.forEach(async event => {
+    //             let orderInfo = event.returnValues;
+    //             let orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
+    //                 txIndex: event.transactionIndex, platformAddr: orderInfo._platformAddress, platformFee: orderInfo._platformFee};
+    //             await meteastDBService.insertOrderPlatformFeeEvent(orderEventDetail);
+    //         })
+    //         orderPlatformFeeJobCurrent = toBlock + 1;
+    //     }).catch( error => {
+    //         console.log(error);
+    //         console.log("[OrderPlatformFee] Sync Ending ...");
+    //     })
+    // });
 })

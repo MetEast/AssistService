@@ -171,12 +171,6 @@ module.exports = [
         "type": "uint256"
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_royaltyOwner",
-        "type": "address"
-      },
-      {
         "indexed": true,
         "internalType": "address",
         "name": "_quoteToken",
@@ -190,8 +184,26 @@ module.exports = [
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_royaltyOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "_royalty",
+        "name": "_royaltyFee",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_platformAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_platformFee",
         "type": "uint256"
       }
     ],
@@ -276,49 +288,6 @@ module.exports = [
       }
     ],
     "name": "OrderForSale",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_platformAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_quoteToken",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_platformFee",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_seller",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_buyer",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "_orderId",
-        "type": "uint256"
-      }
-    ],
-    "name": "OrderPlatformFee",
     "type": "event"
   },
   {
@@ -529,6 +498,11 @@ module.exports = [
         "internalType": "string",
         "name": "_didUri",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isBlindBox",
+        "type": "bool"
       }
     ],
     "name": "createOrderForSale",
@@ -557,6 +531,11 @@ module.exports = [
         "internalType": "string",
         "name": "_didUri",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isBlindBox",
+        "type": "bool"
       }
     ],
     "name": "createOrderForSaleBatch",
@@ -864,6 +843,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -973,6 +977,31 @@ module.exports = [
             "internalType": "uint256",
             "name": "royaltyFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -1086,6 +1115,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -1195,6 +1249,31 @@ module.exports = [
             "internalType": "uint256",
             "name": "royaltyFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -1342,6 +1421,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -1446,6 +1550,31 @@ module.exports = [
             "internalType": "uint256",
             "name": "royaltyFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -1567,6 +1696,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -1673,6 +1827,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -1699,88 +1878,6 @@ module.exports = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_orderId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getOrderExtraById",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "sellerUri",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "buyerUri",
-            "type": "string"
-          },
-          {
-            "internalType": "address",
-            "name": "platformAddr",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "platformFee",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct IMarketDataAndEvents.OrderExtraInfo",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "_orderIds",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "getOrderExtraByIdBatch",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "sellerUri",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "buyerUri",
-            "type": "string"
-          },
-          {
-            "internalType": "address",
-            "name": "platformAddr",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "platformFee",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct IMarketDataAndEvents.OrderExtraInfo[]",
-        "name": "",
-        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -2104,6 +2201,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -2213,6 +2335,31 @@ module.exports = [
             "internalType": "uint256",
             "name": "royaltyFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
           },
           {
             "internalType": "uint256",
@@ -2326,6 +2473,31 @@ module.exports = [
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
+          },
+          {
             "internalType": "uint256",
             "name": "createTime",
             "type": "uint256"
@@ -2435,6 +2607,31 @@ module.exports = [
             "internalType": "uint256",
             "name": "royaltyFee",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "sellerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "buyerUri",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "platformAddr",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "platformFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isBlindBox",
+            "type": "bool"
           },
           {
             "internalType": "uint256",

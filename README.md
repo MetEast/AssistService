@@ -112,7 +112,7 @@ parameter:    pageNum (页码 从1开始 选填 默认1)
               blockNumber (返回本高度之后的数据 选填)
               endBlockNumber (返回本高度之前的数据 选填)
               orderState (订单状态： 1(OrderForSale), 2(OrderCanceled), 3(OrderFilled))
-              adult （值只能是纯小写 true 或者 false 选填）
+              category
               sort (排序方式: 默认按BlockNumber降序， 传 asc表示按BlockNumber升序)
               
 response:     {"code": 200, "message": "success", data: {total: 100, result: [{}, ...]}}  成功

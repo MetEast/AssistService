@@ -7,7 +7,7 @@ router.get('/listmeteastOrder', function(req, res) {
     let pageSizeStr = req.query.pageSize;
     let blockNumberStr = req.query.blockNumber;
     let endBlockNumberStr = req.query.endBlockNumber;
-    let adult = req.query.adult === undefined ? undefined : req.query.adult === 'true';
+    let category = req.query.category === undefined ? "" : req.query.category;
     let orderState = req.query.orderState;
     let sortType = req.query.sortType === 'price' ? 'price' : 'createTime';
     let sort = req.query.sort === "asc" ? 1 : -1;
@@ -42,7 +42,7 @@ router.get('/listmeteastOrder', function(req, res) {
         return;
     }
 
-    meteastDBService.listmeteastOrder(pageNum, pageSize, blockNumber, endBlockNumber, orderState, sortType, sort, adult).then(result => {
+    meteastDBService.listmeteastOrder(pageNum, pageSize, blockNumber, endBlockNumber, orderState, sortType, sort, category).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -53,7 +53,7 @@ router.get('/listmeteastOrder', function(req, res) {
 router.get('/allSaleOrders', function (req, res) {
     let sortType = req.query.sortType === 'price' ? 'price' : 'createTime';
     let sort = req.query.sort === 'asc' ? 1 : -1;
-    let adult = req.query.adult === undefined ? undefined : req.query.adult === 'true';
+    let category = req.query.category === undefined ? '' : req.query.category;
 
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
@@ -78,7 +78,7 @@ router.get('/allSaleOrders', function (req, res) {
     }
 
 
-    meteastDBService.allSaleOrders(sortType, sort, pageNum, pageSize, adult).then(result => {
+    meteastDBService.allSaleOrders(sortType, sort, pageNum, pageSize, category).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -89,7 +89,7 @@ router.get('/allSaleOrders', function (req, res) {
 router.get('/searchSaleOrders', function (req, res) {
     let searchType = req.query.searchType;
     let key = req.query.key;
-    let adult = req.query.adult === undefined ? undefined : req.query.adult === 'true';
+    let category = req.query.category === undefined ? undefined : req.query.category;
 
     if(!key) {
         res.json({code: 400, message: 'bad request'});
@@ -104,7 +104,7 @@ router.get('/searchSaleOrders', function (req, res) {
         searchType = undefined;
     }
 
-    meteastDBService.searchSaleOrders(searchType, key, adult).then(result => {
+    meteastDBService.searchSaleOrders(searchType, key, category).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);

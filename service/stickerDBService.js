@@ -105,9 +105,10 @@ module.exports = {
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
-            let data = await response.json();
-            latest_price = data.coin_usd;
+            let data = await response.json();console.log(data,'fdsfdsfds');
+            latest_price = data.result.coin_usd;console.log(latest_price)
         } catch (err) {
+            logger.error(err);console.log('errorrdrewr');
             latest_price = 0;
         } finally {
             return {code: 200, message: 'success', data: latest_price};
@@ -638,7 +639,7 @@ module.exports = {
                             royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
                             name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
                             thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-                            adult: "$token.adult", video: "$token.video"}}
+                            category: "$token.category", video: "$token.video"}}
                 ]).toArray();
             }
 
@@ -974,12 +975,13 @@ module.exports = {
     },
 
     getCollectibleByTokenId: async function(tokenId) {
-        let projectionToken = {"_id": 0, tokenId:1, blockNumber:1, timestamp:1, value: 1,memo: 1, to: 1, holder: "$to",
+        let projectionToken = { "_id": 0, tokenId:1, blockNumber:1, timestamp:1, value: 1,memo: 1, to: 1, holder: "$to",
         tokenIndex: "$token.tokenIndex", quantity: "$token.quantity", royalties: "$token.royalties",
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-        adult: "$token.adult", authorName: "$token.authorName", authorDescription: "$token.authorDescription", status: "$token.status"}
+        category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId" }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();

@@ -105,9 +105,9 @@ module.exports = {
         description: "$token.description", kind: "$token.kind", type: "$token.type", size: "$token.size",
         royalties: "$token.royalties",royaltyOwner: "$token.royaltyOwner", quantity: "$token.quantity",
         tokenDid: "$token.did", thumbnail: "$token.thumbnail", tokenCreateTime: "$token.createTime",
-        tokenUpdateTime: "$token.updateTime", adult: "$token.adult", video: "$token.video"},
+        tokenUpdateTime: "$token.updateTime", category: "$token.category", video: "$token.video"},
 
-    allSaleOrders: async function(sortType, sort, pageNum, pageSize, adult) {
+    allSaleOrders: async function(sortType, sort, pageNum, pageSize, category) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -120,20 +120,16 @@ module.exports = {
             ];
 
             let total
-            if(adult !== undefined) {
-                let pipeline2 = [
-                    { $match: {orderState: "1"}},
-                    { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
-                    { $unwind: "$token"},
-                    { $match: {"token.adult": adult}},
-                    { $count: "total"}
-                ];
-                total = (await collection.aggregate(pipeline2).toArray())[0].total;
+            let pipeline2 = [
+                { $match: {orderState: "1"}},
+                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $unwind: "$token"},
+                { $match: {category: new RegExp(category)}},
+                { $count: "total"}
+            ];
+            total = (await collection.aggregate(pipeline2).toArray())[0].total;
 
-                pipeline.push({ $match: {"token.adult": adult}});
-            } else {
-                total = await collection.find({orderState: "1"}).count();
-            }
+            pipeline.push({ $match: {category: new RegExp(category)}});
 
             pipeline.push({ $project: this.resultProject});
             pipeline.push({ $sort: {[sortType]: sort}});
@@ -154,15 +150,15 @@ module.exports = {
         }
     },
 
-    searchSaleOrders: async function(searchType, key, adult) {
+    searchSaleOrders: async function(searchType, key, category) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
 
             let firstMatch = {}, match = {};
-            if(adult !== undefined) {
-                match["token.adult"] = adult;
+            if(category !== undefined) {
+                match["token.category"] = category;
             }
 
             if(searchType !== undefined) {
@@ -207,7 +203,7 @@ module.exports = {
         }
     },
 
-    listmeteastOrder: async function(pageNum=1, pageSize=10, blockNumber, endBlockNumber, orderState,sortType, sort, adult) {
+    listmeteastOrder: async function(pageNum=1, pageSize=10, blockNumber, endBlockNumber, orderState,sortType, sort, category) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -242,20 +238,16 @@ module.exports = {
                 }
             }
             let total;
-            if(adult !== undefined) {
-                let pipeline2 = [
-                    { $match: match},
-                    { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
-                    { $unwind: "$token"},
-                    { $match: {"token.adult": adult}},
-                    { $count: "total"}
-                ];
-                total = (await collection.aggregate(pipeline2).toArray())[0].total;
+            let pipeline2 = [
+                { $match: match},
+                { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
+                { $unwind: "$token"},
+                { $match: {category: new RegExp(category)}},
+                { $count: "total"}
+            ];
+            total = (await collection.aggregate(pipeline2).toArray())[0].total;
 
-                pipeline.push({$match: {"token.adult": adult}});
-            } else {
-                total = await collection.find(match).count();
-            }
+            pipeline.push({$match: {category: new RegExp(category)}});
             pipeline.push({ $project: this.resultProject });
             if(sortType === 'price') {
                 pipeline.push({ $sort: {'priceNumber': sort}});

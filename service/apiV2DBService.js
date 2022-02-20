@@ -7,7 +7,7 @@ module.exports = {
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-        adult: "$token.adult"},
+        category: "$token.category"},
 
     queryCollectibleByTokenId: async function(tokenId) {
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -113,7 +113,7 @@ module.exports = {
                             royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
                             name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
                             thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-                            adult: "$token.adult"}}
+                            category: "$token.category"}}
                 ]).toArray();
 
                 let tokenIds = [];
@@ -248,7 +248,7 @@ module.exports = {
     // {kind: "$token.kind", type: "$token.type", size: "$token.size",
     // royalties: "$token.royalties",royaltyOwner: "$token.royaltyOwner", quantity: "$token.quantity",
     // tokenDid: "$token.did", thumbnail: "$token.thumbnail", tokenCreateTime: "$token.createTime",
-    // tokenUpdateTime: "$token.updateTime", adult: "$token.adult"}
+    // tokenUpdateTime: "$token.updateTime", category: "$token.category"}
     queryOrdersByKeyword: async function(orderState, keyword) {
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -413,12 +413,12 @@ module.exports = {
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-        adult: "$token.adult", amount: "$order.amount", royaltyfee: "$order.royaltyFee", price: "$order.price", 
+        category: "$token.category", amount: "$order.amount", royaltyfee: "$order.royaltyFee", price: "$order.price", 
         orderstate: "$order.orderState", orderid: "$order.orderId"};
 
         let projectTokenFinal = {"_id": 0, tokenId:1, blockNumber:1, timestamp: 1, value: 1,memo: 1, to: 1, from: 1,
         tokenIndex: 1, quantity: 1, royalties: 1, royaltyOwner: 1, createTime: 1, tokenIdHex: 1, name: 1, description: 1, kind: 1, type: 1,
-        thumbnail: 1, asset: 1, size: 1, tokenDid: 1, adult: 1, amount: 1, royaltyfee: 1, price: 1, 
+        thumbnail: 1, asset: 1, size: 1, tokenDid: 1, category: 1, amount: 1, royaltyfee: 1, price: 1, 
         platformfee: "$platformfee.platformFee", orderstate: 1, orderid: 1}
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {

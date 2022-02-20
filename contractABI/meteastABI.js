@@ -285,6 +285,19 @@ module.exports  = [
   },
   {
     "inputs": [],
+    "name": "getTradeMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getVersion",
     "outputs": [
       {
@@ -298,6 +311,19 @@ module.exports  = [
   },
   {
     "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tradeMarket",
+        "type": "address"
+      }
+    ],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -695,6 +721,19 @@ module.exports  = [
       }
     ],
     "name": "setBlacklist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tradeMarket",
+        "type": "address"
+      }
+    ],
+    "name": "setTradeMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
