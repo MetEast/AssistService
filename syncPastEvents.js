@@ -47,14 +47,21 @@ let updateOrder = async function(result, blockNumber, orderId) {
             createTime: result.createTime, updateTime: result.updateTime, blockNumber}
 
         if(result.orderState === "1" && blockNumber > config.upgradeBlock) {
-            let extraInfo = await meteastContract.methods.getOrderExtraById(orderId).call();
-            if(extraInfo.sellerUri !== '') {
-                meteastOrder.platformAddr = extraInfo.platformAddr;
-                meteastOrder.platformFee = extraInfo.platformFee;
-                meteastOrder.sellerUri = extraInfo.sellerUri;
-                meteastOrder.sellerDid = await jobService.getInfoByIpfsUri(extraInfo.sellerUri);
+            if(result.sellerUri !== '') {
+                meteastOrder.platformAddr = result.platformAddr;
+                meteastOrder.platformFee = result.platformFee;
+                meteastOrder.sellerUri = result.sellerUri;
+                meteastOrder.sellerDid = await jobService.getInfoByIpfsUri(result.sellerUri);
 
                 await meteastDBService.replaceDid({address: result.sellerAddr, did: meteastOrder.sellerDid});
+            }
+            if(result.buyerUri !== '') {
+                meteastOrder.platformAddr = result.platformAddr;
+                meteastOrder.platformFee = result.platformFee;
+                meteastOrder.buyerUri = result.buyerUri;
+                meteastOrder.buyerDid = await jobService.getInfoByIpfsUri(result.buyerUri);
+
+                await meteastDBService.replaceDid({address: result.buyerAddr, did: meteastOrder.buyerDid});
             }
         }
 
@@ -101,6 +108,7 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
+                
             })
             orderForSaleJobCurrent = toBlock + 1;
         }).catch(error => {
@@ -237,6 +245,13 @@ web3Rpc.eth.getBlockNumber().then(currentHeight => {
                 console.log(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await updateOrder(result, event.blockNumber, orderInfo._orderId);
+                
+                // here is a part for platformfee collection
+                orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
+                    txIndex: event.transactionIndex, platformAddr: result.platformAddr, platformFee: result.platformFee};
+
+                logger.info(`[OrderPlatformFee] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                await meteastDBService.insertOrderPlatformFeeEvent(orderEventDetail);
             })
             orderFilledJobCurrent = toBlock + 1;
         }).catch( error => {

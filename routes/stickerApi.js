@@ -506,7 +506,7 @@ router.get('/getForSaleCollectible', function(req, res) {
         return;
     }
 
-    stickerDBService.getForPriceCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getForSaleCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
