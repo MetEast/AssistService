@@ -293,7 +293,7 @@ module.exports = {
         if(or_condition.length > 0 && filter_status != '')
             condition.push({$or: or_condition});
         condition.push({$and: [{priceCalculated: {$gte: filter_min_price}}, {priceCalculated: {$lte: filter_max_price}}]});
-        condition.push({$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
+        condition.push({$or: [{name: new RegExp(keyword.toString())}, {tokenIdHex: keyword}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
         return condition;
     },
 
@@ -584,7 +584,7 @@ module.exports = {
         try {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
-            let result = await collection.find({$or: [{tokenId: keyword}, {royaltyOwner: keyword}, {name: {$regex: keyword}}, {description: {$regex: keyword}}]}).project({"_id": 0}).toArray();
+            let result = await collection.find({$or: [{tokenId: keyword}, {tokenIdHex: keyword}, {royaltyOwner: keyword}, {name: {$regex: keyword}}, {description: {$regex: keyword}}]}).project({"_id": 0}).toArray();
             return {code: 200, message: 'success', data: {result}};
         } catch (err) {
             logger.error(err);
