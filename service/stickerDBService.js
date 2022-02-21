@@ -981,7 +981,7 @@ module.exports = {
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
         category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
-        status: "$token.status", price: "$token.price", orderId: "$token.orderId" }
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime" }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -1513,13 +1513,13 @@ module.exports = {
         }
     },
     
-    getForSaleFixedPriceCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getForSaleCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
 
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}]});
+        condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}, {status: 'ON AUCTION', status: 'HAS BIDS'}]});
         condition.push({holder: selfAddr});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
