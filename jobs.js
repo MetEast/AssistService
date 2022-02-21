@@ -142,19 +142,6 @@ module.exports = {
                     token.asset = data.data.image;
                     token.kind = data.data.kind;
                     token.size = data.data.size;
-                    // if(parseInt(token.tokenJsonVersion) == 1) {
-                    //     token.thumbnail = data.thumbnail;
-                    //     token.asset = data.image;
-                    //     token.kind = data.kind;
-                    //     token.size = data.size;
-                    // }else {
-                    //     token.thumbnail = data.data.thumbnail;
-                    //     token.asset = data.data.image;
-                    //     token.kind = data.data.kind;
-                    //     token.size = data.data.size;
-                    //     if(data.properties !== undefined)
-                    //         token.properties = data.properties;
-                    // }
                 }
                 token.category = data.category ? data.category : 'other';
                 token.price = 0;
@@ -373,7 +360,7 @@ module.exports = {
             })
         });
         
-        let approval  = schedule.scheduleJob(new Date(now + 100 * 1000), async()=> {
+        let approval  = schedule.scheduleJob(new Date(now + 90 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
             isGetApprovalRun = true;
             logger.info(`[approval] Sync Starting ... from block ${lastHeight + 1}`)
@@ -425,33 +412,33 @@ module.exports = {
             })
         });
 
-        let OrderDIDURISyncJobId = schedule.scheduleJob(new Date(now + 100 * 1000), async () => {
-            let lastHeight = await stickerDBService.getLastStickerSyncHeight();
-            isGetOrderDIDURIJobRun = true;
-            logger.info(`[OrderDIDURI] Sync Starting ... from block ${lastHeight + 1}`)
+        let OrderDIDURISyncJobId = schedule.scheduleJob(new Date(now + 20 * 1000), async () => {
+            // let lastHeight = await stickerDBService.getLastOrderDidSyncHeight();
+            // isGetOrderDIDURIJobRun = true;
+            // logger.info(`[OrderDIDURI] Sync Starting ... from block ${lastHeight + 1}`)
 
-            stickerContractWs.events.OrderDIDURI({
-                fromBlock: lastHeight
-            }).on("error", function (error) {
-                logger.info(error);
-                logger.info("[OrderDIDURI] Sync Ending ...");
-                isGetOrderDIDURIJobRun = false
-            }).on("data", async function (event) {
-                console.log('OrderDIDURI data is as following', event);
-                // let from = event.returnValues._from;
-                // let to = event.returnValues._to;
-                // let tokenId = event.returnValues._id;
-                // let value = event.returnValues._value;
-                // let blockNumber = event.blockNumber;
-                // let txHash = event.transactionHash;
-                // let txIndex = event.transactionIndex;
-                // let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
-                // let gasFee = await stickerDBService.getGasFee(txHash);
-                // let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
-                // logger.info(`[OrderDIDURI] transferToken: ${JSON.stringify(transferEvent)}`)
-                // await stickerDBService.addEvent(transferEvent);
-                // await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
-            })
+            // stickerContractWs.events.OrderDIDURI({
+            //     fromBlock: lastHeight
+            // }).on("error", function (error) {
+            //     logger.info(error);
+            //     logger.info("[OrderDIDURI] Sync Ending ...");
+            //     isGetOrderDIDURIJobRun = false
+            // }).on("data", async function (event) {
+            //     console.log('OrderDIDURI data is as following', event);
+            //     // let from = event.returnValues._from;
+            //     // let to = event.returnValues._to;
+            //     // let tokenId = event.returnValues._id;
+            //     // let value = event.returnValues._value;
+            //     // let blockNumber = event.blockNumber;
+            //     // let txHash = event.transactionHash;
+            //     // let txIndex = event.transactionIndex;
+            //     // let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
+            //     // let gasFee = await stickerDBService.getGasFee(txHash);
+            //     // let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
+            //     // logger.info(`[OrderDIDURI] transferToken: ${JSON.stringify(transferEvent)}`)
+            //     // await stickerDBService.addEvent(transferEvent);
+            //     // await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
+            // })
         });
         schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
             let now = Date.now();

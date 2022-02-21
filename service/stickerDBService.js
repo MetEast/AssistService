@@ -18,7 +18,7 @@ module.exports = {
             if(doc) {
                 return doc.blockNumber
             } else {
-                return config.stickerContractDeploy - 1;
+                return config.stickerContractDeploy;
             }
         } catch (err) {
             logger.error(err);
@@ -547,7 +547,26 @@ module.exports = {
             if(doc) {
                 return doc.blockNumber
             } else {
-                return 1;
+                return config.meteastContractDeploy;
+            }
+        } catch (err) {
+            logger.error(err);
+            throw new Error();
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+    getLastOrderDidSyncHeight: async function () {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
+            let doc = await collection.findOne({}, {sort:{blockNumber: -1}});
+            if(doc) {
+                return doc.blockNumber
+            } else {
+                return config.stickerContractDeploy;
             }
         } catch (err) {
             logger.error(err);

@@ -13,26 +13,7 @@ module.exports = {
             if(doc) {
                 return doc.blockNumber
             } else {
-                return config.meteastContractDeploy - 1;
-            }
-        } catch (err) {
-            logger.error(err);
-            throw new Error();
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
-    getLastOrderPlatformFeeSyncHeight: async function () {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_order_platform_fee');
-            let doc = await collection.findOne({}, {sort:{blockNumber:-1}})
-            if(doc) {
-                return doc.blockNumber
-            } else {
-                return config.upgradeBlock - 1;
+                return config.meteastContractDeploy;
             }
         } catch (err) {
             logger.error(err);
