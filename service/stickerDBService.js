@@ -1000,7 +1000,7 @@ module.exports = {
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
         category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
-        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime" }
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime", authorName: "$token.authorName" }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
