@@ -8,6 +8,7 @@ const { ReplSet } = require('mongodb/lib/core');
 const config_test = require("../config_test");
 const { curNetwork } = require('../config');
 config = config.curNetwork == 'testNet'? config_test : config;
+let jobService = require('./jobService');
 module.exports = {
     getLastStickerSyncHeight: async function () {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -1326,19 +1327,27 @@ module.exports = {
         }
     },
 
-    getLatestBids: async function (tokenId, sellerAddr, buyerAddr, pageNum, pageSize) {
+    getLatestBids: async function (tokenId, address, pageNum, pageSize) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
+            const token_collection = mongoClient.db(config.dbName).collection('meteast_token');
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            let tokenRecord = await token_collection.findOne({tokenId});
+            if(!tokenRecord) {
+                return {code: 500, message: 'collectible not found'};
+            }
+            if(tokenRecord.status != 'ON AUCTION' && tokenRecord.status != 'HAS BIDS') {
+                return {code: 500, message: 'collectible is not on auction'};
+            }
             let result_mine = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {buyerAddr: buyerAddr}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
+                { $match: { $and: [{sellerAddr: tokenRecord.holder}, {buyerAddr: address}, {orderId: tokenRecord.orderId}, {tokenId}, {event: 'OrderBid'} ] } },
                 { $sort: {timestamp: -1} },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
             let result_others = await collection.aggregate([ 
-                { $match: { $and: [{sellerAddr: sellerAddr}, {buyerAddr: {$ne: buyerAddr}}, {tokenId : new RegExp(tokenId.toString())}, {event: 'OrderBid'} ] } },
+                { $match: { $and: [{sellerAddr: tokenRecord.holder}, {buyerAddr: {$ne: address}}, {orderId: tokenRecord.orderId}, {tokenId}, {event: 'OrderBid'} ] } },
                 { $sort: {timestamp: -1} },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }

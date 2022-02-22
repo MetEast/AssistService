@@ -55,8 +55,6 @@ module.exports = {
         let isGetForOrderCancelledJobRun = false;
         let isGetForOrderFilledJobRun = false;
         let isGetTokenInfoJobRun = false;
-        let isGetOrderDIDURIJobRun = false;
-        let isGetForPlatformFeeJobRun = false;
         let isGetApprovalRun = false;
         let now = Date.now();
 
@@ -123,28 +121,6 @@ module.exports = {
             }
         }
 
-        async function updateToken(blockNumber,tokenId,to) {
-            try {
-                let result = await meteastContract.methods.tokenInfo(tokenId).call();
-                let token = {blockNumber, tokenIndex: result.tokenIndex, tokenId, quantity: result.tokenSupply,
-                    holder: to, updateTime: result.updateTime}
-
-                if(blockNumber > config.upgradeBlock) {
-                    // let extraInfo = await stickerContract.methods.tokenExtraInfo(tokenId).call();
-                    // token.didUri = extraInfo.didUri;
-                    // if(extraInfo.didUri !== '') {
-                    //     token.did = await jobService.getInfoByIpfsUri(extraInfo.didUri);
-                    //     await meteastDBService.replaceDid({address: result.royaltyOwner, did: token.did});
-                    // }
-                }
-
-                await stickerDBService.updateToken()
-            } catch (e) {
-                logger.info(`[TokenInfo] Sync error at ${blockNumber} ${tokenId}`);
-                logger.info(e);
-            }
-        }
-
         let orderForAuctionJobId = schedule.scheduleJob(new Date(now + 30 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderForAuction');
             isGetOrderForAuctionJobRun = true;
@@ -161,6 +137,7 @@ module.exports = {
                 let orderInfo = event.returnValues;
                 console.log('OrderForAuction event data is ', event)
                 let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
+                console.log('OrderBid orderinfo is ', result)
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
@@ -190,11 +167,12 @@ module.exports = {
                 let orderInfo = event.returnValues;
                 console.log('OrderBid event data is ', event);
                 let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
+                console.log('OrderBid orderinfo is ', result)
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
-                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
-                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: orderInfo._buyer,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: orderInfo._price, timestamp: result.updateTime, gasFee: gasFee}
 
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
@@ -378,34 +356,6 @@ module.exports = {
             })
         });
 
-        let OrderDIDURISyncJobId = schedule.scheduleJob(new Date(now + 20 * 1000), async () => {
-            // let lastHeight = await stickerDBService.getLastOrderDidSyncHeight();
-            // isGetOrderDIDURIJobRun = true;
-            // logger.info(`[OrderDIDURI] Sync Starting ... from block ${lastHeight + 1}`)
-
-            // stickerContractWs.events.OrderDIDURI({
-            //     fromBlock: lastHeight
-            // }).on("error", function (error) {
-            //     logger.info(error);
-            //     logger.info("[OrderDIDURI] Sync Ending ...");
-            //     isGetOrderDIDURIJobRun = false
-            // }).on("data", async function (event) {
-            //     console.log('OrderDIDURI data is as following', event);
-            //     // let from = event.returnValues._from;
-            //     // let to = event.returnValues._to;
-            //     // let tokenId = event.returnValues._id;
-            //     // let value = event.returnValues._value;
-            //     // let blockNumber = event.blockNumber;
-            //     // let txHash = event.transactionHash;
-            //     // let txIndex = event.transactionIndex;
-            //     // let timestamp = (await web3Rpc.eth.getBlock(blockNumber)).timestamp;
-            //     // let gasFee = await stickerDBService.getGasFee(txHash);
-            //     // let transferEvent = {tokenId, blockNumber, timestamp, txHash, txIndex, from, to, value, memo, gasFee: gasFee};
-            //     // logger.info(`[OrderDIDURI] transferToken: ${JSON.stringify(transferEvent)}`)
-            //     // await stickerDBService.addEvent(transferEvent);
-            //     // await stickerDBService.updateToken(tokenId, to, timestamp, blockNumber);
-            // })
-        });
         schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
             let now = Date.now();
 
@@ -427,13 +377,8 @@ module.exports = {
             if(!isGetTokenInfoJobRun) {
                 tokenInfoSyncJobId.reschedule(new Date(now + 60 * 1000))
             }
-            if(!isGetOrderDIDURIJobRun) {
-                OrderDIDURISyncJobId.reschedule(new Date(now + 100 * 1000))
-            }
             if(!isGetApprovalRun)
                 approval.reschedule(new Date(now + 60 * 1000))
-            // if(!isGetForPlatformFeeJobRun)
-            //     orderPlatformFeeId.reschedule(new Date(now + 60 * 1000))
         });
 
         /**
