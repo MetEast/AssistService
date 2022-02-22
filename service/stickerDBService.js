@@ -159,6 +159,10 @@ module.exports = {
                 result[i]['event'] = "ChangeOrderPrice";
             if(result[i]['event'] == 'OrderForSale')
                 result[i]['event'] = "CreateOrderForSale";
+            if(result[i]['event'] == 'OrderBid')
+                result[i]['event'] = "BidOrder";
+            if(result[i]['event'] == 'OrderForAuction')
+                result[i]['event'] = "CreateOrderForAuction";
         }
         return result;
     },
@@ -232,6 +236,20 @@ module.exports = {
                 case 'ChangeOrderPrice':
                     methodCondition_order.push({'event': 'OrderPriceChanged'});
                     methodCondition_token.push({'from': 'OrderPriceChanged'});
+                    if(requestType == 'walletAddr') {
+                        methodCondition_order.push({$or: [{'sellerAddr': data}, {'buyerAddr': data}]});
+                    }
+                    break;
+                case 'CreateOrderForSale':
+                    methodCondition_order.push({'event': 'OrderForAuction'});
+                    methodCondition_token.push({'from': 'OrderForAuction'});
+                    if(requestType == 'walletAddr') {
+                        methodCondition_order.push({$or: [{'sellerAddr': data}, {'buyerAddr': data}]});
+                    }
+                    break;
+                case 'BidOrder':
+                    methodCondition_order.push({'event': 'OrderBid'});
+                    methodCondition_token.push({'from': 'OrderBid'});
                     if(requestType == 'walletAddr') {
                         methodCondition_order.push({$or: [{'sellerAddr': data}, {'buyerAddr': data}]});
                     }
