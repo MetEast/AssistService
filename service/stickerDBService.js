@@ -447,6 +447,40 @@ module.exports = {
         }
     },
 
+    updateOrder: async function(result, blockNumber, orderId) {
+        try {
+            // let result = await meteastContract.methods.getOrderById(orderId).call();
+            let meteastOrder = {orderId: result.orderId, orderType: result.orderType, orderState: result.orderState,
+                tokenId: result.tokenId, amount: result.amount, price:result.price, priceNumber: parseInt(result.price), endTime: result.endTime,
+                sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr, bids: result.bids, lastBidder: result.lastBidder,
+                lastBid: result.lastBid, filled: result.filled, royaltyOwner: result.royaltyOwner, royaltyFee: result.royaltyFee,
+                createTime: result.createTime, updateTime: result.updateTime, blockNumber}
+
+            if(result.orderState === "1" && blockNumber > config.upgradeBlock) {
+                if(result.sellerUri !== '') {
+                    meteastOrder.platformAddr = result.platformAddr;
+                    meteastOrder.platformFee = result.platformFee;
+                    meteastOrder.sellerUri = result.sellerUri;
+                    meteastOrder.sellerDid = await jobService.getInfoByIpfsUri(result.sellerUri);
+
+                    await meteastDBService.replaceDid({address: result.sellerAddr, did: meteastOrder.sellerDid});
+                }
+                if(result.buyerUri !== '') {
+                    meteastOrder.platformAddr = result.platformAddr;
+                    meteastOrder.platformFee = result.platformFee;
+                    meteastOrder.buyerUri = result.buyerUri;
+                    meteastOrder.buyerDid = await jobService.getInfoByIpfsUri(result.buyerUri);
+
+                    await meteastDBService.replaceDid({address: result.buyerAddr, did: meteastOrder.buyerDid});
+                }
+            }
+            await meteastDBService.updateOrInsert(meteastOrder);
+        } catch(error) {
+            console.log(error);
+            console.log(`[OrderForSale] Sync - getOrderById(${orderId}) at ${blockNumber} call error`);
+        }
+    },
+
     updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status) {
         price = parseInt(price);
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
