@@ -1000,7 +1000,7 @@ module.exports = {
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
         category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
-        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime" }
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime"}
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -1018,22 +1018,6 @@ module.exports = {
             ]).toArray();
             result = result[0];
             collection = client.db(config.dbName).collection('meteast_order');
-            if(result.status == 'ON AUCTION') {
-                let orderForAuctionRecord = await collection.find(
-                    {$and: [{tokenId: tokenId}, {sellerAddr: result.holder}]}
-                ).toArray();
-                if(orderForAuctionRecord.length > 0) {
-                    result.endTime = orderForAuctionRecord[0].endTime;
-                }
-                let orderRecord = await collection.find(
-                    { $and: [{tokenId: tokenId}, {sellerAddr: result.holder}, {$or: [{event: 'OrderForAuction'}, {event: 'OrderForSale'}]}] },
-                    { $sort: {blockNumber: -1} }
-                ).toArray();
-                if(orderRecord.length > 0) {
-                    result.orderId = orderRecord[0].orderId;
-                }
-            }
-
             result['holderName'] = ''
             let addressRecord = await address_did_collection.findOne({address: result['holder']});
             console.log(addressRecord);
