@@ -1000,12 +1000,12 @@ module.exports = {
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
         category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
-        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime", authorName: "$token.authorName" }
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime" }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
             let collection = client.db(config.dbName).collection('meteast_token_event');
-
+            let address_did_collection = client.db(config.dbName).collection('meteast_address_did');
             let result = await collection.aggregate([
                 { $match: {$and: [{tokenId: tokenId}, {to: {$ne: config.stickerContract}}] }},
                 { $sort: {tokenId: 1, blockNumber: -1}},
@@ -1031,6 +1031,15 @@ module.exports = {
                 ).toArray();
                 if(orderRecord.length > 0) {
                     result.orderId = orderRecord[0].orderId;
+                }
+            }
+
+            result['holderName'] = ''
+            let addressRecord = await address_did_collection.findOne({address: result['holder']});
+            console.log(addressRecord);
+            if(addressRecord) {
+                if(typeof addressRecord.did == 'object') {
+                    result['holderName'] = addressRecord.did.name;
                 }
             }
             let tokenIds = [];
