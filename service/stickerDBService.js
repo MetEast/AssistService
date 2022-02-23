@@ -1508,21 +1508,20 @@ module.exports = {
                 { $replaceRoot: { "newRoot": "$data" } },
                 { $lookup: {from: 'meteast_token', localField: 'tokenId', foreignField: 'tokenId', as: 'token'} },
                 { $unwind: "$token" },
-                { $project: {Badge: 1, Earned: 1, updateTime: 1, tokenId: 1, name: "$token.name"} },
+                { $project: {Badge: 1, Earned: 1, updateTime: 1, tokenId: 1, name: "$token.name", thumbnail: "$token.thumbnail"} },
             ]).toArray();
-            console.log(result);
             let data = [];
             if(result.length > 0) {
                 const temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
                 for(var i = 0; i < result.length; i++) {
                     result[i].iEarned = parseInt(result[i].Earned);
                 }
-                console.log(result, 'ddd')
                 await temp_collection.insertMany(result);
                 data = await temp_collection.aggregate([
-                    { $group: { "_id"  : { Badge: "$Badge", tokenId: "$tokenId", name: "$name"}, "iEarned": {$sum: "$iEarned"}} },
-                    { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", name: "$_id.name", iEarned: 1} },
+                    { $group: { "_id"  : { Badge: "$Badge", tokenId: "$tokenId", name: "$name", thumbnail: "$thumbnail"}, "iEarned": {$sum: "$iEarned"}} },
+                    { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", name: "$_id.name", iEarned: 1, thumbnail: "$_id.thumbnail"} },
                 ]).toArray();
+                await collection.drop();
             }
             return {code: 200, message: 'success', data: data};
         } catch(err) {
