@@ -488,13 +488,16 @@ module.exports = {
         }
     },
 
-    updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status) {
+    updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status, holder, blockNumber) {
         price = parseInt(price);
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId}, {$set: {status, price, orderId, marketTime, endTime}});
+            await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {status, price, orderId, marketTime, endTime, blockNumber}});
+            if(holder != config.stickerContract && holder != null) {
+                await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {holder}});
+            }
         } catch (err) {
             logger.error(err);
             throw new Error();
