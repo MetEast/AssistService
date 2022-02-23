@@ -672,8 +672,8 @@ router.get('/listMarketTokens', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
