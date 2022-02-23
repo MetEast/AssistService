@@ -144,9 +144,7 @@ module.exports = {
                     result[i]['event'] = 'Burn';
                 }
                 if(result[i]['from'] != config.burnAddress && result[i]['to'] != config.burnAddress) {
-                    if(result[i]['memo'] == undefined || result[i]['memo'] == '')
-                        result[i]['event'] = 'SafeTransferFrom';
-                    else result[i]['event'] = 'SafeTransferFromWithMemo';
+                    result[i]['event'] = 'Transfer';
                 }
             }
             if(result[i]['event'] == 'OrderFilled') {
@@ -185,7 +183,7 @@ module.exports = {
                     }
                     methodCondition_order.push({'event': 'notSetYet'});
                     break;
-                case 'SafeTransferFrom':
+                case 'Transfer':
                     if(requestType == "walletAddr") {
                         methodCondition_token.push({$or: [{'from': data}, {'to': data}]});
                     }
@@ -194,17 +192,6 @@ module.exports = {
                         methodCondition_token.push({'to': {$ne: config.burnAddress}});
                     }
                     methodCondition_order.push({'event': 'notSetYet'});
-                    break;
-                case 'SafeTransferFromWithMemo':
-                    if(requestType == "walletAddr") {
-                        methodCondition_token.push({$or: [{'from': data}, {'to': data}]});
-                    }
-                    else {
-                        methodCondition_token.push({'from': {$ne: config.burnAddress}});
-                        methodCondition_token.push({'to': {$ne: config.burnAddress}});
-                    }
-                    methodCondition_order.push({'event': 'notSetYet'});
-                    methodCondition_token.push({'memo': {$ne: ''}});
                     break;
                 case 'Burn':
                     methodCondition_token.push({'to': config.burnAddress});
@@ -1518,10 +1505,10 @@ module.exports = {
                 }
                 await temp_collection.insertMany(result);
                 data = await temp_collection.aggregate([
-                    { $group: { "_id"  : { Badge: "$Badge", tokenId: "$tokenId", name: "$name", thumbnail: "$thumbnail"}, "iEarned": {$sum: "$iEarned"}} },
-                    { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", name: "$_id.name", iEarned: 1, thumbnail: "$_id.thumbnail"} },
+                    { $group: { "_id"  : { Badge: "$Badge", updateTime: "$updateTime", tokenId: "$tokenId", name: "$name", thumbnail: "$thumbnail"}, "iEarned": {$sum: "$iEarned"}} },
+                    { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", updateTime: "$_id.updateTime", name: "$_id.name", iEarned: 1, thumbnail: "$_id.thumbnail"} },
                 ]).toArray();
-                await collection.drop();
+                await temp_collection.drop();
             }
             return {code: 200, message: 'success', data: data};
         } catch(err) {
