@@ -99,20 +99,21 @@ module.exports = {
         }
     },
     getLatestElaPrice: async function () {
-        let latest_price_api_url = config.elastos_latest_price_api_url;
         let latest_price;
+        let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
-            const response = await fetch(latest_price_api_url);
-            if (!response.ok) {
-                throw new Error(response.statusText);
+            await client.connect();
+            const collection = client.db(config.dbName).collection('meteast_cmc_price');
+            let result = await collection.find({}).sort({timestamp : -1}).limit(1).toArray();
+            if(result.length > 0) {
+                latest_price = result[0]['ELA'];
             }
-            let data = await response.json();console.log(data,'fdsfdsfds');
-            latest_price = data.result.coin_usd;console.log(latest_price)
-        } catch (err) {
-            logger.error(err);console.log('errorrdrewr');
-            latest_price = 0;
-        } finally {
             return {code: 200, message: 'success', data: latest_price};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await client.close();
         }
     },
     getTimestamp: async function(txHash) {

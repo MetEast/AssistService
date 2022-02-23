@@ -322,7 +322,6 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_cmc_price');
             await collection.insertOne(record);
-            redisService.clearKey('price');
         } catch (err) {
             logger.error(err);
         } finally {
