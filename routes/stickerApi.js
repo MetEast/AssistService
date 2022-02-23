@@ -763,7 +763,7 @@ router.get('/getAllCollectibleByAddress', function(req, res) {
         return;
     }
 
-    stickerDBService.getOwnCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getAllCollectibleByAddress(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
