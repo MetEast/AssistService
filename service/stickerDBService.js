@@ -1467,6 +1467,71 @@ module.exports = {
         }
     },
 
+    getEarnedListByAddress: async function(address) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try  {
+            await mongoClient.connect();
+            let collection = mongoClient.db(config.dbName).collection('meteast_order');
+            let result = await collection.aggregate([
+                { $facet: {
+                  "collection1": [
+                    { $lookup: {
+                      from: "meteast_order",
+                      pipeline: [
+                        { $match: {$and: [{sellerAddr: address}, {orderState: '2'}]} },
+                        { $project: {'_id': 0, Badge: 'Badge', Earned: "$price", updateTime: 1, tokenId: 1} },
+                      ],
+                      "as": "collection1"
+                    }}
+                  ],
+                  "collection2": [
+                    { $lookup: {
+                        from: "meteast_order",
+                        pipeline: [
+                          { $match: {$and: [{royaltyOwner: address}, {orderState: '2'}]} },
+                          { $project: {'_id': 0, Badge: 'Royalties', Earned: "$royaltyFee", updateTime: 1, tokenId: 1} },
+                        ],
+                        "as": "collection2"
+                      }}
+                    ],
+                }},
+                { $project: {
+                  data: {
+                    $concatArrays: [
+                      { "$arrayElemAt": ["$collection1.collection1", 0] },
+                      { "$arrayElemAt": ["$collection2.collection2", 0] },
+                    ]
+                  }
+                }},
+                { $unwind: "$data" },
+                { $replaceRoot: { "newRoot": "$data" } },
+                { $lookup: {from: 'meteast_token', localField: 'tokenId', foreignField: 'tokenId', as: 'token'} },
+                { $unwind: "$token" },
+                { $project: {Badge: 1, Earned: 1, updateTime: 1, tokenId: 1, name: "$token.name"} },
+            ]).toArray();
+            console.log(result);
+            let data = [];
+            if(result.length > 0) {
+                const temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
+                for(var i = 0; i < result.length; i++) {
+                    result[i].iEarned = parseInt(result[i].Earned);
+                }
+                console.log(result, 'ddd')
+                await temp_collection.insertMany(result);
+                data = await temp_collection.aggregate([
+                    { $group: { "_id"  : { Badge: "$Badge", tokenId: "$tokenId", name: "$name"}, "iEarned": {$sum: "$iEarned"}} },
+                    { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", name: "$_id.name", iEarned: 1} },
+                ]).toArray();
+            }
+            return {code: 200, message: 'success', data: data};
+        } catch(err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
     getSelfCreateNotSoldCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
 
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));

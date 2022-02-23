@@ -406,6 +406,17 @@ router.get('/getTodayEarnedByWalletAddress', function(req, res) {
     })
 });
 
+router.get('/getEarnedListByAddress', function(req, res) {
+    let address = req.query.address;
+    address = address ? address: '';
+    stickerDBService.getEarnedListByAddress(address.toString()).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+})
+
 router.get('/getSelfCreateNotSoldCollectible', function(req, res) {
     let selfAddr = req.query.selfAddr;
     let pageNumStr = req.query.pageNum;
