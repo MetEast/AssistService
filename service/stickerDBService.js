@@ -2038,7 +2038,7 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        condition.push({$or: [{holder: selfAddr}, {royaltyOwner: sellerAddr}]});
+        condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
