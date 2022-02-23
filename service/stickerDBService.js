@@ -445,7 +445,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId}, {$set: {holder, blockNumber, updateTime: timestamp, status: 'NEW'}});
+            await collection.updateOne({tokenId}, {$set: {holder, blockNumber, updateTime: timestamp}});
         } catch (err) {
             logger.error(err);
             throw new Error();
