@@ -769,4 +769,26 @@ router.get('/getAllCollectibleByAddress', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 });
+
+router.get('/getOwnCollectiblesByPrice', function(req, res) {
+    let address = req.query.address;
+    let price = req.query.price;
+    let pageNum, pageSize;
+    try {
+        price = price ? parseInt(price) : 0;
+        if(pageNum < 1 || pageSize < 1) {
+            res.json({code: 400, message: 'bad request'})
+            return;
+        }
+    }catch (e) {
+        console.log(e);
+        res.json({code: 400, message: 'bad request'});
+        return;
+    }
+    stickerDBService.getOwnCollectiblesByPrice(address, price).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+});
 module.exports = router;
