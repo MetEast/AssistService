@@ -1418,11 +1418,13 @@ module.exports = {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}]} },
-                { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
-                { $project: {_id: 0, royaltyOwner : "$_id.royaltyOwner", profit: 1} },
+                { $match: {$and: [{sellerAddr: address}, {orderState: '2'}]} },
+                { $project: {_id: 0, price : 1} },
             ]).toArray();
-            let profit = result.length > 0 ? result[0].profit: 0
+            let profit = 0;
+            for(var i = 0; i < result.length; i++) {
+                profit += (parseInt(result[i]) / (10 ** 18));
+            }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
@@ -1444,11 +1446,13 @@ module.exports = {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
-                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
-                { $group: { "_id"  : { royaltyOwner: "$royaltyOwner"}, "profit": {$sum: "$royaltyFee"}} },
-                { $project: {_id: 0, royaltyOwner : "$_id.royaltyOwner", profit: 1} },
+                { $match: {$and: [{sellerAddr: address}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
+                { $project: {_id: 0, price: 1} },
             ]).toArray();
-            let profit = result.length > 0 ? result[0].profit: 0
+            let profit = 0;
+            for(var i = 0; i < result.length; i++) {
+                profit += (parseInt(result[i]) / (10 ** 18));
+            }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
