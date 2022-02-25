@@ -11,7 +11,7 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             let doc = await collection.findOne({event}, {sort:{blockNumber:-1}})
             if(doc) {
-                return doc.blockNumber
+                return doc.blockNumber + 1
             } else {
                 return config.meteastContractDeploy;
             }

@@ -17,7 +17,7 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_token_event');
             let doc = await collection.findOne({}, {sort:{blockNumber: -1}});
             if(doc) {
-                return doc.blockNumber
+                return doc.blockNumber + 1
             } else {
                 return config.stickerContractDeploy;
             }
@@ -589,7 +589,7 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_approval_event');
             let doc = await collection.findOne({}, {sort:{blockNumber: -1}});
             if(doc) {
-                return doc.blockNumber
+                return doc.blockNumber + 1
             } else {
                 return config.meteastContractDeploy;
             }
@@ -608,7 +608,7 @@ module.exports = {
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             let doc = await collection.findOne({}, {sort:{blockNumber: -1}});
             if(doc) {
-                return doc.blockNumber
+                return doc.blockNumber + 1
             } else {
                 return config.stickerContractDeploy;
             }
@@ -1498,7 +1498,7 @@ module.exports = {
                     { $lookup: {
                         from: "meteast_order",
                         pipeline: [
-                          { $match: {$and: [{royaltyOwner: address}, {orderState: '2'}]} },
+                          { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}]} },
                           { $project: {'_id': 0, Badge: 'Royalties', Earned: "$royaltyFee", updateTime: 1, tokenId: 1} },
                         ],
                         "as": "collection2"

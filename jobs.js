@@ -307,7 +307,7 @@ module.exports = {
         let approval  = schedule.scheduleJob(new Date(now + 90 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
             isGetApprovalRun = true;
-            logger.info(`[approval] Sync Starting ... from block ${lastHeight + 1}`)
+            logger.info(`[approval] Sync Starting ... from block ${lastHeight}`)
             meteastContractWs.events.ApprovalForAll({
                 fromBlock: lastHeight
             }).on("error", function(error) {
@@ -323,7 +323,7 @@ module.exports = {
         let tokenInfoSyncJobId = schedule.scheduleJob(new Date(now + 10 * 1000), async () => {
             let lastHeight = await stickerDBService.getLastStickerSyncHeight();
             isGetTokenInfoJobRun = true;
-            logger.info(`[TokenInfo] Sync Starting ... from block ${lastHeight + 1}`)
+            logger.info(`[TokenInfo] Sync Starting ... from block ${lastHeight}`)
 
             meteastContractWs.events.Transfer({
                 fromBlock: lastHeight
