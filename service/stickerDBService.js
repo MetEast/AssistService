@@ -1423,7 +1423,7 @@ module.exports = {
             ]).toArray();
             let profit = 0;
             for(var i = 0; i < result.length; i++) {
-                profit += (parseInt(result[i]) / (10 ** 18));
+                profit += (parseInt(result[i]['price']) / (10 ** 18));
             }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
@@ -1450,8 +1450,9 @@ module.exports = {
                 { $project: {_id: 0, price: 1} },
             ]).toArray();
             let profit = 0;
+            
             for(var i = 0; i < result.length; i++) {
-                profit += (parseInt(result[i]) / (10 ** 18));
+                profit += (parseInt(result[i]['price']) / (10 ** 18));
             }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
