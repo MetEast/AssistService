@@ -2105,6 +2105,14 @@ module.exports = {
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'checkBlindTokenIds' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            result = data.data;
             return { code: 200, message: 'success', data: {result} };
         } catch (err) {
             logger.err(error);
