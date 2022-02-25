@@ -1425,6 +1425,13 @@ module.exports = {
             for(var i = 0; i < result.length; i++) {
                 profit += (parseInt(result[i]['price']) / (10 ** 18));
             }
+            result = await collection.aggregate([
+                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}]} },
+                { $project: {_id: 0, royaltyFee: 1} },
+            ]).toArray();
+            for(var i = 0; i < result.length; i++) {
+                profit += (parseInt(result[i]['royaltyFee']) / (10 ** 18));
+            }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
             logger.error(err);
@@ -1453,6 +1460,13 @@ module.exports = {
             
             for(var i = 0; i < result.length; i++) {
                 profit += (parseInt(result[i]['price']) / (10 ** 18));
+            }
+            result = await collection.aggregate([
+                { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
+                { $project: {_id: 0, royaltyFee: 1} },
+            ]).toArray();
+            for(var i = 0; i < result.length; i++) {
+                profit += (parseInt(result[i]['royaltyFee']) / (10 ** 18));
             }
             return {code: 200, message: 'success', data: profit};
         } catch (err) {
