@@ -2127,7 +2127,7 @@ module.exports = {
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
             }
-            result = data.data;
+            result = await collection.find({tokenId: {$in: data.data}}).toArray();
             return { code: 200, message: 'success', data: {result} };
         } catch (err) {
             logger.err(error);
