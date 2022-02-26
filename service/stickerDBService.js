@@ -2104,10 +2104,11 @@ module.exports = {
         }
     },
 
-    getOwnCollectiblesByPrice: async function (address, price) {
+    getBlindboxCandidate: async function (address, keyword) {
         let condition  = [];
         condition.push({holder: address});
         condition.push({status: 'NEW'});
+        condition.push({name: new RegExp(keyword.toString())});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
