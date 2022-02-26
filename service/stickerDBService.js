@@ -488,13 +488,15 @@ module.exports = {
         }
     },
 
-    updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status, holder, blockNumber) {
+    updateTokenStatus: async function (tokenId, price, orderId, marketTime, endTime, status, holder, blockNumber, isBlindbox) {
         price = parseInt(price);
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {status, price, orderId, marketTime, endTime, blockNumber}});
+            if(isBlindbox != null)
+                await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {isBlindbox}});
             if(holder != config.stickerContract && holder != null) {
                 await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {holder}});
             }
@@ -2119,21 +2121,6 @@ module.exports = {
                 { $match: {$and: condition} }
             ]).toArray();
             return { code: 200, message: 'success', data: {result} };
-        } catch (err) {
-            logger.error(err);
-            return {code: 500, message: 'server error'};
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
-    updateTokenIsBlindbox: async function (tokenIds, isBlindbox) {
-        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateMany({tokenId: {$in: tokenIds}}, {isBlindbox});
-            return { code: 200, message: 'success'};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
