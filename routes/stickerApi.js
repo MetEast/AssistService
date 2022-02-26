@@ -781,7 +781,7 @@ router.get('/getBlindboxCandidate', function(req, res) {
 });
 
 router.post('/updateBlinxboxIds', function(req, res) {
-    let tokenIds = req.query.tokenIds;
+    let tokenIds = req.body.tokenIds;
     tokenIds = tokenIds.split(';');
     stickerDBService.updateTokenIsBlindbox(tokenIds, true).then(result => {
         res.json(result);
