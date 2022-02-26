@@ -113,6 +113,7 @@ module.exports = {
                 token.endTime = null;
                 token.orderId = null;
                 token.status = 'NEW';
+                token.isBlindbox = false;
                 logger.info(`[TokenInfo] New token info: ${JSON.stringify(token)}`)
                 await stickerDBService.replaceToken(token);
             } catch (e) {
@@ -265,6 +266,7 @@ module.exports = {
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber);
+                await stickerDBService.updateTokenIsBlindbox([result.tokenId], false);
 
                 // here is a part for platformfee collection
                 orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,

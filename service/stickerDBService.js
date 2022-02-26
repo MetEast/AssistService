@@ -1044,7 +1044,7 @@ module.exports = {
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
         category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
-        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime"}
+        status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime", isBlindbox: "$token.isBlindbox"}
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -1945,6 +1945,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         console.log(condition);
         condition.push({status: {$ne: 'NEW'}});
+        condition.push({isBlindbox: false});
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -2109,6 +2110,7 @@ module.exports = {
         condition.push({holder: address});
         condition.push({status: 'NEW'});
         condition.push({name: new RegExp(keyword.toString())});
+        condition.push({isBlindbox: false});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2116,18 +2118,21 @@ module.exports = {
             let result = await collection.aggregate([
                 { $match: {$and: condition} }
             ]).toArray();
-            let tokenIds = [];
-            result.forEach(ele => {
-                tokenIds.push(ele.tokenId);
-            });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'checkBlindTokenIds' + '?tokenIds=' + tokenIds.join(',')
-            );
-            const data = await response.json();
-            if(data.code != 200) {
-                return {code: 500, message: 'centralized app invalid response'}
-            }
-            result = await collection.find({tokenId: {$in: data.data}}).toArray();
+            return { code: 200, message: 'success', data: {result} };
+        } catch (err) {
+            logger.err(error);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+    updateTokenIsBlindbox: async function (tokenIds, isBlindbox) {
+        let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            await collection.updateOne({tokenId: {$in: tokenIds}}, {isBlindbox});
             return { code: 200, message: 'success', data: {result} };
         } catch (err) {
             logger.err(error);

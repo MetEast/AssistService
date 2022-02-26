@@ -779,4 +779,14 @@ router.get('/getBlindboxCandidate', function(req, res) {
         res.json({code: 500, message: 'server error'});
     })
 });
+
+router.post('/updateBlinxboxIds', function(req, res) {
+    let tokenIds = req.query.tokenIds;
+    tokenIds = tokenIds.split(';');
+    stickerDBService.updateTokenIsBlindbox(tokenIds, true).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+});
 module.exports = router;
