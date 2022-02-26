@@ -2107,17 +2107,12 @@ module.exports = {
     getOwnCollectiblesByPrice: async function (address, price) {
         let condition  = [];
         condition.push({holder: address});
-        condition.push({priceCalculated: price});
+        condition.push({status: 'NEW'});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             let result = await collection.aggregate([
-                {
-                    $addFields: {
-                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
-                    }
-                },
                 { $match: {$and: condition} }
             ]).toArray();
             let tokenIds = [];
