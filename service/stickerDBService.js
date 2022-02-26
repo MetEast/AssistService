@@ -1653,7 +1653,7 @@ module.exports = {
             }
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -1708,7 +1708,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {condition, total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -1762,7 +1762,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -1827,7 +1827,7 @@ module.exports = {
             }
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -1880,7 +1880,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -1930,7 +1930,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -2045,7 +2045,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -2098,7 +2098,7 @@ module.exports = {
                 await temp_collection.drop();
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -2120,7 +2120,7 @@ module.exports = {
             ]).toArray();
             return { code: 200, message: 'success', data: {result} };
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
@@ -2132,10 +2132,10 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId: {$in: tokenIds}}, {isBlindbox});
-            return { code: 200, message: 'success', data: {result} };
+            await collection.updateMany({tokenId: {$in: tokenIds}}, {isBlindbox});
+            return { code: 200, message: 'success'};
         } catch (err) {
-            logger.err(error);
+            logger.error(err);
             return {code: 500, message: 'server error'};
         } finally {
             await mongoClient.close();
