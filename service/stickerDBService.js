@@ -265,10 +265,10 @@ module.exports = {
         switch(orderType)
         {
             case 'price_l_to_h':
-                sort = {price: -1};
+                sort = {price: 1};
                 break;
             case 'price_h_to_l':
-                sort = {price: 1};
+                sort = {price: -1};
                 break;
             case 'mostviewed':
                 sort = {views: -1};
