@@ -1663,7 +1663,7 @@ module.exports = {
     },
     
     getForSaleCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
-
+        
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
@@ -1708,7 +1708,7 @@ module.exports = {
             result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
             if(total > 0)
                 await temp_collection.drop();
-            return { code: 200, message: 'success', data: {condition, total, result} };
+            return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
