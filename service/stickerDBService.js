@@ -981,6 +981,7 @@ module.exports = {
         let methodCondition = this.composeMethodCondition(method, "tokenId", tokenId);
         let methodCondition_order = methodCondition['order'];
         let methodCondition_token = methodCondition['token'];
+
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token_event');
@@ -1009,7 +1010,7 @@ module.exports = {
                         { $match : {$and: [{tokenId : tokenId.toString()}, methodCondition_token]} }],
                       "as": "collection2"
                     }}
-                  ]
+                  ],
                 }},
                 { $project: {
                   data: {
@@ -1029,6 +1030,25 @@ module.exports = {
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
+            
+            const collection_address_did = mongoClient.db(config.dbName).collection('meteast_address_did');
+            let result_address = await collection_address_did.aggregate([
+                { 
+                    $project: {
+                        '_id': 0,
+                        'address': 1,
+                        'name': "$did.name",
+                        'did': "$did.did",
+                    }
+                },
+            ]).toArray();
+            
+            for(var i = 0; i < result.length; i++) {
+                let listFromAddress = result_address.filter(cell=>cell.address == result[i]['from']);
+                result[i]['fromName'] = listFromAddress[0] && listFromAddress[0]['name'] ? listFromAddress[0]['name'] : '';
+                let listToAddress = result_address.filter(cell=>cell.address == result[i]['to']);
+                result[i]['toName'] = listToAddress[0] && listToAddress[0]['name'] ? listToAddress[0]['name'] : '';
+            }
             result = this.verifyEvents(result);
             return {code: 200, message: 'success', data: result};
         } catch (err) {
@@ -1344,6 +1364,19 @@ module.exports = {
             await mongoClient.connect();
             const token_collection = mongoClient.db(config.dbName).collection('meteast_token');
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
+            const collection_address_did = mongoClient.db(config.dbName).collection('meteast_address_did');
+
+            let result_address = await collection_address_did.aggregate([
+                { 
+                    $project: {
+                        '_id': 0,
+                        'address': 1,
+                        'name': "$did.name",
+                        'did': "$did.did",
+                    }
+                },
+            ]).toArray();
+
             let tokenRecord = await token_collection.findOne({tokenId});
             if(!tokenRecord) {
                 return {code: 500, message: 'collectible not found'};
@@ -1357,12 +1390,24 @@ module.exports = {
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
+            for(var i = 0; i < result_mine.length; i++) {
+                let buyerName = result_address.filter(cell => cell.address == result_mine[i]['buyerAddr']);
+                result_mine[i]['buyerName'] = buyerName[0] && buyerName[0]['name'] ? buyerName[0]['name'] : ''; 
+                let sellerName = result_address.filter(cell => cell.address == result_mine[i]['sellerAddr']);
+                result_mine[i]['sellerName'] = sellerName[0] && sellerName[0]['name'] ? sellerName[0]['name'] : ''; 
+            }
             let result_others = await collection.aggregate([ 
                 { $match: { $and: [{sellerAddr: tokenRecord.holder}, {buyerAddr: {$ne: address}}, {orderId: tokenRecord.orderId}, {tokenId}, {event: 'OrderBid'} ] } },
                 { $sort: {timestamp: -1} },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
+            for(var i = 0; i < result_others.length; i++) {
+                let buyerName = result_address.filter(cell => cell.address == result_others[i]['buyerAddr']);
+                result_others[i]['buyerName'] = buyerName[0] && buyerName[0]['name'] ? buyerName[0]['name'] : ''; 
+                let sellerName = result_address.filter(cell => cell.address == result_others[i]['sellerAddr']);
+                result_others[i]['sellerName'] = sellerName[0] && sellerName[0]['name'] ? sellerName[0]['name'] : ''; 
+            }
             return { code: 200, message: 'success', data: {yours: result_mine, others: result_others} };
         } catch (err) {
             logger.error(err)
