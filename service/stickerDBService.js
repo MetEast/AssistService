@@ -291,12 +291,7 @@ module.exports = {
 
     composeCondition: function(keyword, filter_status, filter_min_price, filter_max_price) {
         let condition = [];
-
-        console.log(keyword);
-        console.log(filter_status);
-        console.log(filter_min_price);
-        console.log(filter_max_price);
-        console.log(new RegExp(''));
+        
         let filter_status_arr = filter_status.split(',');
         let or_condition = [];
         filter_status_arr.forEach(ele => {
