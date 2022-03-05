@@ -291,7 +291,12 @@ module.exports = {
 
     composeCondition: function(keyword, filter_status, filter_min_price, filter_max_price) {
         let condition = [];
-        
+
+        console.log(keyword);
+        console.log(filter_status);
+        console.log(filter_min_price);
+        console.log(filter_max_price);
+        console.log(new RegExp(''));
         let filter_status_arr = filter_status.split(',');
         let or_condition = [];
         filter_status_arr.forEach(ele => {
@@ -1708,7 +1713,6 @@ module.exports = {
     },
     
     getForSaleCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
-        
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
@@ -1728,7 +1732,7 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
-            console.log(result)
+            
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
@@ -1821,7 +1825,7 @@ module.exports = {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
-        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);    
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
 
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
         try {
@@ -1848,7 +1852,7 @@ module.exports = {
             let result = [];
             for(var i = 0; i < sold_collectibles.length; i++) {
                 let ele = sold_collectibles[i];
-                let temp_condition = condition;
+                var temp_condition = [...condition];
                 temp_condition.push({tokenId: ele.tokenId});
                 let record = await collection_token.aggregate([
                     {
