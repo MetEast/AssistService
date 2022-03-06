@@ -2172,4 +2172,20 @@ module.exports = {
             await mongoClient.close();
         }
     },
+
+    getTokenByTokenId: async function (tokenId) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            result = await collection.findOne({tokenId: tokenId});
+            return {code: 200, message: 'success', data: result};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
 }
