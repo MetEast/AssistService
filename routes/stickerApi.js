@@ -791,11 +791,11 @@ router.get('/getTokenByTokenId', function(req, res) {
 });
 
 router.post('/updateAuthorOfToken', function(req, res) {
-    let did = req.query.did;
-    let name = req.query.name;
-    let description = req.query.description;
-
-    stickerDBService.getTokenByTokenId(did, name, description).then(result => {
+    let did = req.body.did;
+    let name = req.body.name;
+    let description = req.body.description;
+    
+    stickerDBService.updateAuthorOfToken(did, name, description).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);

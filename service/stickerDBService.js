@@ -1042,7 +1042,7 @@ module.exports = {
                     }
                 },
             ]).toArray();
-            
+
             for(var i = 0; i < result.length; i++) {
                 let listFromAddress = result_address.filter(cell=>cell.address == result[i]['from']);
                 result[i]['fromName'] = listFromAddress[0] && listFromAddress[0]['name'] ? listFromAddress[0]['name'] : '';
@@ -2211,6 +2211,7 @@ module.exports = {
                 isUpdate = true;
                 updateInfo.authorDescription = description;
             }
+            
             if(isUpdate) {
                 await collection.updateMany({authorDid: did}, updateInfo);
             }
