@@ -2213,7 +2213,7 @@ module.exports = {
             }
             
             if(isUpdate) {
-                await collection.updateMany({authorDid: did}, updateInfo);
+                await collection.updateMany({authorDid: did}, {$set: updateInfo});
             }
             return {code: 200, message: 'success'};
         } catch (err) {
