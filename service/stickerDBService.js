@@ -2188,4 +2188,30 @@ module.exports = {
         }
     },
 
+    updateAuthorOfToken: async function (did, name, description) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            let isUpdate = false;
+            let updateInfo = {};
+            if(name != '') {
+                isUpdate = true;
+                updateInfo.authorName = name;
+            }
+            if(description != '') {
+                isUpdate = true;
+                updateInfo.authorDescription = description;
+            }
+            if(isUpdate) {
+                await collection.updateMany({authorDid: did}, updateInfo);
+            }
+            return {code: 200, message: 'success'};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }
