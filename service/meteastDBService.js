@@ -342,17 +342,4 @@ module.exports = {
         }
     },
     
-    getAddressByDid: async function (did) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
-            let result = await collection.findOne({ "did.did": did });
-            return {code: 200, message: 'success', data: result};
-        } catch (err) {
-            logger.error(err);
-        } finally {
-            await mongoClient.close();
-        }
-    }
 }

@@ -134,14 +134,4 @@ router.get('/getDidByAddress', function(req, res) {
     })
 })
 
-router.get('/getAddressByDid', function(req, res) {
-    let did = req.query.did;
-    meteastDBService.getAddressByDid(did).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-})
-
 module.exports = router;
