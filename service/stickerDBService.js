@@ -1049,8 +1049,16 @@ module.exports = {
                 let listToAddress = result_address.filter(cell=>cell.address == result[i]['to']);
                 result[i]['toName'] = listToAddress[0] && listToAddress[0]['name'] ? listToAddress[0]['name'] : '';
             }
+            
             result = this.verifyEvents(result);
-            return {code: 200, message: 'success', data: result};
+
+            let backResult = [];
+            for(var i = 0; i < result.length; i++) {
+                if(result[i]['event'] != "Transfer") {
+                    backResult.push(result[i]);
+                }
+            }
+            return {code: 200, message: 'success', data: backResult};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
