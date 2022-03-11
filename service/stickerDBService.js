@@ -1008,7 +1008,7 @@ module.exports = {
                       pipeline: [
                         { $project: {'_id': 0, event: "notSetYet", tHash: "$txHash", from: 1, to: 1, gasFee: 1, 
                             timestamp: 1, memo: 1, tokenId: 1, blockNumber: 1, royaltyFee: "0"} },
-                        { $match : {$and: [{tokenId : tokenId.toString()}, methodCondition_token]} }],
+                        { $match : {$and: [{tokenId : tokenId.toString()}, {$or: [{from: config.burnAddress}, {to: config.burnAddress}]}, methodCondition_token]} }],
                       "as": "collection2"
                     }}
                   ],
@@ -1028,8 +1028,8 @@ module.exports = {
                 { $project: {event: 1, tHash: 1, from: 1, to: 1, timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, data: 1, name: "$token.name"
                 , royalties: "$token.royalties", asset: "$token.asset", royaltyFee: 1, royaltyOwner: "$token.royaltyOwner", orderId: 1, gasFee: 1} },
                 { $sort: sort },
+                { $limit: pageSize },
                 { $skip: (pageNum - 1) * pageSize },
-                { $limit: pageSize }
             ]).toArray();
             
             const collection_address_did = mongoClient.db(config.dbName).collection('meteast_address_did');
@@ -1050,16 +1050,10 @@ module.exports = {
                 let listToAddress = result_address.filter(cell=>cell.address == result[i]['to']);
                 result[i]['toName'] = listToAddress[0] && listToAddress[0]['name'] ? listToAddress[0]['name'] : '';
             }
-            
+
             result = this.verifyEvents(result);
 
-            let backResult = [];
-            for(var i = 0; i < result.length; i++) {
-                if(result[i]['event'] != "Transfer") {
-                    backResult.push(result[i]);
-                }
-            }
-            return {code: 200, message: 'success', data: backResult};
+            return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};

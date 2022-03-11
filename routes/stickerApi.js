@@ -234,6 +234,7 @@ router.get('/getTranDetailsByTokenId', function(req, res) {
         res.json({code: 400, message: 'bad request'});
         return;
     }
+    
     stickerDBService.getTranDetailsByTokenId(tokenId, method, orderType, pageNum, pageSize).then(result => {
       res.json(result);
     }).catch(error => {
