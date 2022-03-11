@@ -1073,7 +1073,7 @@ module.exports = {
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
         thumbnail: "$token.thumbnail", asset: "$token.asset", size: "$token.size", tokenDid: "$token.did",
-        category: "$token.category", authorName: "$token.authorName", authorDescription: "$token.authorDescription", 
+        category: "$token.category", authorName: "$token.authorName", authorDid: "$token.authorDid", authorDescription: "$token.authorDescription", 
         status: "$token.status", price: "$token.price", orderId: "$token.orderId", endTime: "$token.endTime", isBlindbox: "$token.isBlindbox"}
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -1102,15 +1102,23 @@ module.exports = {
             }
             let tokenIds = [];
             tokenIds.push(result.tokenId);
-            const response = await fetch(
+            let response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
-            const data = await response.json();
+            let data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
             }
             let tokenPopularity = data.data;
+
+            response = await fetch(config.centralAppUrl + '/api/v1/' + 'getUserProfile' + '?did=' + result['authorDid']);
+            data = await response.json();
             
+            if(data.code == 200 && data.data && data.data.avatar) {
+                result['authorAvatar'] = data.data.avatar;
+            } else {
+                result['authorAvatar'] = null;
+            }
             result['views'] = tokenPopularity[tokenId]? tokenPopularity[tokenId].views: 0;
             result['likes'] = tokenPopularity[tokenId]? tokenPopularity[tokenId].likes: 0;
             return {code: 200, message: 'success', data: result};
@@ -2187,6 +2195,15 @@ module.exports = {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_token');
             result = await collection.findOne({tokenId: tokenId});
+
+            const response = await fetch(config.centralAppUrl + '/api/v1/' + 'getUserProfile' + '?did=' + result['authorDid']);
+            const data = await response.json();
+            
+            if(data.code == 200 && data.data && data.data.avatar) {
+                result['authorAvatar'] = data.data.avatar;
+            } else {
+                result['authorAvatar'] = null;
+            }
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
