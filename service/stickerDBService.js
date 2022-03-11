@@ -277,13 +277,13 @@ module.exports = {
                 sort = {likes: -1};
                 break;
             case 'mostrecent':
-                sort = {createTime: -1};
+                sort = {createTime: -1, timestamp: -1};
                 break;
             case 'oldest':
-                sort = {createTime: 1};
+                sort = {createTime: 1, timestamp: 1};
                 break;
             default:
-                sort = {createTime: -1};
+                sort = {createTime: -1, timestamp: -1};
                 break;
         }
         return sort;
@@ -976,12 +976,13 @@ module.exports = {
         }
     },
 
-    getTranDetailsByTokenId: async function(tokenId, method, timeOrder, pageNum, pageSize) {
+    getTranDetailsByTokenId: async function(tokenId, method, orderType, pageNum, pageSize) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         let methodCondition = this.composeMethodCondition(method, "tokenId", tokenId);
         let methodCondition_order = methodCondition['order'];
         let methodCondition_token = methodCondition['token'];
-
+        let sort = this.composeSort(orderType);
+        
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token_event');
@@ -1026,7 +1027,7 @@ module.exports = {
                 { $unwind: "$token" },
                 { $project: {event: 1, tHash: 1, from: 1, to: 1, timestamp: 1, price: 1, tokenId: 1, blockNumber: 1, data: 1, name: "$token.name"
                 , royalties: "$token.royalties", asset: "$token.asset", royaltyFee: 1, royaltyOwner: "$token.royaltyOwner", orderId: 1, gasFee: 1} },
-                { $sort: {blockNumber: parseInt(timeOrder)} },
+                { $sort: sort },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();

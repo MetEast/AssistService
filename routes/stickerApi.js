@@ -217,7 +217,7 @@ router.get('/getNftPriceByTokenId', function(req, res) {
 router.get('/getTranDetailsByTokenId', function(req, res) {
     let tokenId = req.query.tokenId;
     let method = req.query.method;
-    let timeOrder = req.query.timeOrder;
+    let orderType = req.query.orderType
     method = method ? method : 'All';    
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
@@ -234,7 +234,7 @@ router.get('/getTranDetailsByTokenId', function(req, res) {
         res.json({code: 400, message: 'bad request'});
         return;
     }
-    stickerDBService.getTranDetailsByTokenId(tokenId, method, timeOrder, pageNum, pageSize).then(result => {
+    stickerDBService.getTranDetailsByTokenId(tokenId, method, orderType, pageNum, pageSize).then(result => {
       res.json(result);
     }).catch(error => {
         console.log(error);
