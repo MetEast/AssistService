@@ -4,6 +4,7 @@ let bodyParser = require('body-parser');
 let meteastApi = require('./routes/meteastApi');
 let stickerApi = require('./routes/stickerApi');
 let apiV2 = require('./routes/apiV2');
+let adminApi = require('./routes/adminApi')
 let jobs = require('./jobs');
 let log4js = require('log4js');
 let cors = require('cors');
@@ -31,6 +32,7 @@ app.use(cors());
 app.use('/meteast/api/v1', meteastApi);
 app.use('/sticker/api/v1', stickerApi);
 app.use('/api/v2', apiV2);
+app.use('/admin/api/v1', adminApi);
 
 jobs.run()
 

@@ -36,5 +36,8 @@ module.exports = {
         "2192fabc-19cc-4f97-8bc8-67cdbe6f1cc2",
         "2ea8215e-022d-4d65-b8d8-48dee70daa9e",
         "c6d2dedb-c75c-4bbe-8e59-80dcd49145e6"
+    ],
+    deployerList: [
+        "0x93b76C16e8A2c61a3149dF3AdCbE604be1F4137b",
     ]
 }
