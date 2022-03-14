@@ -15,7 +15,7 @@ router.get('/listaddress', function(req, res) {
     let keyword = req.query.keyword ? req.query.keyword : '';
     
     let pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
-    pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
+    let pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
 
     adminDBService.getAddressList(address, pageNum, pageSize, keyword).then(result => {
         res.json(result);
@@ -27,7 +27,7 @@ router.get('/listaddress', function(req, res) {
 
 router.post('/updateRole', function(req, res) {
     let address = req.body.address;
-    let role = req.body.address;
+    let role = req.body.userRole;
     let remarks = req.body.remarks;
 
     adminDBService.updateRole(address, role, remarks).then(result => {
