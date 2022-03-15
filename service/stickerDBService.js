@@ -2235,4 +2235,20 @@ module.exports = {
             await mongoClient.close();
         }
     },
+    listBanner: async function (owner, location) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_banner');
+            
+            let listAddress = await collection.find({owner: owner, location: location, active: 1}).toArray();
+  
+            return {code: 200, message: 'success', data: listAddress};
+        } catch (err) {
+          logger.error(err);
+          return {code: 500, message: 'server error'};
+        } finally {
+          await mongoClient.close();
+        }
+    },
 }
