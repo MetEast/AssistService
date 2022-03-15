@@ -2241,7 +2241,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_banner');
             
-            let listAddress = await collection.find({owner: owner, location: location, active: 1}).toArray();
+            let listAddress = await collection.find({owner: owner, location: location, active: 1}).sort({sort: -1}).toArray();
   
             return {code: 200, message: 'success', data: listAddress};
         } catch (err) {
