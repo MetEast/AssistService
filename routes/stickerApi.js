@@ -804,16 +804,4 @@ router.post('/updateAuthorOfToken', function(req, res) {
     })
 });
 
-
-router.get('/listBanner', function(req, res) {
-    let owner = req.query.owner;
-    let location = req.query.location;
-
-    stickerDBService.listBanner(owner, location).then(result => {
-        res.json(result);
-    }).catch(error => {
-        console.log(error);
-        res.json({code: 500, message: 'server error'});
-    })
-});
 module.exports = router;
