@@ -332,7 +332,7 @@ module.exports = {
                 logger.info(`[OrderTakenDown] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.deleteToken(result.tokenId);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, null);
             })
         });
 

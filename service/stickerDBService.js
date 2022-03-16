@@ -320,6 +320,7 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition.push({status: {$ne: 'DELETED'}})
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -521,21 +522,6 @@ module.exports = {
             await mongoClient.close();
         }
     },
-
-    deleteToken: async function (tokenId) {
-        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
-        try {
-            await mongoClient.connect();
-            const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId}, {$set: {deleted: 1}});
-        } catch (err) {
-            logger.error(err);
-            throw new Error();
-        } finally {
-            await mongoClient.close();
-        }
-    },
-
 
     updateTokens: async function(){
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -750,7 +736,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            return await collection.find({}).count();
+            return await collection.find({status: {$ne: 'DELETED'}}).count();
         } catch (err) {
             logger.error(err);
         } finally {
@@ -889,7 +875,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            let result = await collection.find({ holder: {$ne: config.burnAddress} }).count();
+            let result = await collection.find({ holder: {$ne: config.burnAddress}, status: {$ne: 'DELETED'} }).count();
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
@@ -1145,7 +1131,7 @@ module.exports = {
             await client.connect();
             let collection = client.db(config.dbName).collection('meteast_token');
             let result = collection.aggregate([
-                { $match: {$and: [{royaltyOwner: creator.toString()}] }},
+                { $match: {$and: [{royaltyOwner: creator.toString()}, {status: {$ne: 'DELETED'}}] }},
             ]).toArray();
             collection = client.db(config.dbName).collection('meteast_order');
             for(var i = 0; i < result.length; i++) {
@@ -1173,7 +1159,7 @@ module.exports = {
             await client.connect();
             let collection = client.db(config.dbName).collection('meteast_token');
             let result = collection.aggregate([
-                { $match: {$or: [{name: new RegExp(keyword.toString())}, {description: new RegExp(keyword.toString())}] }},
+                { $match: {$and: [{$or: [{name: new RegExp(keyword.toString())}, {description: new RegExp(keyword.toString())}] }, {status: {$ne: 'DELETED'}}]}},
             ]).toArray();
             collection = client.db(config.dbName).collection('meteast_order');
             for(var i = 0; i < result.length; i++) {
@@ -1245,7 +1231,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             let result = {};
-            let tokens_created = await mongoClient.db(config.dbName).collection('meteast_token').find({royaltyOwner: walletAddr}).project({"_id": 0, tokenId: 1}).toArray();
+            let tokens_created = await mongoClient.db(config.dbName).collection('meteast_token').find({royaltyOwner: walletAddr, status: {$ne: 'DELETED'}}).project({"_id": 0, tokenId: 1}).toArray();
             let tokens = [];
             tokens_created.forEach(ele => {
                 tokens.push(ele['tokenId']);
@@ -1621,6 +1607,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({royaltyOwner: selfAddr});
         condition.push({holder: selfAddr});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1701,6 +1688,7 @@ module.exports = {
                 let ele = sold_collectibles[i];
                 let temp_condition = condition;
                 temp_condition.push({tokenId: ele.tokenId});
+                temp_condition.push({status: {$ne: 'DELETED'}});
                 let record = await collection_token.aggregate([
                     {
                         $addFields: {
@@ -1739,6 +1727,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}, {status: 'ON AUCTION', status: 'HAS BIDS'}]});
         condition.push({holder: selfAddr});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1794,6 +1783,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({royaltyOwner: {$ne: selfAddr}});
         condition.push({holder: selfAddr});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1874,6 +1864,7 @@ module.exports = {
                 let ele = sold_collectibles[i];
                 var temp_condition = [...condition];
                 temp_condition.push({tokenId: ele.tokenId});
+                temp_condition.push({status: {$ne: 'DELETED'}});
                 let record = await collection_token.aggregate([
                     {
                         $addFields: {
@@ -1912,6 +1903,7 @@ module.exports = {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({holder: selfAddr});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1975,6 +1967,7 @@ module.exports = {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({tokenId: {$in: tokenIds}});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2015,8 +2008,64 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         console.log(condition);
-        condition.push({status: {$ne: 'NEW'}});
+        condition.push({$and: [{status: {$ne: 'NEW'}}, {status: {$ne: 'DELETED'}}]});
         condition.push({isBlindbox: false});
+        let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await client.connect();
+            const collection = client.db(config.dbName).collection('meteast_token');
+            const temp_collection = client.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
+            let result = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $project: {'_id': 0} }
+            ]).toArray();
+
+            let tokenIds = [];
+            result.forEach(ele => {
+                tokenIds.push(ele.tokenId);
+            });
+            const response = await fetch(
+                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
+            );
+            const data = await response.json();
+            if(data.code != 200) {
+                return {code: 500, message: 'centralized app invalid response'}
+            }
+            let tokenPopularity = data.data;
+
+            for(var i = 0; i < result.length; i++) {
+                const tokenID = result[i]['tokenId'];
+                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
+            }
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+            return {code: 200, message: 'success', data: {total, result}};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await client.close();
+        }
+    },
+
+    listAdminMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+        
+        let sort = this.composeSort(orderType);
+        filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
+        filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
+        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        console.log(condition);
+        condition.push({status: {$ne: 'NEW'}});
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -2089,6 +2138,7 @@ module.exports = {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({tokenId: {$in: tokenIds}});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2130,6 +2180,7 @@ module.exports = {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
+        condition.push({status: {$ne: 'DELETED'}});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
