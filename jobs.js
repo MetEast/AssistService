@@ -56,6 +56,7 @@ module.exports = {
         let isGetForOrderFilledJobRun = false;
         let isGetTokenInfoJobRun = false;
         let isGetApprovalRun = false;
+        let isGetForOrderTakenDownedJobRun = false;
         let now = Date.now();
 
         let recipients = [];
@@ -305,6 +306,36 @@ module.exports = {
             })
         });
         
+        let orderTakenDownJobId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
+            let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderTakenDown');
+            isGetForOrderTakenDownedJobRun = true;
+
+            logger.info(`[OrderTakenDown] Sync start from height: ${lastHeight}`);
+
+            stickerContractWs.events.OrderTakenDown({
+                fromBlock: lastHeight
+            }).on("error", function (error) {
+                isGetForOrderTakenDownedJobRun = false;
+                logger.info(error);
+                logger.info("[OrderTakenDown] Sync Ending ...");
+            }).on("data", async function (event) {
+
+                let orderInfo = event.returnValues;
+
+                let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
+                let gasFee = await stickerDBService.getGasFee(event.transactionHash);
+                let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
+                    tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
+                    logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
+                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
+
+                logger.info(`[OrderTakenDown] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
+                await meteastDBService.insertOrderEvent(orderEventDetail);
+                await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
+                await stickerDBService.deleteToken(result.tokenId);
+            })
+        });
+
         let approval  = schedule.scheduleJob(new Date(now + 90 * 1000), async()=> {
             let lastHeight = await stickerDBService.getLastApprovalSyncHeight();
             isGetApprovalRun = true;
@@ -380,6 +411,9 @@ module.exports = {
             }
             if(!isGetApprovalRun)
                 approval.reschedule(new Date(now + 60 * 1000))
+            if(!isGetForOrderTakenDownedJobRun) {
+                orderTakenDownJobId.reschedule(new Date(now + 3 * 60 * 1000));
+            }
         });
 
         /**

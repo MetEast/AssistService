@@ -522,6 +522,19 @@ module.exports = {
         }
     },
 
+    deleteToken: async function (tokenId) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            await collection.updateOne({tokenId}, {$set: {deleted: 1}});
+        } catch (err) {
+            logger.error(err);
+            throw new Error();
+        } finally {
+            await mongoClient.close();
+        }
+    },
 
 
     updateTokens: async function(){

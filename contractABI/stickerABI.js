@@ -447,6 +447,19 @@ module.exports = [
   {
     "inputs": [
       {
+        "internalType": "uint256[]",
+        "name": "_orderIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "cancelOrderBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_orderId",
         "type": "uint256"
