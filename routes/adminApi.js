@@ -48,6 +48,7 @@ router.get('/listMarketTokens', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let status = req.query.status;
     let pageNum, pageSize;
 
     try {
@@ -55,6 +56,7 @@ router.get('/listMarketTokens', function(req, res) {
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
+        status = status ? status : '';
         filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
         filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
         if(pageNum < 1 || pageSize < 1) {
@@ -67,7 +69,7 @@ router.get('/listMarketTokens', function(req, res) {
         return;
     }
 
-    stickerDBService.listAdminMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price).then(result => {
+    stickerDBService.listAdminMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, status).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);

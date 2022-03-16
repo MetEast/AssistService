@@ -2058,7 +2058,7 @@ module.exports = {
         }
     },
 
-    listAdminMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+    listAdminMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, status) {
         
         let sort = this.composeSort(orderType);
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
@@ -2066,6 +2066,11 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         console.log(condition);
         condition.push({status: {$ne: 'NEW'}});
+        if(status == 'online') {
+            condition.push({status: {$ne: 'DELETED'}});
+        } else if(status == 'removed') {
+            condition.push({status: 'DELETED'});
+        }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
