@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 var WebSocketServer = require('websocket').server;
+var WebSocketClient = require('websocket').client;
+var client = new WebSocketClient();
 var http = require('http');
-let stickerDBService = require('../service/stickerDBService');
+
+let stickerDBService = require('./stickerDBService');
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
@@ -57,21 +60,52 @@ wsServer.on('request', function(request) {
 });
 
 async function sendData(title, context, to) {
-  let id = await stickerDBService.createNewNotification(title, context, to);
-  if(id == null) {
-    return;
-  }
-  let data = {
-    type: 'alert',
-    id: id,
-    title: title,
-    context: context,
-    to: to,
-  }
-  if(webSocketConnection != null) {
-    webSocketConnection.send(JSON.stringify(data));
-  }
+  stickerDBService.createNewNotification(title, context, to).then((id) => {
+    if(id == null) {
+      return;
+    }
+    let data = {
+      type: 'alert',
+      id: id,
+      title: title,
+      context: context,
+      to: to,
+    }
+    if(webSocketConnection != null) {
+      webSocketConnection.send(JSON.stringify(data));
+    }
+  }).catch(error => {
+    console.log(error);
+  })
 }
+
+client.on('connectFailed', function(error) {
+  console.log('Connect Error: ' + error.toString());
+});
+
+client.on('connect', function(connection) {
+  console.log('WebSocket Client Connected');
+  connection.on('error', function(error) {
+      console.log("Connection Error: " + error.toString());
+  });
+  connection.on('close', function() {
+      console.log('echo-protocol Connection Closed');
+  });
+  connection.on('message', function(message) {
+      if (message.type === 'utf8') {
+        let data = message.utf8Data;
+        let jsonData = JSON.parse(data);
+        if(jsonData.type == "metbackend") {
+          sendData(jsonData.title, jsonData.context, jsonData.to);
+        }
+        console.log("Received: '" + message.utf8Data + "'");
+      }
+  });
+  
+  
+});
+
+client.connect('ws://localhost:8081/');
 
 module.exports = {
   makeSocketData: function (title, context, to) {

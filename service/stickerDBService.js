@@ -9,7 +9,7 @@ const config_test = require("../config_test");
 const { curNetwork } = require('../config');
 config = config.curNetwork == 'testNet'? config_test : config;
 let jobService = require('./jobService');
-let socketService = require('./webSocketService');
+
 module.exports = {
     getLastStickerSyncHeight: async function () {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
