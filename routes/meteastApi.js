@@ -127,7 +127,7 @@ router.get('/getDidByAddress', function(req, res) {
     let address = req.query.address;
 
     meteastDBService.getDidByAddress(address).then(result => {
-        res.json(result);
+        res.json({code: 200, message: 'success', data: result});
     }).catch(error => {
         console.log(error);
         res.json({code: 500, message: 'server error'});

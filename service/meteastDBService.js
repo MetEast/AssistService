@@ -268,7 +268,7 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             let result =  await collection.findOne({address}, {"_id": 0, address: 1, did: 1});
-            return {code: 200, message: 'success', data: result};
+            return result;
         } catch (err) {
             logger.error(err);
         } finally {

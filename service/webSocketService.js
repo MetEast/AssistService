@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var WebSocketServer = require('websocket').server;
 var http = require('http');
+let stickerDBService = require('../service/stickerDBService');
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
@@ -39,12 +40,12 @@ wsServer.on('request', function(request) {
     webSocketConnection = request.accept(request.origin);
     console.log((new Date()) + ' Connection accepted.');
     webSocketConnection.on('message', function(message) {
-       
+      
     });
 
     function sendCheckData() {
       if(webSocketConnection != null) {
-        webSocketConnection.send(JSON.stringify({type: 'status', data: 1}));
+        webSocketConnection.send(JSON.stringify({type: 'check', data: 1}));
       }
       setTimeout(sendCheckData, 1000);
     }
@@ -55,8 +56,25 @@ wsServer.on('request', function(request) {
     });
 });
 
-module.exports = {
-  sendData: function (data) {
+async function sendData(title, context, to) {
+  let id = await stickerDBService.createNewNotification(title, context, to);
+  if(id == null) {
+    return;
+  }
+  let data = {
+    type: 'alert',
+    id: id,
+    title: title,
+    context: context,
+    to: to,
+  }
+  if(webSocketConnection != null) {
     webSocketConnection.send(JSON.stringify(data));
+  }
+}
+
+module.exports = {
+  makeSocketData: function (title, context, to) {
+    sendData(title, context, to);
   }
 }

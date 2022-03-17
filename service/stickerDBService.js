@@ -2278,6 +2278,21 @@ module.exports = {
         }
     },
 
+    getTokenInfoByTokenId: async function (tokenId) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            let result = await collection.findOne({tokenId: tokenId});
+            return result;
+        } catch (err) {
+            logger.error(err);
+            return null;
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
     updateAuthorOfToken: async function (did, name, description) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
@@ -2301,6 +2316,29 @@ module.exports = {
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+
+    createNewNotification: async function(title, context, to) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
+            let data = {
+                title: title,
+                context: context,
+                to: to,
+                date: new Date()/1000,
+                isRead: 0,
+            };
+            await collection.insertOne(data);
+            let dbNotification = await collection.findOne(data);
+            let id = dbNotification._id? dbNotification._id : null;
+            return id;
+        } catch (err) {
+            return null;
         } finally {
             await mongoClient.close();
         }

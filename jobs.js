@@ -7,6 +7,7 @@ let meteastContractABI = require('./contractABI/meteastABI');
 let stickerContractABI = require('./contractABI/stickerABI');
 let galleriaContractABI = require('./contractABI/galleriaABI');
 let jobService = require('./service/jobService');
+let webSocketService = require('./service/webSocketService');
 let sendMail = require('./send_mail');
 const config_test = require("./config_test");
 config = config.curNetwork == 'testNet'? config_test : config;
@@ -180,6 +181,13 @@ module.exports = {
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'HAS BIDS', result.sellerAddr, event.blockNumber, null);
+
+                let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
+                let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
+
+                let notifyTitle = 'New sale!';
+                let notifyContext = `Your ${nft.name ? nft.name : '' } project has just been bid by (${did.name ? did.name + '/' : ''}${orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
             })
         });
 
@@ -262,11 +270,26 @@ module.exports = {
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
                     logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
                     royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: result.price, timestamp: result.updateTime, gasFee: gasFee}
-
+                
+                    
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber, false);
+
+                let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
+                let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
+                
+                let notifyTitle = 'New sale!';
+                let notifyContext = `Your ${nft.name ? nft.name : '' } project has been sold to (${did.name ? did.name + '/' : ''}${orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
+
+                let royalityPrice = orderEventDetail.price * (orderEventDetail.royaltyFee / 1e6);
+                notifyTitle = 'Royalties Received!';
+                notifyContext = `You have received ${royalityPrice/1e18} ELA in Roylties from the sale of the ${nft.name ? nft.name : '' } project.`;
+                if(nft.royaltyOwner) {
+                    webSocketService.makeSocketData(notifyTitle, notifyContext, nft.royaltyOwner);
+                }
 
                 // here is a part for platformfee collection
                 orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
