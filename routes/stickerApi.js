@@ -828,4 +828,24 @@ router.get('/getTokensByIds', function(req, res) {
     })
 });
 
+router.get('/readNotifications', function(req, res) {
+    let ids = req.query.ids;
+
+    stickerDBService.readNotifications(ids).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.get('/getUnReadNotifications', function(req, res) {
+    let address = req.query.address;
+
+    stickerDBService.getUnReadNotifications(address).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 module.exports = router;

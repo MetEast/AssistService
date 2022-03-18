@@ -186,7 +186,7 @@ module.exports = {
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
                 let notifyTitle = 'New sale!';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has just been bid by (${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has just been bid by ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
             })
         });
@@ -281,7 +281,7 @@ module.exports = {
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
                 
                 let notifyTitle = 'New sale!';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to (${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
 
                 let royalityPrice = orderEventDetail.price * (orderEventDetail.royaltyFee / 1e6);

@@ -5,6 +5,7 @@ const {MongoClient} = require("mongodb");
 let config = require("../config");
 const meteastDBService = require("./meteastDBService");
 const { ReplSet } = require('mongodb/lib/core');
+var ObjectID = require('mongodb').ObjectID;
 const config_test = require("../config_test");
 const { curNetwork } = require('../config');
 config = config.curNetwork == 'testNet'? config_test : config;
@@ -2032,6 +2033,7 @@ module.exports = {
             const response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
+            console.log(response);
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -2372,6 +2374,44 @@ module.exports = {
                 await collection.updateMany({'did.did': did}, {$set: {"did.description": description}});
             }
             return {code: 200, message: 'success'};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    readNotifications: async function (ids) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
+            let listId = ids.split(',');
+            let objectListId = [];
+            listId.map(cell => {
+                if(cell) {
+                    objectListId.push(ObjectID(cell));
+                }
+            })
+
+            await collection.updateMany({_id: {$in: objectListId}}, {$set: {isRead: 1}});
+
+            return {code: 200, message: 'success'};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    getUnReadNotifications: async function (address) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
+            let data = await collection.find({to: address, isRead: 0}).toArray();
+
+            return {code: 200, message: 'success', data: data};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};
