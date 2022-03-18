@@ -2343,5 +2343,21 @@ module.exports = {
             await mongoClient.close();
         }
     },
-    
+    getTokensByIds: async function(ids) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_token');
+            
+            let listId = ids.split(',');
+            console.log(listId);
+            let result = await collection.find({tokenId: {$in: listId}}).toArray();
+
+            return {code: 200, message: 'success', data: result};
+        } catch (err) {
+            return null;
+        } finally {
+            await mongoClient.close();
+        }
+    }
 }

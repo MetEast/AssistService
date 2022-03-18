@@ -804,4 +804,15 @@ router.post('/updateAuthorOfToken', function(req, res) {
     })
 });
 
+router.get('/getTokensByIds', function(req, res) {
+    let ids = req.query.ids;
+
+    stickerDBService.getTokensByIds(ids).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 module.exports = router;
