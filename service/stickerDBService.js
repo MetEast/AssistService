@@ -2359,5 +2359,24 @@ module.exports = {
         } finally {
             await mongoClient.close();
         }
-    }
+    },
+    updateAddressDid: async function (did, name, description) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_address_did');
+            if(name != '') {
+                await collection.updateMany({'did.did': did}, {$set: {"did.name": name}});
+            }
+            if(description != '') {
+                await collection.updateMany({'did.did': did}, {$set: {"did.description": description}});
+            }
+            return {code: 200, message: 'success'};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }

@@ -804,6 +804,19 @@ router.post('/updateAuthorOfToken', function(req, res) {
     })
 });
 
+router.post('/updateAddressDid', function(req, res) {
+    let did = req.body.did;
+    let name = req.body.name;
+    let description = req.body.description;
+    
+    stickerDBService.updateAddressDid(did, name, description).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 router.get('/getTokensByIds', function(req, res) {
     let ids = req.query.ids;
 
