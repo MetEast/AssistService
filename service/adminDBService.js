@@ -2,6 +2,7 @@ let config = require('../config');
 let MongoClient = require('mongodb').MongoClient;
 const config_test = require("../config_test");
 config = config.curNetwork == 'testNet'? config_test : config;
+let webSocketService = require('./webSocketService');
 
 module.exports = {
     getAddressList: async function (address, pageNum, pageSize, keyword) {
@@ -34,6 +35,15 @@ module.exports = {
           const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
           await collection.updateOne({address: address}, {$set: {role, role, remarks: remarks}});
           
+          let notifyTitle = 'Important Notice.';
+          let notifyContext;
+          if(role==3) {
+            notifyContext = `Your account ${address} has been banned by admin for the following reason: ${remarks}.`;
+          } else {
+            notifyContext = `Your account has been unbanned by admin.`;
+          }
+          webSocketService.makeSocketData(notifyTitle, notifyContext, address);
+
           return {code: 200, message: 'success'};
       } catch (err) {
         logger.error(err);
