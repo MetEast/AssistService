@@ -356,6 +356,14 @@ module.exports = {
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, null);
+
+                let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
+
+                let notifyTitle = 'Important Notice.';
+                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been taken down by admin.`;
+                if(nft && nft.holder) {
+                    webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
+                }
             })
         });
 
@@ -403,6 +411,13 @@ module.exports = {
 
                 if(to === burnAddress) {
                     await stickerDBService.burnToken(tokenId);
+                    let nft = await stickerDBService.getTokenInfoByTokenId(tokenId);
+
+                    let notifyTitle = 'Important Notice.';
+                    let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been burned by admin.`;
+                    if(nft && nft.holder) {
+                        webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
+                    }
                 } else if(from === burnAddress) {
                     await dealWithNewToken(blockNumber, tokenId)
                 } else {
