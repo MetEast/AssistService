@@ -40,7 +40,7 @@ wsServer.on('request', function(request) {
       return;
     }
     
-    webSocketConnection = request.accept(request.origin);
+    webSocketConnection = request.accept();
     console.log((new Date()) + ' Connection accepted.');
     webSocketConnection.on('message', function(message) {
       
