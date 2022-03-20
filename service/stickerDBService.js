@@ -2404,14 +2404,37 @@ module.exports = {
             await mongoClient.close();
         }
     },
-    getUnReadNotifications: async function (address) {
+    getNotifications: async function (address) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
-            let data = await collection.find({to: address, isRead: 0}).toArray();
+            let data = await collection.find({to: address}).toArray();
 
             return {code: 200, message: 'success', data: data};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
+    removeNotifications: async function (ids) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
+            let listId = ids.split(',');
+            let objectListId = [];
+            listId.map(cell => {
+                if(cell) {
+                    objectListId.push(ObjectID(cell));
+                }
+            })
+
+            await collection.deleteMany({_id: {$in: objectListId}});
+
+            return {code: 200, message: 'success'};
         } catch (err) {
             logger.error(err);
             return {code: 500, message: 'server error'};

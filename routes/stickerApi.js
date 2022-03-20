@@ -2,6 +2,7 @@ let express = require('express');
 let router = express.Router();
 let stickerDBService = require('../service/stickerDBService');
 const { filter } = require('mongodb/lib/core/connection/logger');
+const { route } = require('express/lib/router');
 
 router.get('/listTokens', function(req, res) {
     let pageNumStr = req.query.pageNum;
@@ -838,10 +839,20 @@ router.get('/readNotifications', function(req, res) {
     })
 });
 
-router.get('/getUnReadNotifications', function(req, res) {
+router.get('/getNotifications', function(req, res) {
     let address = req.query.address;
 
-    stickerDBService.getUnReadNotifications(address).then(result => {
+    stickerDBService.getNotifications(address).then(result => {
+        res.json(result);
+    }).catch(error => {
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
+router.get('/removeNotifications', function(req, res) {
+    let ids = req.query.ids;
+
+    stickerDBService.removeNotifications(ids).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
