@@ -284,7 +284,7 @@ module.exports = {
                 let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
 
-                let royalityPrice = orderEventDetail.price * (orderEventDetail.royaltyFee / 1e6);
+                let royalityPrice = orderEventDetail.price * (orderEventDetail.royaltyFee / 1e18);
                 notifyTitle = 'Royalties Received!';
                 notifyContext = `You have received ${royalityPrice/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
                 if(nft && nft.royaltyOwner) {
