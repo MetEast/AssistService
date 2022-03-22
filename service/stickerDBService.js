@@ -284,6 +284,9 @@ module.exports = {
             case 'oldest':
                 sort = {createTime: 1, timestamp: 1};
                 break;
+            case 'endingsoon': 
+
+                break;
             default:
                 sort = {createTime: -1, timestamp: -1};
                 break;
@@ -1501,12 +1504,13 @@ module.exports = {
     },
 
     getTodayEarnedByWalletAddress: async function (address) {
-        var now = Date.now() / 1000;
+        var now = (Date.now() / 1000).toFixed(0);
         var start_today = new Date();
         start_today.setHours(0);
         start_today.setMinutes(0);
         start_today.setSeconds(0);
-        start_today /= 1000;
+        start_today = (start_today/1000).toFixed(0);
+
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
