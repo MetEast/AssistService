@@ -105,12 +105,12 @@ module.exports = {
                 { $match: {orderState: "1"}},
                 { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
-                { $match: {category: new RegExp(category)}},
+                { $match: {category: new RegExp(category, 'i')}},
                 { $count: "total"}
             ];
             total = (await collection.aggregate(pipeline2).toArray())[0].total;
 
-            pipeline.push({ $match: {category: new RegExp(category)}});
+            pipeline.push({ $match: {category: new RegExp(category, 'i')}});
 
             pipeline.push({ $project: this.resultProject});
             pipeline.push({ $sort: {[sortType]: sort}});
@@ -223,12 +223,12 @@ module.exports = {
                 { $match: match},
                 { $lookup: {from: "meteast_token", localField: "tokenId", foreignField: "tokenId", as: "token"} },
                 { $unwind: "$token"},
-                { $match: {category: new RegExp(category)}},
+                { $match: {category: new RegExp(category, 'i')}},
                 { $count: "total"}
             ];
             total = (await collection.aggregate(pipeline2).toArray())[0].total;
 
-            pipeline.push({$match: {category: new RegExp(category)}});
+            pipeline.push({$match: {category: new RegExp(category, 'i')}});
             pipeline.push({ $project: this.resultProject });
             if(sortType === 'price') {
                 pipeline.push({ $sort: {'priceNumber': sort}});

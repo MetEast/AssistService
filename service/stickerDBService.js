@@ -302,7 +302,7 @@ module.exports = {
         if(or_condition.length > 0 && filter_status != '')
             condition.push({$or: or_condition});
         condition.push({$and: [{priceCalculated: {$gte: filter_min_price}}, {priceCalculated: {$lte: filter_max_price}}]});
-        condition.push({$or: [{name: new RegExp(keyword.toString())}, {tokenIdHex: keyword}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]});
+        condition.push({$or: [{name: new RegExp(keyword.toString(), 'i')}, {tokenIdHex: new RegExp(keyword.toString(), 'i')}, {royaltyOwner: new RegExp(keyword.toString(), 'i')}, {holder: new RegExp(keyword.toString(), 'i')}, {tokenId: new RegExp(keyword.toString(), 'i')}, {description: new RegExp(keyword.toString(), 'i')}]});
         return condition;
     },
 
@@ -961,7 +961,7 @@ module.exports = {
             });
             let result = await temp_collection.aggregate([
             { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$updateTime'}}} },
-            { $match: {$and : [{"tokenId": new RegExp('^' + tokenId)}, { 'orderState': '2'}]} },
+            { $match: {$and : [{"tokenId": new RegExp('^' + tokenId, 'i')}, { 'orderState': '2'}]} },
             { $group: { "_id"  : { tokenId: "$tokenId", onlyDate: "$onlyDate"}, "price": {$sum: "$price"}} },
             { $project: {_id: 0, tokenId : "$_id.tokenId", onlyDate: "$_id.onlyDate", price:1} },
             { $sort: {onlyDate: 1} }
@@ -1160,7 +1160,7 @@ module.exports = {
             await client.connect();
             let collection = client.db(config.dbName).collection('meteast_token');
             let result = collection.aggregate([
-                { $match: {$and: [{$or: [{name: new RegExp(keyword.toString())}, {description: new RegExp(keyword.toString())}] }, {status: {$ne: 'DELETED'}}]}},
+                { $match: {$and: [{$or: [{name: new RegExp(keyword.toString(), 'i')}, {description: new RegExp(keyword.toString(), 'i')}] }, {status: {$ne: 'DELETED'}}]}},
             ]).toArray();
             collection = client.db(config.dbName).collection('meteast_order');
             for(var i = 0; i < result.length; i++) {
@@ -1189,9 +1189,9 @@ module.exports = {
             let addressCondition = [];
             //type 0: total royalties, 1: total sales
             if(type == 0)
-                addressCondition.push({"sellerAddr": new RegExp('^' + walletAddr)});
+                addressCondition.push({"sellerAddr": new RegExp('^' + walletAddr, 'i')});
             else
-                addressCondition.push({"royaltyOwner": new RegExp('^' + walletAddr)});
+                addressCondition.push({"royaltyOwner": new RegExp('^' + walletAddr, 'i')});
             let collection = client.db(config.dbName).collection('meteast_order');
             let temp_collection = client.db(config.dbName).collection('token_temp_' + Date.now().toString());
             let rows = [];
@@ -1332,7 +1332,7 @@ module.exports = {
             let start = (pageNum - 1) * pageSize;
             let tempResult = [];
             for(var i = 0; i < result.length; i++) {
-                let res  = await collection_token.findOne({$and:[{tokenId: result[i]['tokenId']}, {$or: [{name: new RegExp(keyword.toString())}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]}]});
+                let res  = await collection_token.findOne({$and:[{tokenId: result[i]['tokenId']}, {$or: [{name: new RegExp(keyword.toString(), 'i')}, {royaltyOwner: keyword}, {holder: keyword}, {tokenId: keyword}]}]});
                 if(res != null) {
                     result[i]['name'] = res['name'];
                     result[i]['royalties'] = res['royalties'];
@@ -2238,7 +2238,7 @@ module.exports = {
         let condition  = [];
         condition.push({holder: address});
         condition.push({status: 'NEW'});
-        condition.push({name: new RegExp(keyword.toString())});
+        condition.push({name: new RegExp(keyword.toString(), 'i')});
         condition.push({isBlindbox: false});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
