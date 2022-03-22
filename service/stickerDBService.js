@@ -285,7 +285,7 @@ module.exports = {
                 sort = {createTime: 1, timestamp: 1};
                 break;
             case 'endingsoon': 
-
+                sort = {endTime: -1};
                 break;
             default:
                 sort = {createTime: -1, timestamp: -1};
@@ -1520,7 +1520,7 @@ module.exports = {
                 { $project: {_id: 0, price: 1} },
             ]).toArray();
             let profit = 0;
-            
+
             for(var i = 0; i < result.length; i++) {
                 profit += (parseInt(result[i]['price']) / (10 ** 18));
             }
