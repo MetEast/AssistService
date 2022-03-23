@@ -39,8 +39,10 @@ module.exports = {
           let notifyContext;
           if(role==3) {
             notifyContext = `Your account ${address} has been banned by admin for the following reason: ${remarks}.`;
-          } else {
-            notifyContext = `Your account has been unbanned by admin.`;
+          } else if(role==1) {
+            notifyContext = `Your account has been set to the moderator by admin.`;
+          } else if(role==2) {
+            notifyContext = `Your account has been set to the normal user by admin.`;
           }
           webSocketService.makeSocketData(notifyTitle, notifyContext, address);
 
