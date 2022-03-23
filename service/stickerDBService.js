@@ -2062,10 +2062,9 @@ module.exports = {
     listMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
         
         let sort = this.composeSort(orderType);
-        filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
-        filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
+        // filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
+        // let filter_max_price1 = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        console.log(condition);
         condition.push({$and: [{status: {$ne: 'NEW'}}, {status: {$ne: 'DELETED'}}]});
         condition.push({isBlindbox: false});
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});

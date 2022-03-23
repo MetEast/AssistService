@@ -712,15 +712,17 @@ router.get('/listMarketTokens', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
-    let pageNum, pageSize;
-
+    let pageNum, pageSize, max_price, min_price;
+    
     try {
         pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
         keyword = keyword ? keyword : '';
         filter_status = filter_status ? filter_status : '';
-        filter_min_price = filter_min_price ? parseInt(filter_min_price) : 0;
-        filter_max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
+        min_price = filter_min_price ? parseInt(filter_min_price) : 0;
+        max_price = filter_max_price ? parseInt(filter_max_price, 10) : 10000000000000000000000000000000000000000000000000000000000;
+        console.log(max_price);
+
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;
@@ -731,7 +733,7 @@ router.get('/listMarketTokens', function(req, res) {
         return;
     }
 
-    stickerDBService.listMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price).then(result => {
+    stickerDBService.listMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, min_price, max_price).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
