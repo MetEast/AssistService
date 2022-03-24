@@ -957,10 +957,10 @@ module.exports = {
             await mongoClient.connect();
             let collection = mongoClient.db(config.dbName).collection('meteast_order');
             let temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
-            await collection.find({"tokenId": tokenId}).forEach( function (x) {
+            await collection.find({"tokenId": tokenId}).forEach(async function (x) {
                 x.updateTime = new Date(x.updateTime * 1000);
                 x.price = parseInt(x.price);
-                temp_collection.save(x);
+                await temp_collection.insertOne(x);
             });
             let result = await temp_collection.aggregate([
             { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$updateTime'}}} },
