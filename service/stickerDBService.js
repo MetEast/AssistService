@@ -2465,7 +2465,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection  = mongoClient.db(config.dbName).collection('meteast_notification');
-            let data = await collection.find({to: address}).toArray();
+            let data = await collection.find({to: address}).sort({date: -1}).toArray();
 
             return {code: 200, message: 'success', data: data};
         } catch (err) {
