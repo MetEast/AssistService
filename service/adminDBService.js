@@ -38,7 +38,7 @@ module.exports = {
           let notifyTitle = 'Important Notice.';
           let notifyContext;
           if(role==3) {
-            notifyContext = `Your account ${address} has been banned by admin for the following reason: ${remarks}.`;
+            notifyContext = `Your account ${address} has been banned by admin for the following` +  remarks ? `reason: ${remarks}` : '';
           } else if(role==1) {
             notifyContext = `Your account has been set to the moderator by admin.`;
           } else if(role==2) {
