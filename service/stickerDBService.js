@@ -956,21 +956,13 @@ module.exports = {
         try {
             await mongoClient.connect();
             let collection = mongoClient.db(config.dbName).collection('meteast_order');
-            let temp_collection = mongoClient.db(config.dbName).collection('token_temp_' + Date.now().toString());
-            await collection.find({"tokenId": tokenId}).forEach(async function (x) {
-                x.updateTime = new Date(x.updateTime * 1000);
-                x.price = parseInt(x.price);
-                await temp_collection.insertOne(x);
-            });
-            let result = await temp_collection.aggregate([
-            { $addFields: {onlyDate: {$dateToString: {format: '%Y-%m-%d %H', date: '$updateTime'}}} },
+            
+            let result = await collection.aggregate([
             { $match: {$and : [{"tokenId": new RegExp('^' + tokenId, 'i')}, { 'orderState': '2'}]} },
-            { $group: { "_id"  : { tokenId: "$tokenId", onlyDate: "$onlyDate"}, "price": {$sum: "$price"}} },
-            { $project: {_id: 0, tokenId : "$_id.tokenId", onlyDate: "$_id.onlyDate", price:1} },
-            { $sort: {onlyDate: 1} }
+            { $project: {_id: 0, tokenId : 1, price: 1, updateTime:1} },
+            { $sort: {updateTime: 1} }
             ]).toArray();
-            if(result.length > 0)
-                await temp_collection.drop();
+
             return {code: 200, message: 'success', data: result};
         } catch (err) {
             logger.error(err);
