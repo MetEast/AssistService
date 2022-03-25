@@ -1584,6 +1584,7 @@ module.exports = {
                 data = await temp_collection.aggregate([
                     { $group: { "_id"  : { Badge: "$Badge", updateTime: "$updateTime", tokenId: "$tokenId", name: "$name", thumbnail: "$thumbnail"}, "iEarned": {$sum: "$iEarned"}} },
                     { $project: {_id: 0, Badge : "$_id.Badge", tokenId: "$_id.tokenId", updateTime: "$_id.updateTime", name: "$_id.name", iEarned: 1, thumbnail: "$_id.thumbnail"} },
+                    { $sort: {updateTime: -1}}
                 ]).toArray();
                 await temp_collection.drop();
             }
