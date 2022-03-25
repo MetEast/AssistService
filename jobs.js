@@ -547,11 +547,12 @@ module.exports = {
             schedule.scheduleJob('*/4 * * * *', async () => {
                 let x = Math.floor(Math.random() * config.cmcApiKeys.length);
                 let headers = {'Content-Type': 'application/json', 'X-CMC_PRO_API_KEY': config.cmcApiKeys[x]}
+                
                 let res = await fetch('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=100', {method: 'get', headers})
                 let result = await res.json();
 
                 let record = {timestamp: Date.parse(result.status.timestamp)}
-                result.data.forEach(item => {
+                result.data && result.data.forEach(item => {
                     if(coins[item.symbol] === item.id) {
                         record[item.symbol] = item.quote.USD.price;
                     }
@@ -561,7 +562,7 @@ module.exports = {
                     let resOther = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=1&convert_id=${coins2[i]}`, {method: 'get', headers})
                     let resultOther = await resOther.json();
 
-                    if(resultOther.data[0].id === 1) {
+                    if(resultOther.data && resultOther.data[0] && resultOther.data[0].id === 1) {
                         let priceAtBTC = resultOther.data[0].quote[coins2[i]].price;
                         record[i] = record['BTC'] / priceAtBTC;
                     } else {
