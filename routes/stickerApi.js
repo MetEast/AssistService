@@ -10,8 +10,8 @@ router.get('/listTokens', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -426,8 +426,8 @@ router.get('/getSelfCreateNotSoldCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -462,8 +462,8 @@ router.get('/getSelfCreateCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -498,8 +498,8 @@ router.get('/getSoldPreviouslyBoughtCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -534,8 +534,8 @@ router.get('/getForSaleCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -569,8 +569,8 @@ router.get('/getSoldCollectibles', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -604,8 +604,8 @@ router.get('/getBoughtNotSoldCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -640,8 +640,8 @@ router.get('/getOwnCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -676,8 +676,8 @@ router.get('/getCollectiblesByTokenIds', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -748,8 +748,8 @@ router.get('/getFavoritesCollectible', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
@@ -782,8 +782,8 @@ router.get('/getAllCollectibleByAddress', function(req, res) {
     let keyword = req.query.keyword;
     let orderType = req.query.orderType;
     let filter_status = req.query.filter_status;
-    let filter_min_price = req.query.filter_status;
-    let filter_max_price = req.query.filter_min_price;
+    let filter_min_price = req.query.filter_min_price;
+    let filter_max_price = req.query.filter_max_price;
     let pageNum, pageSize;
 
     try {
