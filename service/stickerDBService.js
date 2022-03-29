@@ -1660,7 +1660,7 @@ module.exports = {
         
         if(filter_status == 'BUY NOW') {
             condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
-        } else if('ON AUCTION'){
+        } else if(filter_status == 'ON AUCTION'){
             condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
         }
 
@@ -2067,7 +2067,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
         if(filter_status == 'BUY NOW') {
             condition.push({endTime: "0"});
-        } else if('ON AUCTION'){
+        } else if(filter_status == 'ON AUCTION'){
             condition.push({endTime: { $ne: "0"}});
         }
         condition.push({$and: [{status: {$ne: 'NEW'}}, {status: {$ne: 'DELETED'}}]});
