@@ -1656,7 +1656,14 @@ module.exports = {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
-        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
+        
+        if(filter_status == 'BUY NOW') {
+            condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
+        } else if('ON AUCTION'){
+            condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
+        }
+
         condition.push({royaltyOwner: selfAddr});
         condition.push({status: {$ne: 'DELETED'}});
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -2057,7 +2064,12 @@ module.exports = {
         let sort = this.composeSort(orderType);
         // filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         // let filter_max_price1 = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
-        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
+        if(filter_status == 'BUY NOW') {
+            condition.push({endTime: "0"});
+        } else if('ON AUCTION'){
+            condition.push({endTime: { $ne: "0"}});
+        }
         condition.push({$and: [{status: {$ne: 'NEW'}}, {status: {$ne: 'DELETED'}}]});
         condition.push({isBlindbox: false});
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
