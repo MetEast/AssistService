@@ -1365,13 +1365,14 @@ module.exports = {
         }
     },
 
-    getLatestBids: async function (tokenId, address, pageNum, pageSize) {
+    getLatestBids: async function (tokenId, address, pageNum, pageSize, orderType) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const token_collection = mongoClient.db(config.dbName).collection('meteast_token');
             const collection = mongoClient.db(config.dbName).collection('meteast_order_event');
             const collection_address_did = mongoClient.db(config.dbName).collection('meteast_address_did');
+            let sort = this.composeSort(orderType);
 
             let result_address = await collection_address_did.aggregate([
                 { 
@@ -1383,7 +1384,7 @@ module.exports = {
                     }
                 },
             ]).toArray();
-
+            console.log(tokenId)
             let tokenRecord = await token_collection.findOne({tokenId});
             if(!tokenRecord) {
                 return {code: 500, message: 'collectible not found'};
@@ -1393,7 +1394,7 @@ module.exports = {
             }
             let result_mine = await collection.aggregate([ 
                 { $match: { $and: [{sellerAddr: tokenRecord.holder}, {buyerAddr: address}, {orderId: tokenRecord.orderId}, {tokenId}, {event: 'OrderBid'} ] } },
-                { $sort: {timestamp: -1} },
+                { $sort: sort },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();
@@ -1405,7 +1406,7 @@ module.exports = {
             }
             let result_others = await collection.aggregate([ 
                 { $match: { $and: [{sellerAddr: tokenRecord.holder}, {buyerAddr: {$ne: address}}, {orderId: tokenRecord.orderId}, {tokenId}, {event: 'OrderBid'} ] } },
-                { $sort: {timestamp: -1} },
+                { $sort: sort },
                 { $skip: (pageNum - 1) * pageSize },
                 { $limit: pageSize }
             ]).toArray();

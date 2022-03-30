@@ -336,8 +336,10 @@ router.get('/getLatestBids', function(req, res) {
     let address = req.query.address;
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
+    let orderTypeStr = req.query.orderType;
     tokenId = tokenId ? tokenId : '';
     address = address ? address: '';
+
     let pageNum, pageSize;
     try {
         pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
@@ -351,7 +353,7 @@ router.get('/getLatestBids', function(req, res) {
         res.json({code: 400, message: 'bad request'});
         return;
     }
-    stickerDBService.getLatestBids(tokenId.toString(), address.toString(), pageNum, pageSize).then(result => {
+    stickerDBService.getLatestBids(tokenId.toString(), address.toString(), pageNum, pageSize, orderTypeStr).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
