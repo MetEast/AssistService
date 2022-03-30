@@ -858,6 +858,20 @@ router.post('/updateAddressDid', function(req, res) {
     })
 });
 
+router.post('/insertAddressDid', function(req, res) {
+    let address = req.body.address;
+    let did = req.body.did;
+    let name = req.body.name;
+    let description = req.body.description;
+    
+    stickerDBService.insertAddressDid(address, did, name, description).then(result => {
+        res.json(result);
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+});
+
 router.get('/getTokensByIds', function(req, res) {
     let ids = req.query.ids;
 

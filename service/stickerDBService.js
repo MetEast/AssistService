@@ -2466,6 +2466,21 @@ module.exports = {
             await mongoClient.close();
         }
     },
+    insertAddressDid: async function (address, did, name, description) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            let collection  = mongoClient.db(config.dbName).collection('meteast_address_did');
+            let newDid = {did, name, description}
+            await collection.insertOne({address: address, did: newDid});
+            return {code: 200, message: 'success'};
+        } catch (err) {
+            logger.error(err);
+            return {code: 500, message: 'server error'};
+        } finally {
+            await mongoClient.close();
+        }
+    },
     readNotifications: async function (ids) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {

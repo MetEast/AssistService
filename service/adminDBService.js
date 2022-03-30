@@ -5,13 +5,13 @@ config = config.curNetwork == 'testNet'? config_test : config;
 let webSocketService = require('./webSocketService');
 
 module.exports = {
-    getAddressList: async function (address, pageNum, pageSize, keyword) {
+    getAddressList: async function (pageNum, pageSize, keyword) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             let listAddress = await collection
-              .find({$and: [{address: {$ne: address}}, {$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]})
+              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]})
               .skip((pageNum-1)*pageSize).limit(pageSize).toArray();
 
             for(var i = 0; i < listAddress.length; i++) {

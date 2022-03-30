@@ -6,11 +6,6 @@ let stickerDBService = require('../service/stickerDBService');
 const { route } = require('express/lib/application');
 
 router.get('/listaddress', function(req, res) {
-    let address = req.query.address;
-    if(!address) {
-        res.json({code: 500, message: 'server error'});
-        return;
-    }
 
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
@@ -19,7 +14,7 @@ router.get('/listaddress', function(req, res) {
     let pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
     let pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
 
-    adminDBService.getAddressList(address, pageNum, pageSize, keyword).then(result => {
+    adminDBService.getAddressList(pageNum, pageSize, keyword).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
