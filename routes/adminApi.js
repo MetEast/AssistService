@@ -50,7 +50,6 @@ router.get('/listMarketTokens', function(req, res) {
     let filter_max_price = req.query.filter_max_price;
     let status = req.query.status;
     let pageNum, pageSize, max_price, min_price;
-
     try {
         pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
@@ -59,6 +58,7 @@ router.get('/listMarketTokens', function(req, res) {
         status = status ? status : '';
         min_price = filter_min_price ? parseInt(filter_min_price) : 0;
         max_price = filter_max_price ? parseInt(filter_max_price) : 10000000000000000000000000000000000000000000000000000000000;
+
         if(pageNum < 1 || pageSize < 1) {
             res.json({code: 400, message: 'bad request'})
             return;

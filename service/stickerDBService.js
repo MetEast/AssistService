@@ -2132,7 +2132,6 @@ module.exports = {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
-
         if(filter_status == 'BUY NOW') {
             condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
         } else if(filter_status == 'ON AUCTION'){
@@ -2149,6 +2148,17 @@ module.exports = {
             await client.connect();
             const collection = client.db(config.dbName).collection('meteast_token');
             const temp_collection = client.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
+            let result1 = await collection.aggregate([
+                {
+                    $addFields: {
+                       "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                    }
+                },
+                { $match: {$and: condition} },
+                { $project: {'_id': 0} }
+            ]).sort(sort).toArray();
+            let skip = (pageNum - 1) * pageSize;
+
             let result = await collection.aggregate([
                 {
                     $addFields: {
@@ -2157,16 +2167,18 @@ module.exports = {
                 },
                 { $match: {$and: condition} },
                 { $project: {'_id': 0} }
-            ]).toArray();
-
+            ]).sort(sort).skip(skip).limit(pageSize).toArray();
+            
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
+
             const response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
             const data = await response.json();
+            console.log(data);
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
             }
@@ -2177,12 +2189,8 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+            let total = result1.length;
+
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
