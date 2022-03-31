@@ -2543,7 +2543,6 @@ module.exports = {
         }
     },
     deleteTokenFromBlindBox: async function (tokenId) {
-        price = parseInt(price);
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2554,7 +2553,7 @@ module.exports = {
                     config.centralAppUrl + `/api/v1/deleteTokenFromBlindbox?blindBoxIndex=${token.blindBoxIndex}&tokenId=${tokenId}`
                 );
             }
-            await collection.updateOne({tokenId: tokenId}, {$set: {blindBoxIndex: null, isBlindbox: false}});
+            await collection.updateOne({tokenId: tokenId}, {$set: {blindboxIndex: null, isBlindbox: false}});
             await mongoClient.close();
         } catch (err) {
             logger.error(err);
