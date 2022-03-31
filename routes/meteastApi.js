@@ -145,4 +145,16 @@ router.get('/getDidByDid', function(req, res) {
     })
 })
 
+router.get('/insertTokenToBlindBox', function(req, res) {
+    let blindboxIndex = req.query.blindboxIndex;
+    let tokenIds = req.query.tokenIds
+
+    meteastDBService.insertTokenToBlindBox(blindboxIndex, tokenIds).then(result => {
+        res.json({code: 200, message: 'success', data: result});
+    }).catch(error => {
+        console.log(error);
+        res.json({code: 500, message: 'server error'});
+    })
+})
+
 module.exports = router;

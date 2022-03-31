@@ -2542,4 +2542,23 @@ module.exports = {
             await mongoClient.close();
         }
     },
+    deleteTokenFromBlindBox: async function (tokenId) {
+        price = parseInt(price);
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const token = await collection.findOne({tokenId: tokenId});
+            if(token.isBlindbox == true && token.blindboxIndex != null) {
+                const response = await fetch(
+                    config.centralAppUrl + `/api/v1/deleteTokenFromBlindbox?blindBoxIndex=${token.blindboxIndex}&tokenId=${tokenId}`
+                );
+            }
+        } catch (err) {
+            logger.error(err);
+            throw new Error();
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }

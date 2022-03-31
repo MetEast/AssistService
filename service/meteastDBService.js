@@ -353,5 +353,17 @@ module.exports = {
             await mongoClient.close();
         }
     },
-    
+    insertTokenToBlindBox: async function (blindboxIndex, tokenIds) {
+        let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        try {
+            await mongoClient.connect();
+            const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            let listToken = tokenIds.split(';');
+            await collection.updateMany({tokenId: {$in: listToken}}, {$set: {isBlindbox: true, blindboxIndex: blindboxIndex}});
+        } catch (err) {
+            logger.error(err);
+        } finally {
+            await mongoClient.close();
+        }
+    },
 }

@@ -326,6 +326,7 @@ module.exports = {
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
                 await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.deleteTokenFromBlindBox(result.tokenId);
             })
         });
         
