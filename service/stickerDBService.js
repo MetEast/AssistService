@@ -2549,16 +2549,18 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             const token = await collection.findOne({tokenId: tokenId});
-            if(token.isBlindbox == true && token.blindboxIndex != null) {
+            if(token.isBlindbox == true && token.blindBoxIndex != null) {
                 const response = await fetch(
-                    config.centralAppUrl + `/api/v1/deleteTokenFromBlindbox?blindBoxIndex=${token.blindboxIndex}&tokenId=${tokenId}`
+                    config.centralAppUrl + `/api/v1/deleteTokenFromBlindbox?blindBoxIndex=${token.blindBoxIndex}&tokenId=${tokenId}`
                 );
             }
+            await collection.updateOne({tokenId: tokenId}, {$set: {blindBoxIndex: null, isBlindbox: false}});
+            await mongoClient.close();
         } catch (err) {
             logger.error(err);
+            await mongoClient.close();
             throw new Error();
         } finally {
-            await mongoClient.close();
         }
     },
 }
