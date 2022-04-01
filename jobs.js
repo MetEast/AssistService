@@ -215,7 +215,7 @@ module.exports = {
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, false);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, null);
             })
         });
 
@@ -283,10 +283,9 @@ module.exports = {
                 let notifyTitle = 'New sale!';
                 let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
-
-                let royalityPrice = orderEventDetail.price * (orderEventDetail.royaltyFee / 1e18);
+s
                 notifyTitle = 'Royalties Received!';
-                notifyContext = `You have received ${royalityPrice/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
+                notifyContext = `You have received ${orderEventDetail.royaltyFee/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
                 if(nft && nft.royaltyOwner) {
                     webSocketService.makeSocketData(notifyTitle, notifyContext, nft.royaltyOwner);
                 }
