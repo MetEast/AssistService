@@ -215,7 +215,7 @@ module.exports = {
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, result.isBlindBox);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, false);
             })
         });
 
@@ -356,8 +356,9 @@ module.exports = {
                 logger.info(`[OrderTakenDown] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, null);
-
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, false);
+                await stickerDBService.deleteTokenFromBlindBox(result.tokenId);
+                
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
                 let notifyTitle = 'Important Notice.';

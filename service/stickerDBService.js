@@ -406,7 +406,9 @@ module.exports = {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
             await collection.updateOne({tokenId}, {$set: {
-                    holder: config.burnAddress
+                    holder: config.burnAddress,
+                    isBlindbox: false,
+                    blindboxIndex: null
             }});
         } catch (err) {
             logger.error(err);
