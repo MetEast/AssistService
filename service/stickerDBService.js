@@ -960,9 +960,11 @@ module.exports = {
             let collection = mongoClient.db(config.dbName).collection('meteast_order');
             
             let result = await collection.aggregate([
-            { $match: {$and : [{"tokenId": new RegExp('^' + tokenId, 'i')}, { 'orderState': '2'}]} },
-            { $project: {_id: 0, tokenId : 1, price: 1, updateTime:1} },
-            { $sort: {updateTime: 1} }
+                { $lookup : {from: 'meteast_address_did', localField: 'buyerAddr', foreignField: 'address', as: 'address_did'} },
+                { $unwind: "$address_did"},
+                { $match: {$and : [{"tokenId": new RegExp('^' + tokenId, 'i')}, { 'orderState': '2'}]} },
+                { $project: {_id: 0, tokenId : 1, price: 1, updateTime:1, name: "$address_did.did.name"} },
+                { $sort: {updateTime: 1} }
             ]).toArray();
 
             return {code: 200, message: 'success', data: result};

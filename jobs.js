@@ -269,7 +269,7 @@ module.exports = {
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
                     tHash: event.transactionHash, tIndex: event.transactionIndex, blockHash: event.blockHash,
                     logIndex: event.logIndex, removed: event.removed, id: event.id, sellerAddr: result.sellerAddr, buyerAddr: result.buyerAddr,
-                    royaltyFee: result.royaltyFee, tokenId: result.tokenId, price: orderInfo._value, timestamp: result.updateTime, gasFee: gasFee}
+                    royaltyFee: orderInfo._royaltyFee, tokenId: result.tokenId, price: orderInfo._value, timestamp: result.updateTime, gasFee: gasFee}
                 
                     
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
@@ -283,11 +283,10 @@ module.exports = {
                 let notifyTitle = 'New sale!';
                 let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
-s
                 notifyTitle = 'Royalties Received!';
-                notifyContext = `You have received ${orderEventDetail.royaltyFee/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
+                notifyContext = `You have received ${orderInfo._royaltyFee/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
                 if(nft && nft.royaltyOwner) {
-                    webSocketService.makeSocketData(notifyTitle, notifyContext, nft.royaltyOwner);
+                    webSocketService.makeSocketData(notifyTitle, notifyContext, orderInfo._royaltyOwner);
                 }
 
                 // here is a part for platformfee collection
