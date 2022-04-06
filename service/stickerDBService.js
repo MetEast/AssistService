@@ -97,7 +97,7 @@ module.exports = {
         } catch (err) {
             transactionFee = 0
         } finally {
-            return transactionFee == 0 ? await this.getGasFee(txHash): transactionFee;
+            return transactionFee;
         }
     },
     getLatestElaPrice: async function () {
