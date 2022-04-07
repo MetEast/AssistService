@@ -2143,11 +2143,11 @@ module.exports = {
             condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
         }
 
-        if(status == 'online') {
-            condition.push({status: {$ne: 'DELETED'}});
-        } else if(status == 'removed') {
-            condition.push({status: 'DELETED'});
-        }
+        // if(status == 'online') {
+        //     condition.push({status: {$ne: 'DELETED'}});
+        // } else if(status == 'removed') {
+        condition.push({status: 'DELETED'});
+        // }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();
@@ -2277,7 +2277,6 @@ module.exports = {
         }
         condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
         condition.push({status: {$ne: 'DELETED'}});
-        condition.push({isBlindbox: false});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
