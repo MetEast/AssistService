@@ -10,6 +10,8 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
+            let listAddressTotal = await collection
+              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]}).toArray();
             let listAddress = await collection
               .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]})
               .skip((pageNum-1)*pageSize).limit(pageSize).toArray();
@@ -20,7 +22,7 @@ module.exports = {
                 listAddress[i]['role'] = 0;
               }
             }
-            return {code: 200, message: 'success', data: listAddress};
+            return {code: 200, message: 'success', total:listAddressTotal.length, data: listAddress};
         } catch (err) {
           logger.error(err);
           return {code: 500, message: 'server error'};
