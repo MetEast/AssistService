@@ -2277,6 +2277,7 @@ module.exports = {
         }
         condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
         condition.push({status: {$ne: 'DELETED'}});
+        condition.push({isBlindbox: false});
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
