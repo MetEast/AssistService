@@ -10,11 +10,11 @@ router.get('/listaddress', function(req, res) {
     let pageNumStr = req.query.pageNum;
     let pageSizeStr = req.query.pageSize;
     let keyword = req.query.keyword ? req.query.keyword : '';
-    
+    let type = req.query.type;
     let pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
     let pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
 
-    adminDBService.getAddressList(pageNum, pageSize, keyword).then(result => {
+    adminDBService.getAddressList(pageNum, pageSize, keyword, type).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);

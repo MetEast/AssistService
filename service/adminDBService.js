@@ -5,15 +5,26 @@ config = config.curNetwork == 'testNet'? config_test : config;
 let webSocketService = require('./webSocketService');
 
 module.exports = {
-    getAddressList: async function (pageNum, pageSize, keyword) {
+    getAddressList: async function (pageNum, pageSize, keyword, type) {
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
+        let checkType = {};
+        if(type != null && type != '') {
+          let typeArr = type.split(',');
+          if(typeArr.indexOf('0') != -1) {
+            typeArr = typeArr.concat(config.deployerList);
+          }
+          if(typeArr.indexOf('2') != -1) {
+            typeArr.push(null);
+          }
+          checkType = {$or: [{address: {$in: typeArr}}, {role: {$in: typeArr}}]}
+        }
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_address_did');
             let listAddressTotal = await collection
-              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]}).toArray();
+              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}, checkType]}).toArray();
             let listAddress = await collection
-              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}]})
+              .find({$and: [{$or: [{address: {$regex: keyword}}, {"did.name": {$regex: keyword}}]}, checkType]})
               .skip((pageNum-1)*pageSize).limit(pageSize).toArray();
 
             for(var i = 0; i < listAddress.length; i++) {
