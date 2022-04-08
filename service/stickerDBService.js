@@ -408,7 +408,8 @@ module.exports = {
             await collection.updateOne({tokenId}, {$set: {
                     holder: config.burnAddress,
                     isBlindbox: false,
-                    blindboxIndex: null
+                    blindboxIndex: null,
+                    status: 'DELETED'
             }});
         } catch (err) {
             logger.error(err);
