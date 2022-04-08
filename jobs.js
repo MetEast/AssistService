@@ -274,7 +274,7 @@ module.exports = {
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber, false);
+                await stickerDBService.updateTokenStatus(result.tokenId, 0, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber, false);
 
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
