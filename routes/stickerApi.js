@@ -466,6 +466,7 @@ router.get('/getSelfCreateCollectible', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category: '';
     let pageNum, pageSize;
 
     try {
@@ -485,7 +486,7 @@ router.get('/getSelfCreateCollectible', function(req, res) {
         return;
     }
 
-    stickerDBService.getSelfCreateCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getSelfCreateCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
@@ -538,6 +539,7 @@ router.get('/getForSaleCollectible', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category : '';
     let pageNum, pageSize;
 
     try {
@@ -557,7 +559,7 @@ router.get('/getForSaleCollectible', function(req, res) {
         return;
     }
 
-    stickerDBService.getForSaleCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getForSaleCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
@@ -573,6 +575,7 @@ router.get('/getSoldCollectibles', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category :  '';
     let pageNum, pageSize;
 
     try {
@@ -592,7 +595,7 @@ router.get('/getSoldCollectibles', function(req, res) {
         return;
     }
 
-    stickerDBService.getSoldCollectibles(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getSoldCollectibles(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
@@ -644,6 +647,7 @@ router.get('/getOwnCollectible', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category : '';
     let pageNum, pageSize;
 
     try {
@@ -663,7 +667,7 @@ router.get('/getOwnCollectible', function(req, res) {
         return;
     }
 
-    stickerDBService.getOwnCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getOwnCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
@@ -752,6 +756,7 @@ router.get('/getFavoritesCollectible', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category : '';
     let pageNum, pageSize;
 
     try {
@@ -770,7 +775,7 @@ router.get('/getFavoritesCollectible', function(req, res) {
         res.json({code: 400, message: 'bad request'});
         return;
     }
-    stickerDBService.getFavoritesCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did).then(result => {
+    stickerDBService.getFavoritesCollectible(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did, category).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});
@@ -786,6 +791,7 @@ router.get('/getAllCollectibleByAddress', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category : '';
     let pageNum, pageSize;
 
     try {
@@ -805,7 +811,7 @@ router.get('/getAllCollectibleByAddress', function(req, res) {
         return;
     }
 
-    stickerDBService.getAllCollectibleByAddress(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr).then(result => {
+    stickerDBService.getAllCollectibleByAddress(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category).then(result => {
         res.json(result);
     }).catch(error => {
         res.json({code: 500, message: 'server error'});

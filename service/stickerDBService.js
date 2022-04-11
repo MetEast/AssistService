@@ -1657,7 +1657,7 @@ module.exports = {
         }
     },
 
-    getSelfCreateCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getSelfCreateCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category) {
 
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
@@ -1672,6 +1672,9 @@ module.exports = {
 
         condition.push({royaltyOwner: selfAddr});
         condition.push({status: {$ne: 'DELETED'}});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1784,7 +1787,7 @@ module.exports = {
         }
     },
     
-    getForSaleCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getForSaleCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category) {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
@@ -1792,6 +1795,9 @@ module.exports = {
         condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}, {status: 'ON AUCTION', status: 'HAS BIDS'}]});
         condition.push({holder: selfAddr});
         condition.push({status: {$ne: 'DELETED'}});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -1894,7 +1900,7 @@ module.exports = {
         }
     },
     
-    getSoldCollectibles: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getSoldCollectibles: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category) {
 
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
@@ -1902,6 +1908,7 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
 
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
+
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_order');
@@ -1929,6 +1936,9 @@ module.exports = {
                 var temp_condition = [...condition];
                 temp_condition.push({tokenId: ele.tokenId});
                 temp_condition.push({status: {$ne: 'DELETED'}});
+                if(category != '' && category != null) {
+                    temp_condition.push({category: { $regex : new RegExp(category, "i")}});
+                }
                 let record = await collection_token.aggregate([
                     {
                         $addFields: {
@@ -1960,7 +1970,7 @@ module.exports = {
         }
     },
     
-    getOwnCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getOwnCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category) {
 
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
@@ -1973,6 +1983,9 @@ module.exports = {
         }
         condition.push({holder: selfAddr});
         condition.push({status: {$ne: 'DELETED'}});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2206,7 +2219,7 @@ module.exports = {
         }
     },
 
-    getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did) {
+    getFavoritesCollectible: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, did, category) {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let response = await fetch(
@@ -2231,6 +2244,9 @@ module.exports = {
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({tokenId: {$in: tokenIds}});
         condition.push({status: {$ne: 'DELETED'}});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
@@ -2265,7 +2281,7 @@ module.exports = {
         }
     },
 
-    getAllCollectibleByAddress: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr) {
+    getAllCollectibleByAddress: async function (pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, selfAddr, category) {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
         if(filter_status == 'BUY NOW') {
@@ -2275,6 +2291,9 @@ module.exports = {
         }
         condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
         condition.push({status: {$ne: 'DELETED'}});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let mongoClient  = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await mongoClient.connect();
