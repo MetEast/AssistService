@@ -2144,11 +2144,11 @@ module.exports = {
             condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
         }
 
-        // if(status == 'online') {
-        //     condition.push({status: {$ne: 'DELETED'}});
-        // } else if(status == 'removed') {
-        condition.push({status: 'DELETED'});
-        // }
+        if(status == 'online') {
+            condition.push({status: {$ne: 'DELETED'}});
+        } else if(status == 'removed') {
+            condition.push({status: 'DELETED'});
+        }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();

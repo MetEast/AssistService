@@ -45,6 +45,15 @@ router.get('/listMarketTokens', function(req, res) {
     let filter_max_price = req.query.filter_max_price;
     let status = req.query.status;
     let pageNum, pageSize, max_price, min_price;
+
+    if(keyword.length == 42 && keyword[0] == '0' && keyword[1] == 'x') {
+        status = 'removed';
+    } else if(keyword != '' & keyword != null) {
+        status = 'online';
+    } else {
+        status = 'removed';
+    }
+
     try {
         pageNum = pageNumStr ? parseInt(pageNumStr) : 1;
         pageSize = pageSizeStr ? parseInt(pageSizeStr) : 10;
