@@ -2083,7 +2083,7 @@ module.exports = {
         }
     },
 
-    listMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price) {
+    listMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, category) {
         
         let sort = this.composeSort(orderType);
         // filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
@@ -2096,6 +2096,9 @@ module.exports = {
         }
         condition.push({$and: [{status: {$ne: 'NEW'}}, {status: {$ne: 'DELETED'}}]});
         condition.push({isBlindbox: false});
+        if(category != '' && category != null) {
+            condition.push({category: { $regex : new RegExp(category, "i")}});
+        }
         let client = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
         try {
             await client.connect();

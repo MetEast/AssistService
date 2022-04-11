@@ -718,6 +718,7 @@ router.get('/listMarketTokens', function(req, res) {
     let filter_status = req.query.filter_status;
     let filter_min_price = req.query.filter_min_price;
     let filter_max_price = req.query.filter_max_price;
+    let category = req.query.category ? req.query.category : '';
     let pageNum, pageSize, max_price, min_price;
     
     try {
@@ -739,7 +740,7 @@ router.get('/listMarketTokens', function(req, res) {
         return;
     }
 
-    stickerDBService.listMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, min_price, max_price).then(result => {
+    stickerDBService.listMarketTokens(pageNum, pageSize, keyword, orderType, filter_status, min_price, max_price, category).then(result => {
         res.json(result);
     }).catch(error => {
         console.log(error);
