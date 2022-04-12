@@ -46,7 +46,7 @@ router.get('/listMarketTokens', function(req, res) {
     let status = req.query.status;
     let pageNum, pageSize, max_price, min_price;
 
-    if(keyword.length == 42 && keyword[0] == '0' && keyword[1] == 'x') {
+    if(keyword && keyword.length == 42 && keyword[0] == '0' && keyword[1] == 'x') {
         status = 'removed';
     } else if(keyword != '' & keyword != null) {
         status = 'online';
