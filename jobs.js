@@ -278,7 +278,7 @@ module.exports = {
 
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
-                
+
                 let notifyTitle = 'New sale!';
                 let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
