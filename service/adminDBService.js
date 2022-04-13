@@ -52,14 +52,14 @@ module.exports = {
           let notifyContext;
           if(role==3) {
             if(remarks == '' && remarks == null) {
-              notifyContext = `Your account ${address} has been banned by admin.`;
+              notifyContext = `Your account ${address} has been <p style="color:#eb5757;">banned</p> by admin.`;
             } else {
-              notifyContext = `Your account ${address} has been banned by admin for the following reason: ${remarks}`;
+              notifyContext = `Your account ${address} has been <p style="color:#eb5757;">banned</p> by admin for the following reason: ${remarks}`;
             }
           } else if(role==1) {
-            notifyContext = `Your account has been set to the moderator by admin.`;
+            notifyContext = `Your account has been set to the <p style="color:#27ae60;">moderator</p> by admin.`;
           } else if(role==2) {
-            notifyContext = `Your account has been set to the normal user by admin.`;
+            notifyContext = `Your account has been set to the <p style="color:#27ae60;">normal user</p> by admin.`;
           }
           webSocketService.makeSocketData(notifyTitle, notifyContext, address);
 

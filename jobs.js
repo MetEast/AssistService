@@ -185,8 +185,8 @@ module.exports = {
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
-                let notifyTitle = 'New sale!';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has just been bid by ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                let notifyTitle = 'You Have A New Bid!';
+                let notifyContext = `Your <b>${nft && nft.name ? nft.name : '' }</b> project has just been bid by <b>${did && did.name ? did.name : orderEventDetail.buyerAddr}</b> for <b>${orderEventDetail.price/1e18} ELA</b>`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
             })
         });
@@ -280,10 +280,10 @@ module.exports = {
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
                 let notifyTitle = 'New sale!';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } project has been sold to ${did && did.name ? did.name : orderEventDetail.buyerAddr} for ${orderEventDetail.price/1e18} ELA.`
+                let notifyContext = `Your <b>${nft && nft.name ? nft.name : '' }</b> project has been sold to <b>${did && did.name ? did.name : orderEventDetail.buyerAddr}</b> for <b>${orderEventDetail.price/1e18} ELA</b>`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
                 notifyTitle = 'Royalties Received!';
-                notifyContext = `You have received ${orderInfo._royaltyFee/1e18} ELA in Roylties from the sale of the ${nft && nft.name ? nft.name : '' } project.`;
+                notifyContext = `You have received <b>${orderInfo._royaltyFee/1e18} ELA</b> in Roylties from the sale of the <b>${nft && nft.name ? nft.name : '' }</b> project.`;
                 if(nft && nft.royaltyOwner) {
                     webSocketService.makeSocketData(notifyTitle, notifyContext, orderInfo._royaltyOwner);
                 }
@@ -359,7 +359,7 @@ module.exports = {
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
                 let notifyTitle = 'Important Notice.';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been taken down by admin.`;
+                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <p style="color:#eb5757;">takendown</p> by admin.`;
                 if(nft && nft.holder) {
                     webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
                 }
@@ -413,7 +413,7 @@ module.exports = {
                     let nft = await stickerDBService.getTokenInfoByTokenId(tokenId);
 
                     let notifyTitle = 'Important Notice.';
-                    let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been burned by admin.`;
+                    let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <p style="color:#eb5757;">burned</p> by admin.`;
                     if(nft && nft.holder) {
                         webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
                     }
