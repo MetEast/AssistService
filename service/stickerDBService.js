@@ -279,16 +279,16 @@ module.exports = {
                 sort = {likes: -1};
                 break;
             case 'mostrecent':
-                sort = {createTime: -1, timestamp: -1};
+                sort = {createTime: -1, marketTime: -1};
                 break;
             case 'oldest':
-                sort = {createTime: 1, timestamp: 1};
+                sort = {createTime: 1, marketTime: 1};
                 break;
             case 'endingsoon': 
                 sort = {endTime: -1};
                 break;
             default:
-                sort = {createTime: -1, timestamp: -1};
+                sort = {createTime: -1, marketTime: -1};
                 break;
         }
         return sort;

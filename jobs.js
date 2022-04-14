@@ -150,7 +150,7 @@ module.exports = {
                 logger.info(`[OrderForAuction] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'ON AUCTION', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'ON AUCTION', result.sellerAddr, event.blockNumber, null);
             })
         });
 
@@ -180,7 +180,7 @@ module.exports = {
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'HAS BIDS', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'HAS BIDS', result.sellerAddr, event.blockNumber, null);
 
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
@@ -215,7 +215,7 @@ module.exports = {
                 logger.info(`[OrderForSale] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'BUY NOW', result.sellerAddr, event.blockNumber, null);
             })
         });
 
@@ -244,7 +244,7 @@ module.exports = {
                 logger.info(`[OrderPriceChanged] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'PRICE CHANGED', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'PRICE CHANGED', result.sellerAddr, event.blockNumber, null);
             })
         });
 
@@ -274,7 +274,7 @@ module.exports = {
                 logger.info(`[OrderFilled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, 0, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber, false);
+                await stickerDBService.updateTokenStatus(result.tokenId, 0, orderEventDetail.orderId, result.updateTime, result.endTime, 'NEW', result.buyerAddr, event.blockNumber, false);
 
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
@@ -322,7 +322,7 @@ module.exports = {
                 logger.info(`[OrderCanceled] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'NEW', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'NEW', result.sellerAddr, event.blockNumber, null);
                 await stickerDBService.deleteTokenFromBlindBox(result.tokenId);
             })
         });
@@ -353,7 +353,7 @@ module.exports = {
                 logger.info(`[OrderTakenDown] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.createTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, false);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'DELETED', result.sellerAddr, event.blockNumber, false);
                 await stickerDBService.deleteTokenFromBlindBox(result.tokenId);
                 
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
