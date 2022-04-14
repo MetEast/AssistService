@@ -279,16 +279,48 @@ module.exports = {
                 sort = {likes: -1};
                 break;
             case 'mostrecent':
-                sort = {createTime: -1, marketTime: -1};
+                sort = {createTime: -1, timestamp: -1};
                 break;
             case 'oldest':
-                sort = {createTime: 1, marketTime: 1};
+                sort = {createTime: 1, timestamp: 1};
                 break;
             case 'endingsoon': 
                 sort = {endTime: -1};
                 break;
             default:
-                sort = {createTime: -1, marketTime: -1};
+                sort = {createTime: -1, timestamp: -1};
+                break;
+        }
+        return sort;
+    },
+
+    composeSortListMarket: function(orderType) {
+        let sort;
+        switch(orderType)
+        {
+            case 'price_l_to_h':
+                sort = {price: 1};
+                break;
+            case 'price_h_to_l':
+                sort = {price: -1};
+                break;
+            case 'mostviewed':
+                sort = {views: -1};
+                break;
+            case 'mostliked':
+                sort = {likes: -1};
+                break;
+            case 'mostrecent':
+                sort = {marketTime: -1};
+                break;
+            case 'oldest':
+                sort = {marketTime: 1};
+                break;
+            case 'endingsoon': 
+                sort = {endTime: -1};
+                break;
+            default:
+                sort = {marketTime: -1};
                 break;
         }
         return sort;
@@ -2085,7 +2117,7 @@ module.exports = {
 
     listMarketTokens: async function(pageNum, pageSize, keyword, orderType, filter_status, filter_min_price, filter_max_price, category) {
         
-        let sort = this.composeSort(orderType);
+        let sort = this.composeSortListMarket(orderType);
         // filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         // let filter_max_price1 = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
