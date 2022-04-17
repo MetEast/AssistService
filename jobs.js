@@ -359,7 +359,7 @@ module.exports = {
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);
 
                 let notifyTitle = 'Important Notice.';
-                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <p style="color:#eb5757;">takendown</p> by admin.`;
+                let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <span style="color:#eb5757;">takendown</span> by admin.`;
                 if(nft && nft.holder) {
                     webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
                 }
@@ -413,7 +413,7 @@ module.exports = {
                     let nft = await stickerDBService.getTokenInfoByTokenId(tokenId);
 
                     let notifyTitle = 'Important Notice.';
-                    let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <p style="color:#eb5757;">burned</p> by admin.`;
+                    let notifyContext = `Your ${nft && nft.name ? nft.name : '' } Project has been <span style="color:#eb5757;">burned</span> by admin.`;
                     if(nft && nft.holder) {
                         webSocketService.makeSocketData(notifyTitle, notifyContext, nft.holder);
                     }
