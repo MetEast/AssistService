@@ -1952,8 +1952,10 @@ module.exports = {
             ]).toArray();
             let tokenIds = [];
             sold_collectibles.forEach(ele => {
-                tokenIds.push(ele.tokenId);
+                if(tokenIds.indexOf(ele.tokenId) == -1)
+                    tokenIds.push(ele.tokenId);
             });
+
             const response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
@@ -1963,10 +1965,9 @@ module.exports = {
             }
             let tokenPopularity = data.data;
             let result = [];
-            for(var i = 0; i < sold_collectibles.length; i++) {
-                let ele = sold_collectibles[i];
+            for(var i = 0; i < tokenIds.length; i++) {
                 var temp_condition = [...condition];
-                temp_condition.push({tokenId: ele.tokenId});
+                temp_condition.push({tokenId: tokenIds[i]});
                 temp_condition.push({status: {$ne: 'DELETED'}});
                 if(category != '' && category != null) {
                     temp_condition.push({category: { $regex : new RegExp(category, "i")}});
