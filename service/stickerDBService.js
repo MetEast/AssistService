@@ -1969,6 +1969,7 @@ module.exports = {
                 var temp_condition = [...condition];
                 temp_condition.push({tokenId: tokenIds[i]});
                 temp_condition.push({status: {$ne: 'DELETED'}});
+                temp_condition.push({holder: {$ne: selfAddr}});
                 if(category != '' && category != null) {
                     temp_condition.push({category: { $regex : new RegExp(category, "i")}});
                 }
