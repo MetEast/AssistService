@@ -2325,7 +2325,7 @@ module.exports = {
         } else if(filter_status == 'ON AUCTION'){
             condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
         }
-        condition.push({$or: [{holder: selfAddr}, {royaltyOwner: selfAddr}]});
+        condition.push({$or: [{holder: selfAddr}]});
         condition.push({status: {$ne: 'DELETED'}});
         if(category != '' && category != null) {
             condition.push({category: { $regex : new RegExp(category, "i")}});
@@ -2376,7 +2376,7 @@ module.exports = {
                 } else if(filter_status == 'ON AUCTION'){
                     temp_condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
                 }
-                
+
                 temp_condition.push({status: {$ne: 'DELETED'}});
                 if(category != '' && category != null) {
                     temp_condition.push({category: { $regex : new RegExp(category, "i")}});
