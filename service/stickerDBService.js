@@ -2334,6 +2334,7 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
+            const collection_order = mongoClient.db(config.dbName).collection('meteast_order');
             const temp_collection = mongoClient.db(config.dbName).collection('meteast_token_temp_' + Date.now().toString());
             let result = await collection.aggregate([
                 {
@@ -2347,6 +2348,17 @@ module.exports = {
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
+
+            let sold_collectibles = await collection_order.aggregate([
+                { $match: {$and: [{sellerAddr: selfAddr}, {orderState: '2'}] } },
+                { $project: {"_id": 0, tokenId: 1} }
+            ]).toArray();
+
+            sold_collectibles.forEach(ele => {
+                if(tokenIds.indexOf(ele.tokenId) == -1)
+                    tokenIds.push(ele.tokenId);
+            });
+            console.log(tokenIds);
             const response = await fetch(
                 config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
             );
@@ -2355,6 +2367,38 @@ module.exports = {
                 return {code: 500, message: 'centralized app invalid response'}
             }
             let tokenPopularity = data.data;
+            result = [];
+
+            for(var i = 0; i < tokenIds.length; i++) {
+                let temp_condition = this.composeCondition(keyword, '', filter_min_price, filter_max_price);
+                if(filter_status == 'BUY NOW') {
+                    temp_condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
+                } else if(filter_status == 'ON AUCTION'){
+                    temp_condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
+                }
+                
+                temp_condition.push({status: {$ne: 'DELETED'}});
+                if(category != '' && category != null) {
+                    temp_condition.push({category: { $regex : new RegExp(category, "i")}});
+                }
+
+                temp_condition.push({tokenId: tokenIds[i]});
+                
+                let record = await collection.aggregate([
+                    {
+                        $addFields: {
+                           "priceCalculated": { $divide: [ "$price", 10 ** 18 ] }
+                        }
+                    },
+                    { $match: {$and: temp_condition} }
+                ]).toArray();
+                if(record.length > 0) {
+                    const tokenID = record[0]['tokenId'];
+                    record[0]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
+                    record[0]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
+                    result.push(record[0]);
+                }
+            }
 
             for(var i = 0; i < result.length; i++) {
                 const tokenID = result[i]['tokenId'];
