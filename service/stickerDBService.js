@@ -1825,9 +1825,9 @@ module.exports = {
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         if(filter_status == 'BUY NOW') {
-            condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
+            condition.push({endTime: "0"});
         } else if(filter_status == 'ON AUCTION'){
-            condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
+            condition.push({endTime: { $ne: "0"}});
         }
         condition.push({holder: selfAddr});
         condition.push({$and: [{status: {$ne: 'DELETED'}}, {status: {$ne: 'NEW'}}]});
