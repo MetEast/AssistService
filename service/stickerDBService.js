@@ -1949,7 +1949,7 @@ module.exports = {
         if(filter_status == 'BUY NOW') {
             condition.push({$and: [{endTime: "0"}, {status: {$ne: "NEW"}}]});
         } else if(filter_status == 'ON AUCTION'){
-            condition.push({$and: [{endTime: { $ne: "0"}}, , {status: {$ne: "NEW"}}]});
+            condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: "NEW"}}]});
         }
 
         let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology:true});
@@ -2295,7 +2295,7 @@ module.exports = {
         if(filter_status == 'BUY NOW') {
             condition.push({$and: [{endTime: "0"}, {status: {$ne: "NEW"}}]});
         } else if(filter_status == 'ON AUCTION'){
-            condition.push({$and: [{endTime: { $ne: "0"}}, , {status: {$ne: "NEW"}}]});
+            condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: "NEW"}}]});
         }
         condition.push({tokenId: {$in: tokenIds}});
         condition.push({status: {$ne: 'DELETED'}});
