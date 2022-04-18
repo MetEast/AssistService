@@ -1823,6 +1823,7 @@ module.exports = {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
+        filter_status = filter_status + ',PRICE CHANGED';
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         if(filter_status == 'BUY NOW') {
             condition.push({endTime: "0"});
