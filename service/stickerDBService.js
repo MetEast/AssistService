@@ -1824,9 +1824,13 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
         let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
-        condition.push({$or: [{status: 'PRICE CHANGED'}, {status: 'BUY NOW'}, {status: 'ON AUCTION', status: 'HAS BIDS'}]});
+        if(filter_status == 'BUY NOW') {
+            condition.push({$and: [{endTime: "0"}, {status: {$ne: 'NEW'}}]});
+        } else if(filter_status == 'ON AUCTION'){
+            condition.push({$and: [{endTime: { $ne: "0"}}, {status: {$ne: 'NEW'}}]});
+        }
         condition.push({holder: selfAddr});
-        condition.push({status: {$ne: 'DELETED'}});
+        condition.push({$and: [{status: {$ne: 'DELETED'}}, {status: {$ne: 'NEW'}}]});
         if(category != '' && category != null) {
             condition.push({category: { $regex : new RegExp(category, "i")}});
         }
