@@ -1823,7 +1823,7 @@ module.exports = {
         filter_min_price = parseInt(BigInt(filter_min_price, 10) / BigInt(10 ** 18, 10));
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let sort = this.composeSort(orderType);
-        
+        let condition;
         if(filter_status == 'BUY NOW') {
             condition.push({endTime: "0"});
             filter_status = filter_status + ',PRICE CHANGED';
@@ -1831,7 +1831,7 @@ module.exports = {
             condition.push({endTime: { $ne: "0"}});
             filter_status = filter_status + ',PRICE CHANGED,HAS BIDS';
         }
-        let condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
+        condition = this.composeCondition(keyword, filter_status, filter_min_price, filter_max_price);
         condition.push({holder: selfAddr});
         condition.push({$and: [{status: {$ne: 'DELETED'}}, {status: {$ne: 'NEW'}}]});
         if(category != '' && category != null) {
