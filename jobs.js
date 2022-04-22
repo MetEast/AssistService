@@ -248,7 +248,7 @@ module.exports = {
             })
         });
 
-        let orderFilledJobId = schedule.scheduleJob(new Date(now + 70 * 1000), async () => {
+        let orderFilledJobId = schedule.scheduleJob(new Date(now + 60 * 1000), async () => {
             let lastHeight = await meteastDBService.getLastmeteastOrderSyncHeight('OrderFilled');
             isGetForOrderFilledJobRun = true;
 
@@ -263,7 +263,7 @@ module.exports = {
             }).on("data", async function (event) {
 
                 let orderInfo = event.returnValues;
-
+                
                 let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
@@ -426,7 +426,7 @@ module.exports = {
             })
         });
 
-        schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '* * * * * *'}, () => {
+        schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
             let now = Date.now();
 
             if(!isGetForSaleOrderJobRun) {
@@ -440,8 +440,9 @@ module.exports = {
             }
             if(!isGetForOrderPriceChangedJobRun)
                 orderPriceChangedJobId.reschedule(new Date(now + 60 * 1000));
-            if(!isGetForOrderFilledJobRun)
+            if(!isGetForOrderFilledJobRun) {
                 orderFilledJobId.reschedule(new Date(now + 60 * 1000));
+            }
             if(!isGetForOrderCancelledJobRun)
                 orderCanceledJobId.reschedule(new Date(now + 60 * 1000));
             if(!isGetTokenInfoJobRun) {
