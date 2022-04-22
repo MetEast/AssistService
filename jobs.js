@@ -310,8 +310,9 @@ module.exports = {
                 logger.info(error);
                 logger.info("[OrderCanceled] Sync Ending ...");
             }).on("data", async function (event) {
-
+                
                 let orderInfo = event.returnValues;
+                console.log("Cancel: " + JSON.stringify(orderInfo));
                 let result = await stickerContract.methods.getOrderById(orderInfo._orderId).call();
                 let gasFee = await stickerDBService.getGasFee(event.transactionHash);
                 let orderEventDetail = {orderId: orderInfo._orderId, event: event.event, blockNumber: event.blockNumber,
@@ -425,7 +426,7 @@ module.exports = {
             })
         });
 
-        schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '0 */2 * * * *'}, () => {
+        schedule.scheduleJob({start: new Date(now + 61 * 1000), rule: '* * * * * *'}, () => {
             let now = Date.now();
 
             if(!isGetForSaleOrderJobRun) {
@@ -438,18 +439,18 @@ module.exports = {
                 orderBidJobId.reschedule(new Date(now + 60 * 1000));
             }
             if(!isGetForOrderPriceChangedJobRun)
-                orderPriceChangedJobId.reschedule(new Date(now + 2 * 60 * 1000));
+                orderPriceChangedJobId.reschedule(new Date(now + 60 * 1000));
             if(!isGetForOrderFilledJobRun)
-                orderFilledJobId.reschedule(new Date(now + 3 * 60 * 1000));
+                orderFilledJobId.reschedule(new Date(now + 60 * 1000));
             if(!isGetForOrderCancelledJobRun)
-                orderCanceledJobId.reschedule(new Date(now + 3 * 60 * 1000));
+                orderCanceledJobId.reschedule(new Date(now + 60 * 1000));
             if(!isGetTokenInfoJobRun) {
                 tokenInfoSyncJobId.reschedule(new Date(now + 60 * 1000))
             }
             if(!isGetApprovalRun)
                 approval.reschedule(new Date(now + 60 * 1000))
             if(!isGetForOrderTakenDownedJobRun) {
-                orderTakenDownJobId.reschedule(new Date(now + 3 * 60 * 1000));
+                orderTakenDownJobId.reschedule(new Date(now + 60 * 1000));
             }
         });
 
