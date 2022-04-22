@@ -1,6 +1,6 @@
 module.exports = {
     mongodb: 'mongodb://localhost:27017',
-    dbName: 'meteast_sources_test123',
+    dbName: 'meteast_sources_test',
     dbUser: '',
     dbPass: '',
 
