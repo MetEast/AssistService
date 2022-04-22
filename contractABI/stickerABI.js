@@ -1933,19 +1933,6 @@ module.exports = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getRewardsAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -2723,28 +2710,23 @@ module.exports = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
         "name": "_tokenAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_rewardsAddress",
         "type": "address"
       }
     ],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "pure",
     "type": "function"
   },
   {
