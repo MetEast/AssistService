@@ -38,6 +38,6 @@ module.exports = {
         "c6d2dedb-c75c-4bbe-8e59-80dcd49145e6"
     ],
     deployerList: [
-        "0x93b76C16e8A2c61a3149dF3AdCbE604be1F4137b",
+        "0x68c1b40CadD7c8012b164Dd17531DC45aeb87495",
     ]
 }
