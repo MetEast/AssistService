@@ -13,11 +13,11 @@ module.exports = {
     escWsUrl: 'wss://api-testnet.elastos.io/eth-ws',
     escRpcUrl: 'https://api-testnet.elastos.io/eth',
 
-    meteastContract: '0x15319c02e6f6b4FcB90b465c135c63dc84B9afFC',
-    stickerContract: '0x2Ac890bE6864e06774B34fb075d60CC2E03d286e',
+    meteastContract: '0xd50BEDAD0985041fDf1270AE44034005456e5233',
+    stickerContract: '0x525805f96CEf178AD8d4Ca37E4a2c29262f7ae93',
     galleriaContract: '',
-    meteastContractDeploy: 10748727,
-    stickerContractDeploy: 10748727,
+    meteastContractDeploy: 11813909,
+    stickerContractDeploy: 11813915,
     galleriaContractDeploy: 0,
     ipfsNodeUrl: 'https://ipfs-test.meteast.io/ipfs/',
 
