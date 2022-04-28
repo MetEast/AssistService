@@ -539,7 +539,8 @@ module.exports = {
             if(marketTime) {
                 updateInfo.marketTime = marketTime;
             }
-            await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {updateInfo}});
+            console.log("Update Token:" + JSON.stringify(updateInfo));
+            await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: updateInfo});
             if(isBlindbox != null)
                 await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {isBlindbox}});
             if(holder != config.stickerContract && holder != null) {
