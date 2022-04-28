@@ -180,7 +180,7 @@ module.exports = {
                 logger.info(`[OrderForBid] orderEventDetail: ${JSON.stringify(orderEventDetail)}`)
                 await meteastDBService.insertOrderEvent(orderEventDetail);
                 await stickerDBService.updateOrder(result, event.blockNumber, orderInfo._orderId);
-                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, result.updateTime, result.endTime, 'HAS BIDS', result.sellerAddr, event.blockNumber, null);
+                await stickerDBService.updateTokenStatus(result.tokenId, orderEventDetail.price, orderEventDetail.orderId, null, result.endTime, 'HAS BIDS', result.sellerAddr, event.blockNumber, null);
 
                 let did = await meteastDBService.getDidByAddress(orderEventDetail.buyerAddr);
                 let nft = await stickerDBService.getTokenInfoByTokenId(orderEventDetail.tokenId);

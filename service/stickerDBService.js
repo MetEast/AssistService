@@ -535,7 +535,11 @@ module.exports = {
         try {
             await mongoClient.connect();
             const collection = mongoClient.db(config.dbName).collection('meteast_token');
-            await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {status, price, orderId, marketTime, endTime, blockNumber}});
+            let updateInfo = {status, price, orderId, endTime, blockNumber};
+            if(marketTime) {
+                updateInfo.marketTime = marketTime;
+            }
+            await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {updateInfo}});
             if(isBlindbox != null)
                 await collection.updateOne({tokenId, blockNumber: {$lte: blockNumber}, holder: {$ne: config.burnAddress}}, {$set: {isBlindbox}});
             if(holder != config.stickerContract && holder != null) {
