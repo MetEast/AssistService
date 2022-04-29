@@ -1,9 +1,11 @@
 const cron = require("node-cron");
 let MongoClient = require('mongodb').MongoClient;
+let Web3 = require('web3');
 let config = require('../config');
 const config_test = require("../config_test");
 config = config.curNetwork == 'testNet'? config_test : config;
 let webSocketService = require('./webSocketService');
+let vestingContractABI = require('../contractABI/tokenVesting');
 
 cron.schedule("0 */1 * * *", async () => {
   // get all tokens
@@ -23,5 +25,15 @@ cron.schedule("0 */1 * * *", async () => {
       throw new Error();
   } finally {
       await mongoClient.close();
+  }
+})
+
+cron.schedule("0 0 * * *", async () => {
+  try {
+    let web3Rpc = new Web3(config.escRpcUrl);
+    let vestingContract = new web3Rpc.eth.Contract(vestingContractABI, config.vestingContract);
+    await vestingContract.methods.releaseMiningPool().call();
+  } catch(err) {
+    console.log(err);
   }
 })
