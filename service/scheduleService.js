@@ -28,7 +28,7 @@ cron.schedule("0 */1 * * *", async () => {
   }
 })
 
-cron.schedule("0 0 * * *", async () => {
+cron.schedule("0 */5 * * * *", async () => {
   try {
     let web3Rpc = new Web3(config.escRpcUrl);
     let vestingContract = new web3Rpc.eth.Contract(vestingContractABI, config.vestingContract);
