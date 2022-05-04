@@ -63,8 +63,9 @@ async function sendData(title, context, to) {
       context: context,
       to: to,
     }
+    let jsonString = JSON.stringify(data);
     if(webSocketConnection != null) {
-      webSocketConnection.send(JSON.stringify(data));
+      webSocketConnection.sendUTF(jsonString);
     }
   }).catch(error => {
     console.log(error);
