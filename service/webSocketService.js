@@ -46,14 +46,6 @@ wsServer.on('request', function(request) {
       
     });
 
-    function sendCheckData() {
-      if(webSocketConnection != null) {
-        webSocketConnection.send(JSON.stringify({type: 'check', data: 1}));
-      }
-      setTimeout(sendCheckData, 1000);
-    }
-    sendCheckData();
-
     webSocketConnection.on('close', function(reasonCode, description) {
         console.log((new Date()) + ' Peer ' + webSocketConnection.remoteAddress + ' disconnected.');
     });
@@ -81,15 +73,18 @@ async function sendData(title, context, to) {
 
 client.on('connectFailed', function(error) {
   console.log('Connect Error: ' + error.toString());
+  client.connect('ws://localhost:8081/');
 });
 
 client.on('connect', function(connection) {
   console.log('WebSocket Client Connected');
   connection.on('error', function(error) {
       console.log("Connection Error: " + error.toString());
+      client.connect('ws://localhost:8081/');
   });
   connection.on('close', function() {
       console.log('echo-protocol Connection Closed');
+      client.connect('ws://localhost:8081/');
   });
   connection.on('message', function(message) {
       if (message.type === 'utf8') {
