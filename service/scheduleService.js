@@ -31,8 +31,18 @@ cron.schedule("0 */1 * * *", async () => {
 cron.schedule("0 */5 * * * *", async () => {
   try {
     let web3Rpc = new Web3(config.escRpcUrl);
+    const account = await web3Rpc.eth.accounts.privateKeyToAccount(process.env.wallet_key);
+    web3Rpc.eth.accounts.wallet.add(account);
+    web3Rpc.eth.defaultAccount = account.address;
+
     let vestingContract = new web3Rpc.eth.Contract(vestingContractABI, config.vestingContract);
-    await vestingContract.methods.releaseMiningPool().call();
+    vestingContract.methods.releaseMiningPool().send({from: web3Rpc.eth.defaultAccount, gas: 100000}, function(err, res) {
+      if (err) {
+        console.log("An error occured", err)
+        return
+      }
+      console.log("Hash of the transaction: " + res)
+    });
   } catch(err) {
     console.log(err);
   }

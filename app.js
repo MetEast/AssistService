@@ -8,6 +8,7 @@ let adminApi = require('./routes/adminApi')
 let jobs = require('./jobs');
 let log4js = require('log4js');
 let cors = require('cors');
+require('dotenv').config()
 require('./service/scheduleService');
 
 log4js.configure({
