@@ -28,7 +28,7 @@ cron.schedule("0 */1 * * *", async () => {
   }
 })
 
-cron.schedule("0 */5 * * * *", async () => {
+const callingMiningPool = async () => {
   try {
     let web3Rpc = new Web3(config.escRpcUrl);
     const account = await web3Rpc.eth.accounts.privateKeyToAccount(process.env.wallet_key);
@@ -36,7 +36,8 @@ cron.schedule("0 */5 * * * *", async () => {
     web3Rpc.eth.defaultAccount = account.address;
 
     let vestingContract = new web3Rpc.eth.Contract(vestingContractABI, config.vestingContract);
-    vestingContract.methods.releaseMiningPool().send({from: web3Rpc.eth.defaultAccount, gas: 100000}, function(err, res) {
+
+      vestingContract.methods.releaseMiningPool().send({from: web3Rpc.eth.defaultAccount, gas: 100000}, function(err, res) {
       if (err) {
         console.log("An error occured", err)
         return
@@ -46,4 +47,40 @@ cron.schedule("0 */5 * * * *", async () => {
   } catch(err) {
     console.log(err);
   }
-})
+}
+
+const callPoolDuringOneHour = () => {
+  let count = 1;
+  let scheduleEvery5Sec = setInterval(() => {
+    count++;
+    callingMiningPool();
+    if (count == 13) {
+      clearInterval(scheduleEvery5Sec);
+    }
+  }, 300 * 1000);
+};
+
+const setScheduleOfMiningPool = async () => {
+  let web3Rpc = new Web3(config.escRpcUrl);
+  let vestingContract = new web3Rpc.eth.Contract(vestingContractABI, config.vestingContract);
+
+  const epochTime = await vestingContract.methods.getStartTime().call() * 1000;
+  const timeOneDay = 24 * 60 * 60 * 1000; //After 24 hour
+
+  let newEpochTime = epochTime;
+  let current = Date.now() * 1;
+
+  while(newEpochTime <= current) {
+    newEpochTime += timeOneDay;
+    current = Date.now();
+  }
+
+  const delayTime = newEpochTime - 35 * 60 * 1000 - current;
+
+  setTimeout(() => {
+    callPoolDuringOneHour();
+    setInterval(callPoolDuringOneHour, timeOneDay);
+  }, delayTime);
+}
+
+setScheduleOfMiningPool();

@@ -15,7 +15,7 @@ module.exports = {
 
     meteastContract: '0xd50BEDAD0985041fDf1270AE44034005456e5233',
     stickerContract: '0x525805f96CEf178AD8d4Ca37E4a2c29262f7ae93',
-    vestingContract: '0x6053e9A50E07ADacfD7Fd5ecF7E7F35095c67381',
+    vestingContract: '0xb494e638aC2Dae3E9603d3BA8a213C8505F99cC8',
     galleriaContract: '',
     meteastContractDeploy: 11813909,
     stickerContractDeploy: 11813915,
