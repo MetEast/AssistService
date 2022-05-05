@@ -282,12 +282,15 @@ module.exports = {
                 let notifyTitle = 'New sale!';
                 let notifyContext = `Your <b>${nft && nft.name ? nft.name : '' }</b> project has been sold to <b>${did && did.name ? did.name : orderEventDetail.buyerAddr}</b> for <b>${orderEventDetail.price/1e18} ELA</b>`
                 webSocketService.makeSocketData(notifyTitle, notifyContext, orderEventDetail.sellerAddr);
-                notifyTitle = 'Royalties Received!';
-                notifyContext = `You have received <b>${orderInfo._royaltyFee/1e18} ELA</b> in Roylties from the sale of the <b>${nft && nft.name ? nft.name : '' }</b> project.`;
-                if(nft && nft.royaltyOwner) {
-                    webSocketService.makeSocketData(notifyTitle, notifyContext, orderInfo._royaltyOwner);
-                }
-
+                
+                setTimeout(() => {
+                    notifyTitle = 'Royalties Received!';
+                    notifyContext = `You have received <b>${orderInfo._royaltyFee/1e18} ELA</b> in Roylties from the sale of the <b>${nft && nft.name ? nft.name : '' }</b> project.`;
+                    if(nft && nft.royaltyOwner) {
+                        webSocketService.makeSocketData(notifyTitle, notifyContext, orderInfo._royaltyOwner);
+                    }
+                }, 10 * 1000) // Delay for 10 sec
+                
                 // here is a part for platformfee collection
                 orderEventDetail = {orderId: orderInfo._orderId, blockNumber: event.blockNumber, txHash: event.transactionHash,
                     txIndex: event.transactionIndex, platformAddr: result.platformAddr, platformFee: result.platformFee};
