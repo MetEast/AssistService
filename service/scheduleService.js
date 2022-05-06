@@ -14,7 +14,7 @@ cron.schedule("0 */1 * * *", async () => {
     let now = (new Date()/1000).toFixed();
     await mongoClient.connect();
     const collection = mongoClient.db(config.dbName).collection('meteast_token');
-    let listToken = await collection.find({status: 'ON AUCTION', endTime: {$gt: now}}).toArray();
+    let listToken = await collection.find({status: 'ON AUCTION', endTime: {$lt: now}}).toArray();
     listToken.map(cell => {
       let notifyTitle = 'Auction expired!';
       let notifyContext = `Your <b>${cell.name}</b> Project Auction has just ended! Please Settle the auction.`
