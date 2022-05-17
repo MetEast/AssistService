@@ -7,7 +7,7 @@ config = config.curNetwork == 'testNet'? config_test : config;
 let webSocketService = require('./webSocketService');
 let vestingContractABI = require('../contractABI/tokenVesting');
 
-cron.schedule("0 */1 * * *", async () => {
+cron.schedule("0 0 */1 * *", async () => {
   // get all tokens
   let mongoClient = new MongoClient(config.mongodb, {useNewUrlParser: true, useUnifiedTopology: true});
   try {

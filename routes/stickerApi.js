@@ -890,8 +890,8 @@ router.get('/getTokensByIds', function(req, res) {
     })
 });
 
-router.get('/readNotifications', function(req, res) {
-    let ids = req.query.ids;
+router.post('/readNotifications', function(req, res) {
+    let ids = req.body.ids;
 
     stickerDBService.readNotifications(ids).then(result => {
         res.json(result);
