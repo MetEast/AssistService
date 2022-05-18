@@ -1133,19 +1133,19 @@ module.exports = {
             ]).toArray();
             result = result[0];
             collection = client.db(config.dbName).collection('meteast_order');
-            result['holderName'] = ''
+            result.holderName = '';
             let addressRecord = await address_did_collection.findOne({address: result['holder']});
             console.log(addressRecord);
             if(addressRecord) {
                 if(typeof addressRecord.did == 'object') {
-                    result['holderName'] = addressRecord.did.name;
+                    result.holderName = addressRecord.did.name;
                 }
             }
             if(holderName != '') {
                 addressRecord = await address_did_collection.findOne({"did.did": result['holder']});
                 if(addressRecord) {
                     if(typeof addressRecord.did == 'object') {
-                        result['holderName'] = addressRecord.did.name;
+                        result.holderName = addressRecord.did.name;
                     }
                 }
             }
