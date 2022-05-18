@@ -1085,8 +1085,16 @@ module.exports = {
             for(var i = 0; i < result.length; i++) {
                 let listFromAddress = result_address.filter(cell=>cell.address == result[i]['from']);
                 result[i]['fromName'] = listFromAddress[0] && listFromAddress[0]['name'] ? listFromAddress[0]['name'] : '';
+                if(result[i]['fromName'] == '') {
+                    listFromAddress = result_address.filter(cell=>cell.did == result[i]['from']);
+                    result[i]['fromName'] = listFromAddress[0] && listFromAddress[0]['name'] ? listFromAddress[0]['name'] : '';
+                }
                 let listToAddress = result_address.filter(cell=>cell.address == result[i]['to']);
                 result[i]['toName'] = listToAddress[0] && listToAddress[0]['name'] ? listToAddress[0]['name'] : '';
+                if(result[i]['toName'] == '') {
+                    listToAddress = result_address.filter(cell=>cell.did == result[i]['to']);
+                    result[i]['toName'] = listToAddress[0] && listToAddress[0]['name'] ? listToAddress[0]['name'] : '';
+                }
             }
 
             result = this.verifyEvents(result);
