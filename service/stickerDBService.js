@@ -1002,7 +1002,7 @@ module.exports = {
                     $lookup: {
                     from: "meteast_address_did",
                     let: {"tbuyerAddr": "$buyerAddr"},
-                    pipeline: [{$match: {$or: [{ "$expr":{"$eq":["$$tbuyerAddr","$address"]} }, { "$expr":{"$eq":["$$tbuyerAddr","$did.did"]} }]}}],
+                    pipeline: [{$match: {$or: [{ "$expr":{"$eq":["$$tbuyerAddr","$address"]} }, { "$expr":{"$eq":["$$tbuyerAddr","$did.did"]} }]}}, {$limit: 1}],
                     as: "address_did"}
                 },
                 { $unwind: {path: "$address_did", preserveNullAndEmptyArrays: true}},
