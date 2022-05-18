@@ -1544,7 +1544,7 @@ module.exports = {
             ]).toArray();
             let profit = 0;
             for(var i = 0; i < result.length; i++) {
-                profit += (parseInt(result[i]['price']) / (10 ** 18));
+                profit += (parseInt(result[i]['filled']) / (10 ** 18));
             }
             result = await collection.aggregate([
                 { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}]} },
@@ -1611,7 +1611,7 @@ module.exports = {
                       from: "meteast_order",
                       pipeline: [
                         { $match: {$and: [{sellerAddr: address}, {orderState: '2'}]} },
-                        { $project: {'_id': 0, Badge: 'Badge', Earned: "$price", updateTime: 1, tokenId: 1} },
+                        { $project: {'_id': 0, Badge: 'Badge', Earned: "$filled", updateTime: 1, tokenId: 1} },
                       ],
                       "as": "collection1"
                     }}
