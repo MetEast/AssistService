@@ -1141,7 +1141,7 @@ module.exports = {
                     result.holderName = addressRecord.did.name;
                 }
             }
-            if(holderName != '') {
+            if(result.holderName != '') {
                 addressRecord = await address_did_collection.findOne({"did.did": result['holder']});
                 if(addressRecord) {
                     if(typeof addressRecord.did == 'object') {
