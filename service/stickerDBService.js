@@ -998,10 +998,16 @@ module.exports = {
             let collection = mongoClient.db(config.dbName).collection('meteast_order');
             
             let result = await collection.aggregate([
-                { $lookup : {from: 'meteast_address_did', localField: 'buyerAddr', foreignField: 'address', as: 'address_did'} },
-                { $unwind: "$address_did"},
+                { 
+                    $lookup: {
+                    from: "meteast_address_did",
+                    let: {"tbuyerAddr": "$buyerAddr"},
+                    pipeline: [{$match: {$or: [{ "$expr":{"$eq":["$$tbuyerAddr","$address"]} }, { "$expr":{"$eq":["$$tbuyerAddr","$did.did"]} }]}}],
+                    as: "address_did"}
+                },
+                { $unwind: {path: "$address_did", preserveNullAndEmptyArrays: true}},
                 { $match: {$and : [{"tokenId": new RegExp('^' + tokenId, 'i')}, { 'orderState': '2'}]} },
-                { $project: {_id: 0, tokenId : 1, price: "$filled", updateTime:1, name: "$address_did.did.name"} },
+                { $project: {_id: 0, tokenId : 1, price: "$filled", updateTime:1, buyerAddr: 1, name: "$address_did.did.name"} },
                 { $sort: {updateTime: 1} }
             ]).toArray();
 
