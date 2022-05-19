@@ -1540,7 +1540,7 @@ module.exports = {
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: address}, {orderState: '2'}]} },
-                { $project: {_id: 0, price : 1} },
+                { $project: {_id: 0, price : 1, filled: 1} },
             ]).toArray();
             let profit = 0;
             for(var i = 0; i < result.length; i++) {
@@ -1576,12 +1576,12 @@ module.exports = {
             let collection  = mongoClient.db(config.dbName).collection('meteast_order');
             let result = await collection.aggregate([
                 { $match: {$and: [{sellerAddr: address}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
-                { $project: {_id: 0, price: 1} },
+                { $project: {_id: 0, price: 1, filled: 1} },
             ]).toArray();
             let profit = 0;
 
             for(var i = 0; i < result.length; i++) {
-                profit += (parseInt(result[i]['price']) / (10 ** 18));
+                profit += (parseInt(result[i]['filled']) / (10 ** 18));
             }
             result = await collection.aggregate([
                 { $match: {$and: [{royaltyOwner: address}, {sellerAddr: {$ne: address}}, {orderState: '2'}, {$and: [{updateTime: {$gte: start_today}}, {updateTime: {$lte: now}}]}]} },
