@@ -372,13 +372,28 @@ module.exports = {
                 { $project: {'_id': 0} }
             ]).toArray();
             console.log(result);
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+            
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
+
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -390,12 +405,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -1159,9 +1169,14 @@ module.exports = {
 
             let tokenIds = [];
             tokenIds.push(result.tokenId);
-            let response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             let data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1686,13 +1701,26 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1703,12 +1731,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -1749,13 +1772,26 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1766,12 +1802,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+            
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -1802,9 +1833,14 @@ module.exports = {
             sold_collectibles.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1880,13 +1916,26 @@ module.exports = {
                 { $match: {$and: condition} }
             ]).toArray();
             
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1898,12 +1947,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -1935,13 +1979,26 @@ module.exports = {
                 },
                 { $match: {$and: condition} }
             ]).toArray();
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            const response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -1953,12 +2010,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -1998,9 +2050,14 @@ module.exports = {
                     tokenIds.push(ele.tokenId);
             });
 
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -2079,9 +2136,22 @@ module.exports = {
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
@@ -2093,12 +2163,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return { code: 200, message: 'success', data: {total, result} };
         } catch (err) {
             logger.error(err);
@@ -2114,9 +2179,14 @@ module.exports = {
         filter_max_price = parseInt(BigInt(filter_max_price, 10) / BigInt(10 ** 18, 10));
         let tokenIds = str_tokenIds.split(',');
 
-        const response = await fetch(
-            config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-        );
+        const response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({tokenIds: tokenIds.join(',')})
+        });
         const data = await response.json();
         if(data.code != 200) {
             return {code: 500, message: 'centralized app invalid response'}
@@ -2190,13 +2260,27 @@ module.exports = {
                 { $project: {'_id': 0} }
             ]).toArray();
 
+            
+            let total = result.length;
+            if(total > 0)
+                await temp_collection.insertMany(result);
+            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
+            if(total > 0)
+                await temp_collection.drop();
+
             let tokenIds = [];
             result.forEach(ele => {
                 tokenIds.push(ele.tokenId);
             });
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            const response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
+
             console.log(response);
             const data = await response.json();
             if(data.code != 200) {
@@ -2209,12 +2293,7 @@ module.exports = {
                 result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
                 result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
             }
-            let total = result.length;
-            if(total > 0)
-                await temp_collection.insertMany(result);
-            result = await temp_collection.find({}).sort(sort).skip((pageNum - 1) * pageSize).limit(pageSize).toArray();
-            if(total > 0)
-                await temp_collection.drop();
+
             return {code: 200, message: 'success', data: {total, result}};
         } catch (err) {
             logger.error(err);
@@ -2272,9 +2351,14 @@ module.exports = {
                 tokenIds.push(ele.tokenId);
             });
 
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             console.log(data);
             if(data.code != 200) {
@@ -2310,9 +2394,14 @@ module.exports = {
         }
         let tokenIds = data.data;
 
-        response = await fetch(
-            config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-        );
+        response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({tokenIds: tokenIds.join(',')})
+        });
         data = await response.json();
         if(data.code != 200) {
             return {code: 500, message: 'centralized app invalid response'}
@@ -2407,9 +2496,14 @@ module.exports = {
                     tokenIds.push(ele.tokenId);
             });
             console.log(tokenIds);
-            const response = await fetch(
-                config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens' + '?tokenIds=' + tokenIds.join(',')
-            );
+            let response = await fetch(config.centralAppUrl + '/api/v1/' + 'getPopularityOfTokens', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({tokenIds: tokenIds.join(',')})
+            });
             const data = await response.json();
             if(data.code != 200) {
                 return {code: 500, message: 'centralized app invalid response'}
