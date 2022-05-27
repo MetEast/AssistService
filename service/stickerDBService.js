@@ -2441,11 +2441,7 @@ module.exports = {
                 { $match: {$and: condition} },
                 { $project: {'_id': 0} }
             ]).toArray();
-            for(var i = 0; i < result.length; i++) {
-                const tokenID = result[i]['tokenId'];
-                result[i]['views'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].views: 0;
-                result[i]['likes'] = tokenPopularity[tokenID]? tokenPopularity[tokenID].likes: 0;
-            }
+            
             let total = result.length;
             if(total > 0)
                 await temp_collection.insertMany(result);
