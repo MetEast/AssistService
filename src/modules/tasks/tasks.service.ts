@@ -71,7 +71,7 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past Transfer events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️`,
+        `Sync past Transfer events from [${lastHeight + 1}] to [${nowHeight}] finished ✅☕🚾️`,
       );
     }
 
@@ -156,7 +156,9 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderForAuction events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderForAuction events from [${
+          lastHeight + 1
+        }] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 
@@ -241,7 +243,7 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderBid events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderBid events from [${lastHeight + 1}] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 
@@ -334,7 +336,9 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderForSale events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderForSale events from [${
+          lastHeight + 1
+        }] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 
@@ -420,7 +424,9 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderPriceChanged events from [${lastHeight + 1}] to [${nowHeight}] end!!!`,
+        `Sync past OrderPriceChanged events from [${
+          lastHeight + 1
+        }] to [${nowHeight}] finished ✅☕🚾️`,
       );
     }
 
@@ -502,7 +508,7 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderFilled events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderFilled events from [${lastHeight + 1}] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 
@@ -599,7 +605,9 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderCancelled events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderCancelled events from [${
+          lastHeight + 1
+        }] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 
@@ -678,7 +686,9 @@ export class TasksService {
       }
 
       this.logger.log(
-        `Sync past OrderTakenDown events from [${lastHeight + 1}] to [${nowHeight}] end ✅☕🚾️️`,
+        `Sync past OrderTakenDown events from [${
+          lastHeight + 1
+        }] to [${nowHeight}] finished ✅☕🚾️️`,
       );
     }
 

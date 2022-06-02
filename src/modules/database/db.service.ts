@@ -63,4 +63,12 @@ export class DbService {
   async updateOrder(orderId: number, params: UpdateOrderParams) {
     await this.connection.collection('orders').updateOne({ orderId }, { $set: params });
   }
+
+  async orderCount() {
+    return await this.connection.collection('orders').countDocuments();
+  }
+
+  async tokenCount() {
+    return await this.connection.collection('tokens').countDocuments();
+  }
 }
