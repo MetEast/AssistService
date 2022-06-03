@@ -24,7 +24,7 @@ export class DataCheckService {
 
     const [web3OrderCount, web3TokenCount] = await this.web3Service.web3BatchRequest([
       {
-        method: this.web3Service.metContractRPC.methods.getOrderCount().call,
+        method: this.web3Service.metMarketContractRPC.methods.getOrderCount().call,
         params: {},
       },
       {

@@ -13,4 +13,4 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   await app.listen(configService.get('LISTEN_PORT'));
 }
-bootstrap().then(() => console.log('Application start successfully!!!'));
+bootstrap().then(() => console.log('MetEast Assist Service start successfully ✅ '));

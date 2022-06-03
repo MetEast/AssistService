@@ -5,7 +5,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { getTokenEventModel } from '../common/models/TokenEventModel';
 import { Constants } from '../../constants';
-import { SubTasksService } from './subTasks.service';
+import { SubTasksService } from './sub-tasks.service';
 import { ContractTokenInfo, OrderEventType, OrderState } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { getOrderEventModel } from '../common/models/OrderEventModel';

@@ -39,9 +39,7 @@ export class Web3Service {
       },
     };
 
-    this.web3WS = new Web3(
-      new Web3.providers.WebsocketProvider(escWSUrl, options),
-    );
+    this.web3WS = new Web3(new Web3.providers.WebsocketProvider(escWSUrl, options));
     this.web3RPC = new Web3(new Web3.providers.HttpProvider(escRPCUrl));
 
     this.metContractWS = new this.web3WS.eth.Contract(

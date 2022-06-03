@@ -1,8 +1,8 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "meteast-assist-service",
   "private": true,
   "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
+  "description": "meteast-assist-service",
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",

@@ -4,7 +4,6 @@ import {
   ContractTokenInfo,
   ContractUserInfo,
   IPFSTokenInfo,
-  OrderState,
 } from './interfaces';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
