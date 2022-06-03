@@ -67,7 +67,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -118,10 +118,10 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
+      await this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
     } else {
       if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
-        this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
+        await this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
   }
@@ -139,7 +139,6 @@ export class TasksService {
       let fromBlock = lastHeight + 1;
       let toBlock = fromBlock + this.step;
       while (fromBlock <= nowHeight) {
-        toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
         this.logger.log(`Sync past OrderForAuction events from [${fromBlock}] to [${toBlock}]`);
         this.web3Service.metMarketContractWS
           .getPastEvents('OrderForAuction', {
@@ -152,7 +151,8 @@ export class TasksService {
             });
           });
         fromBlock = toBlock + 1;
-        await Sleep(1000 * 10);
+        toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -172,7 +172,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderForAuctionEventData(event);
+        await this.handleOrderForAuctionEventData(event);
       });
   }
 
@@ -210,7 +210,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderBid', 5000)
@@ -226,7 +226,6 @@ export class TasksService {
       let fromBlock = lastHeight + 1;
       let toBlock = fromBlock + this.step;
       while (fromBlock <= nowHeight) {
-        toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
         this.logger.log(`Sync past OrderBid events from [${fromBlock}] to [${toBlock}]`);
         this.web3Service.metMarketContractWS
           .getPastEvents('OrderBid', {
@@ -239,7 +238,8 @@ export class TasksService {
             });
           });
         fromBlock = toBlock + 1;
-        await Sleep(1000 * 10);
+        toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -256,7 +256,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderBidEventData(event);
+        await this.handleOrderBidEventData(event);
       });
   }
 
@@ -291,16 +291,16 @@ export class TasksService {
 
     await bidOrderEvent.save();
 
-    this.subTasksService.updateOrder(eventInfo.orderId, {
-      orderState: contractOrderInfo.orderState,
+    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+      orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
       buyerUri: contractOrderInfo.buyerUri,
-      filled: contractOrderInfo.filled,
+      filled: parseInt(contractOrderInfo.filled),
       platformAddr: contractOrderInfo.platformAddr,
-      platformFee: contractOrderInfo.platformFee,
-      updateTime: contractOrderInfo.timestamp,
-      bids: contractOrderInfo.bids,
-      lastBid: contractOrderInfo.lastBid,
+      platformFee: parseInt(contractOrderInfo.platformFee),
+      updateTime: parseInt(contractOrderInfo.updateTime),
+      bids: parseInt(contractOrderInfo.bids),
+      lastBid: parseInt(contractOrderInfo.lastBid),
       lastBidder: contractOrderInfo.lastBidder,
     });
   }
@@ -332,7 +332,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -351,7 +351,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderForSaleEventData(event);
+        await this.handleOrderForSaleEventData(event);
       });
   }
 
@@ -387,7 +387,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderPriceChanged', 5000)
@@ -420,7 +420,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -440,7 +440,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderPriceChangedEventData(event);
+        await this.handleOrderPriceChangedEventData(event);
       });
   }
 
@@ -470,8 +470,8 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(eventInfo.orderId, {
-      price: eventInfo.newPrice,
+    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+      price: parseInt(eventInfo.newPrice),
       updateTime: orderEvent.timestamp,
     });
   }
@@ -504,7 +504,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -521,7 +521,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderFilledEventData(event);
+        await this.handleOrderFilledEventData(event);
       });
   }
 
@@ -562,14 +562,14 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.subTasksService.updateOrder(eventInfo.orderId, {
-      orderState: contractOrderInfo.orderState,
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+      orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
       buyerUri: contractOrderInfo.buyerUri,
-      filled: contractOrderInfo.filled,
+      filled: parseInt(contractOrderInfo.filled),
       platformAddr: contractOrderInfo.platformAddr,
-      platformFee: contractOrderInfo.platformFee,
-      updateTime: contractOrderInfo.timestamp,
+      platformFee: parseInt(contractOrderInfo.platformFee),
+      updateTime: parseInt(contractOrderInfo.updateTime),
     });
   }
 
@@ -601,7 +601,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -620,7 +620,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderCancelledEventData(event);
+        await this.handleOrderCancelledEventData(event);
       });
   }
 
@@ -648,7 +648,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(eventInfo.orderId, {
+    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
       updateTime: orderEvent.timestamp,
     });
@@ -682,7 +682,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 10);
+        await Sleep(1000 * 20);
       }
 
       this.logger.log(
@@ -701,7 +701,7 @@ export class TasksService {
         this.logger.error(error);
       })
       .on('data', async (event) => {
-        this.handleOrderTakenDownEventData(event);
+        await this.handleOrderTakenDownEventData(event);
       });
   }
 
@@ -729,7 +729,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(eventInfo.orderId, {
+    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,
       updateTime: orderEvent.timestamp,
     });

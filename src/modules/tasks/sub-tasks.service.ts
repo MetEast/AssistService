@@ -62,8 +62,7 @@ export class SubTasksService {
 
   async updateOrder(orderId: number, params: UpdateOrderParams) {
     if (params.buyerUri) {
-      const ipfsUserInfo = await this.getInfoByIpfsUri(params.buyerUri);
-      params.buyerInfo = ipfsUserInfo as ContractUserInfo;
+      params.buyerInfo = (await this.getInfoByIpfsUri(params.buyerUri)) as ContractUserInfo;
     }
 
     await this.dbService.updateOrder(orderId, params);
