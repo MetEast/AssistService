@@ -118,10 +118,10 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      await this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
+      this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
     } else {
       if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
-        await this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
+        this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
   }
@@ -210,7 +210,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderBid', 5000)
@@ -387,7 +387,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderPriceChanged', 5000)
@@ -470,7 +470,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
       price: parseInt(eventInfo.newPrice),
       updateTime: orderEvent.timestamp,
     });
@@ -562,7 +562,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
       buyerUri: contractOrderInfo.buyerUri,
@@ -648,7 +648,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
       updateTime: orderEvent.timestamp,
     });
@@ -729,7 +729,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,
       updateTime: orderEvent.timestamp,
     });
