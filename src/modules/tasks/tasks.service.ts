@@ -123,11 +123,19 @@ export class TasksService {
       if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
         this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       } else {
-        this.subTasksService.changeTokenOrderStatus(eventInfo.tokenId, 'onSale');
+        this.subTasksService.changeTokenOrderStatus(
+          eventInfo.tokenId,
+          'onSale',
+          eventInfo.blockNumber,
+        );
       }
 
       if (eventInfo.from === this.configService.get('CONTRACT_MARKET')) {
-        this.subTasksService.changeTokenOrderStatus(eventInfo.tokenId, 'offSale');
+        this.subTasksService.changeTokenOrderStatus(
+          eventInfo.tokenId,
+          'offSale',
+          eventInfo.blockNumber,
+        );
       }
     }
   }

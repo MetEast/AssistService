@@ -68,11 +68,15 @@ export class SubTasksService {
     await this.dbService.updateOrder(orderId, params);
   }
 
-  async changeTokenOrderStatus(tokenId: string, operation: 'onSale' | 'offSale') {
+  async changeTokenOrderStatus(
+    tokenId: string,
+    operation: 'onSale' | 'offSale',
+    blockNumber: number,
+  ) {
     await axios(
       `${this.configService.get(
         'METEAST_BACKEND',
-      )}/api/v1/onOffSale?tokenId=${tokenId}&operation=${operation}`,
+      )}/api/v1/onOffSale?tokenId=${tokenId}&operation=${operation}&blockNumber=${blockNumber}`,
     );
   }
 }
