@@ -5,9 +5,17 @@ import { DbModule } from '../database/db.module';
 import { UtilsModule } from '../utils/utils.module';
 import { SubTasksService } from './sub-tasks.service';
 import { DataCheckService } from './data-check.service';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), DbModule, UtilsModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    DbModule,
+    UtilsModule,
+    BullModule.registerQueue({
+      name: 'tokenOnOffSaleQueue',
+    }),
+  ],
   providers: [TasksService, SubTasksService, DataCheckService],
 })
 export class TasksModule {}

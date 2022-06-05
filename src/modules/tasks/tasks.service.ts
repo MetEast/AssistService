@@ -13,6 +13,8 @@ import { CallOfBatch } from '../utils/interfaces';
 import { getBidOrderEventModel } from '../common/models/BidOrderEventModel';
 import { Timeout } from '@nestjs/schedule';
 import { Sleep } from '../utils/utils.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class TasksService {
@@ -25,6 +27,7 @@ export class TasksService {
     private dbService: DbService,
     private web3Service: Web3Service,
     @InjectConnection() private readonly connection: Connection,
+    @InjectQueue('tokenOnOffSaleQueue') private tokenOnOffSaleQueue: Queue,
   ) {}
 
   private getBaseBatchRequestParam(event: any): CallOfBatch[] {
@@ -123,19 +126,19 @@ export class TasksService {
       if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
         this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       } else {
-        this.subTasksService.changeTokenOrderStatus(
-          eventInfo.tokenId,
-          'onSale',
-          eventInfo.blockNumber,
-        );
+        await this.tokenOnOffSaleQueue.add({
+          tokenId: eventInfo.tokenId,
+          operation: 'onSale',
+          blockNumber: eventInfo.blockNumber,
+        });
       }
 
       if (eventInfo.from === this.configService.get('CONTRACT_MARKET')) {
-        this.subTasksService.changeTokenOrderStatus(
-          eventInfo.tokenId,
-          'offSale',
-          eventInfo.blockNumber,
-        );
+        await this.tokenOnOffSaleQueue.add({
+          tokenId: eventInfo.tokenId,
+          operation: 'offSale',
+          blockNumber: eventInfo.blockNumber,
+        });
       }
     }
   }
