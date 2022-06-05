@@ -118,7 +118,9 @@ export class TasksService {
       timestamp: blockInfo.timestamp,
     });
 
-    if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
+    const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
+
+    if (eventInfo.from === CONTRACT_ADDRESS || eventInfo.to === CONTRACT_ADDRESS) {
       await this.tokenOnOffSaleQueue.add({
         blockNumber: event.blockNumber,
         from: event.returnValues._from,
@@ -132,7 +134,7 @@ export class TasksService {
     if (eventInfo.from === Constants.BURN_ADDRESS) {
       this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
     } else {
-      if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
+      if (eventInfo.to !== CONTRACT_ADDRESS) {
         this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
