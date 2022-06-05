@@ -103,6 +103,17 @@ export class TasksService {
 
     this.logger.log(`Received Transfer Event: ${JSON.stringify(eventInfo)}`);
 
+    const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
+
+    if (eventInfo.from === CONTRACT_ADDRESS || eventInfo.to === CONTRACT_ADDRESS) {
+      await this.tokenOnOffSaleQueue.add({
+        blockNumber: event.blockNumber,
+        from: event.returnValues._from,
+        to: event.returnValues._to,
+        tokenId: event.returnValues._tokenId,
+      });
+    }
+
     const [txInfo, blockInfo, contractTokenInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
       {
@@ -117,17 +128,6 @@ export class TasksService {
       gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
       timestamp: blockInfo.timestamp,
     });
-
-    const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
-
-    if (eventInfo.from === CONTRACT_ADDRESS || eventInfo.to === CONTRACT_ADDRESS) {
-      await this.tokenOnOffSaleQueue.add({
-        blockNumber: event.blockNumber,
-        from: event.returnValues._from,
-        to: event.returnValues._to,
-        tokenId: event.returnValues._tokenId,
-      });
-    }
 
     await tokenEvent.save();
 
