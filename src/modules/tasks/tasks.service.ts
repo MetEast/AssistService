@@ -118,6 +118,15 @@ export class TasksService {
       timestamp: blockInfo.timestamp,
     });
 
+    if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
+      await this.tokenOnOffSaleQueue.add({
+        blockNumber: event.blockNumber,
+        from: event.returnValues._from,
+        to: event.returnValues._to,
+        tokenId: event.returnValues._tokenId,
+      });
+    }
+
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
@@ -125,20 +134,6 @@ export class TasksService {
     } else {
       if (eventInfo.to !== this.configService.get('CONTRACT_MARKET')) {
         this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
-      } else {
-        await this.tokenOnOffSaleQueue.add({
-          tokenId: eventInfo.tokenId,
-          operation: 'onSale',
-          blockNumber: eventInfo.blockNumber,
-        });
-      }
-
-      if (eventInfo.from === this.configService.get('CONTRACT_MARKET')) {
-        await this.tokenOnOffSaleQueue.add({
-          tokenId: eventInfo.tokenId,
-          operation: 'offSale',
-          blockNumber: eventInfo.blockNumber,
-        });
       }
     }
   }
