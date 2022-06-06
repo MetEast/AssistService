@@ -27,8 +27,7 @@ export class TasksService {
     private dbService: DbService,
     private web3Service: Web3Service,
     @InjectConnection() private readonly connection: Connection,
-    @InjectQueue('tokenOnOffSaleQueue') private tokenOnOffSaleQueue: Queue,
-    @InjectQueue('tokenCreateQueue') private tokenCreateQueue: Queue,
+    @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
   ) {}
 
   private getBaseBatchRequestParam(event: any): CallOfBatch[] {
@@ -107,7 +106,7 @@ export class TasksService {
     const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
 
     if (eventInfo.from === CONTRACT_ADDRESS || eventInfo.to === CONTRACT_ADDRESS) {
-      await this.tokenOnOffSaleQueue.add({
+      await this.tokenDataQueue.add('token-on-off-sale', {
         blockNumber: event.blockNumber,
         from: event.returnValues._from,
         to: event.returnValues._to,
@@ -133,7 +132,7 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.tokenCreateQueue.add({
+      this.tokenDataQueue.add('token-create', {
         tokenId: eventInfo.tokenId,
         createTime: tokenEvent.timestamp,
       });

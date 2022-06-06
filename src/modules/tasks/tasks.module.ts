@@ -13,10 +13,7 @@ import { BullModule } from '@nestjs/bull';
     DbModule,
     UtilsModule,
     BullModule.registerQueue({
-      name: 'tokenOnOffSaleQueue',
-    }),
-    BullModule.registerQueue({
-      name: 'tokenCreateQueue',
+      name: 'token-data-queue',
     }),
   ],
   providers: [TasksService, SubTasksService, DataCheckService],
