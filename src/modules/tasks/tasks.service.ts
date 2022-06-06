@@ -28,7 +28,7 @@ export class TasksService {
     private web3Service: Web3Service,
     @InjectConnection() private readonly connection: Connection,
     @InjectQueue('tokenOnOffSaleQueue') private tokenOnOffSaleQueue: Queue,
-    @InjectQueue('tokenCreateTimeQueue') private tokenCreateTimeQueue: Queue,
+    @InjectQueue('tokenCreateQueue') private tokenCreateQueue: Queue,
   ) {}
 
   private getBaseBatchRequestParam(event: any): CallOfBatch[] {
@@ -133,7 +133,7 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.tokenCreateTimeQueue.add({
+      this.tokenCreateQueue.add({
         tokenId: eventInfo.tokenId,
         createTime: tokenEvent.timestamp,
       });

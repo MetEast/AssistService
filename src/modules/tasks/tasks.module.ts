@@ -15,6 +15,9 @@ import { BullModule } from '@nestjs/bull';
     BullModule.registerQueue({
       name: 'tokenOnOffSaleQueue',
     }),
+    BullModule.registerQueue({
+      name: 'tokenCreateQueue',
+    }),
   ],
   providers: [TasksService, SubTasksService, DataCheckService],
 })
