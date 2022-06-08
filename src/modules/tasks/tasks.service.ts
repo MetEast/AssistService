@@ -488,7 +488,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       price: parseInt(eventInfo.newPrice),
       updateTime: orderEvent.timestamp,
     });
@@ -666,7 +666,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
       updateTime: orderEvent.timestamp,
     });
@@ -747,7 +747,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.dbService.updateOrder(parseInt(eventInfo.orderId), {
+    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,
       updateTime: orderEvent.timestamp,
     });

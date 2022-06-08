@@ -12,9 +12,14 @@ import { BullModule } from '@nestjs/bull';
     ScheduleModule.forRoot(),
     DbModule,
     UtilsModule,
-    BullModule.registerQueue({
-      name: 'token-data-queue',
-    }),
+    BullModule.registerQueue(
+      {
+        name: 'token-data-queue',
+      },
+      {
+        name: 'order-data-queue',
+      },
+    ),
   ],
   providers: [TasksService, SubTasksService, DataCheckService],
 })

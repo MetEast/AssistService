@@ -64,15 +64,7 @@ export class DbService {
   }
 
   async updateOrder(orderId: number, params: UpdateOrderParams) {
-    const result = await this.connection
-      .collection('orders')
-      .updateOne({ orderId }, { $set: params });
-
-    if (result.matchedCount === 0) {
-      this.logger.warn(`updateOrder: orderId ${orderId} not found, retrying...`);
-      await Sleep(2000);
-      await this.updateOrder(orderId, params);
-    }
+    return await this.connection.collection('orders').updateOne({ orderId }, { $set: params });
   }
 
   async orderCount() {

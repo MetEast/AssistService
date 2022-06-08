@@ -13,6 +13,9 @@ import axios from 'axios';
 import { getOrderInfoModel } from '../common/models/OrderInfoModel';
 import { DbService } from '../database/db.service';
 import { UpdateOrderParams } from '../database/interfaces';
+import { Sleep } from '../utils/utils.service';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Injectable()
 export class SubTasksService {
@@ -22,6 +25,7 @@ export class SubTasksService {
     private configService: ConfigService,
     private dbService: DbService,
     @InjectConnection() private readonly connection: Connection,
+    @InjectQueue('order-data-queue') private orderDataQueue: Queue,
   ) {}
 
   private async getInfoByIpfsUri(ipfsUri: string): Promise<IPFSTokenInfo | ContractUserInfo> {
@@ -65,18 +69,11 @@ export class SubTasksService {
       params.buyerInfo = (await this.getInfoByIpfsUri(params.buyerUri)) as ContractUserInfo;
     }
 
-    await this.dbService.updateOrder(orderId, params);
-  }
-
-  async changeTokenOrderStatus(
-    tokenId: string,
-    operation: 'onSale' | 'offSale',
-    blockNumber: number,
-  ) {
-    await axios(
-      `${this.configService.get(
-        'METEAST_BACKEND',
-      )}/api/v1/onOffSale?tokenId=${tokenId}&operation=${operation}&blockNumber=${blockNumber}`,
-    );
+    const result = await this.dbService.updateOrder(orderId, params);
+    if (result.modifiedCount === 0) {
+      this.logger.warn(`Order ${orderId} is not exist yet, put the operation into the queue`);
+      await Sleep(1000);
+      await this.orderDataQueue.add('update-order', { orderId, params });
+    }
   }
 }
