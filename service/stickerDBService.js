@@ -1120,7 +1120,7 @@ module.exports = {
     },
 
     getCollectibleByTokenId: async function(tokenId) {
-        let projectionToken = { "_id": 0, tokenId:1, blockNumber:1, timestamp:1, value: 1,memo: 1, to: 1, holder: "$to",
+        let projectionToken = { "_id": 0, tokenId:1, blockNumber:1, timestamp:1, value: 1,memo: 1, to: 1, holder: "$token.holder",
         tokenIndex: "$token.tokenIndex", quantity: "$token.quantity", royalties: "$token.royalties",
         royaltyOwner: "$token.royaltyOwner", createTime: '$token.createTime', tokenIdHex: '$token.tokenIdHex',
         name: "$token.name", description: "$token.description", kind: "$token.kind", type: "$token.type",
