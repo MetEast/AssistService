@@ -26,6 +26,7 @@ export class SubTasksService {
     private dbService: DbService,
     @InjectConnection() private readonly connection: Connection,
     @InjectQueue('order-data-queue') private orderDataQueue: Queue,
+    @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
   ) {}
 
   private async getInfoByIpfsUri(ipfsUri: string): Promise<IPFSTokenInfo | ContractUserInfo> {
@@ -40,7 +41,13 @@ export class SubTasksService {
   }
 
   async dealWithNewToken(tokenInfo: ContractTokenInfo) {
-    const ipfsTokenInfo = await this.getInfoByIpfsUri(tokenInfo.tokenUri);
+    const ipfsTokenInfo = (await this.getInfoByIpfsUri(tokenInfo.tokenUri)) as IPFSTokenInfo;
+
+    await this.tokenDataQueue.add('token-create', {
+      tokenId: tokenInfo.tokenId,
+      createTime: tokenInfo.createTime,
+      category: ipfsTokenInfo.category,
+    });
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
     const tokenInfoDoc = new TokenInfoModel({

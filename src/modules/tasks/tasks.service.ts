@@ -6,7 +6,7 @@ import { Connection } from 'mongoose';
 import { getTokenEventModel } from '../common/models/TokenEventModel';
 import { Constants } from '../../constants';
 import { SubTasksService } from './sub-tasks.service';
-import { ContractTokenInfo, OrderEventType, OrderState } from './interfaces';
+import { ContractTokenInfo, OrderEventType, OrderState, OrderType } from "./interfaces";
 import { ConfigService } from '@nestjs/config';
 import { getOrderEventModel } from '../common/models/OrderEventModel';
 import { CallOfBatch } from '../utils/interfaces';
@@ -132,10 +132,6 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.tokenDataQueue.add('token-create', {
-        tokenId: eventInfo.tokenId,
-        createTime: tokenEvent.timestamp,
-      });
       this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
     } else {
       if (eventInfo.to !== CONTRACT_ADDRESS) {
@@ -207,6 +203,13 @@ export class TasksService {
     };
 
     this.logger.log(`Received OrderForAuction Event: ${JSON.stringify(eventInfo)}`);
+
+    await this.tokenDataQueue.add('update-token', {
+      blockNumber: event.blockNumber,
+      tokenId: eventInfo.tokenId,
+      orderType: OrderType.Auction,
+      orderPrice: eventInfo.minPrice,
+    });
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
@@ -385,27 +388,37 @@ export class TasksService {
 
     this.logger.log(`Received OrderForSale Event: ${JSON.stringify(eventInfo)}`);
 
-    const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
-      ...this.getBaseBatchRequestParam(event),
-      {
-        method: this.web3Service.metMarketContractRPC.methods.getOrderById(
-          event.returnValues._orderId,
-        ).call,
-        params: {},
-      },
-    ]);
-
-    const OrderEventModel = getOrderEventModel(this.connection);
-    const orderEvent = new OrderEventModel({
-      ...eventInfo,
-      eventType: OrderEventType.OrderForSale,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
-      timestamp: blockInfo.timestamp,
+    await this.tokenDataQueue.add('update-token', {
+      blockNumber: event.blockNumber,
+      tokenId: eventInfo.tokenId,
+      orderType: OrderType.Auction,
+      orderPrice: eventInfo.price,
     });
 
-    await orderEvent.save();
+    try {
+      const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
+        ...this.getBaseBatchRequestParam(event),
+        {
+          method: this.web3Service.metMarketContractRPC.methods.getOrderById(
+            event.returnValues._orderId,
+          ).call,
+          params: {},
+        },
+      ]);
 
-    this.subTasksService.dealWithNewOrder(contractOrderInfo);
+      const OrderEventModel = getOrderEventModel(this.connection);
+      const orderEvent = new OrderEventModel({
+        ...eventInfo,
+        eventType: OrderEventType.OrderForSale,
+        gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+        timestamp: blockInfo.timestamp,
+      });
+
+      await orderEvent.save();
+      this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    } catch (error) {
+      this.logger.error(`Get order ${event.returnValues._orderId} info failed: ${JSON.stringify(error)}`);
+    }
   }
 
   @Timeout('orderPriceChanged', 5000)
