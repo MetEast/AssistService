@@ -40,11 +40,12 @@ export class SubTasksService {
     }
   }
 
-  async dealWithNewToken(tokenInfo: ContractTokenInfo) {
+  async dealWithNewToken(tokenInfo: ContractTokenInfo, blockNumber: number) {
     const ipfsTokenInfo = (await this.getInfoByIpfsUri(tokenInfo.tokenUri)) as IPFSTokenInfo;
 
     await this.tokenDataQueue.add('token-create', {
       tokenId: tokenInfo.tokenId,
+      blockNumber,
       createTime: tokenInfo.createTime,
       category: ipfsTokenInfo.category,
     });

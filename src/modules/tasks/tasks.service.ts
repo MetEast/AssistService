@@ -6,7 +6,7 @@ import { Connection } from 'mongoose';
 import { getTokenEventModel } from '../common/models/TokenEventModel';
 import { Constants } from '../../constants';
 import { SubTasksService } from './sub-tasks.service';
-import { ContractTokenInfo, OrderEventType, OrderState, OrderType } from "./interfaces";
+import { ContractTokenInfo, OrderEventType, OrderState, OrderType } from './interfaces';
 import { ConfigService } from '@nestjs/config';
 import { getOrderEventModel } from '../common/models/OrderEventModel';
 import { CallOfBatch } from '../utils/interfaces';
@@ -132,7 +132,10 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.subTasksService.dealWithNewToken(contractTokenInfo as ContractTokenInfo);
+      this.subTasksService.dealWithNewToken(
+        contractTokenInfo as ContractTokenInfo,
+        eventInfo.blockNumber,
+      );
     } else {
       if (eventInfo.to !== CONTRACT_ADDRESS) {
         this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
@@ -207,6 +210,7 @@ export class TasksService {
     await this.tokenDataQueue.add('update-token', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
+      orderId: eventInfo.orderId,
       orderType: OrderType.Auction,
       orderPrice: eventInfo.minPrice,
     });
@@ -391,6 +395,7 @@ export class TasksService {
     await this.tokenDataQueue.add('update-token', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
+      orderId: eventInfo.orderId,
       orderType: OrderType.Auction,
       orderPrice: eventInfo.price,
     });
@@ -417,7 +422,9 @@ export class TasksService {
       await orderEvent.save();
       this.subTasksService.dealWithNewOrder(contractOrderInfo);
     } catch (error) {
-      this.logger.error(`Get order ${event.returnValues._orderId} info failed: ${JSON.stringify(error)}`);
+      this.logger.error(
+        `Get order ${event.returnValues._orderId} info failed: ${JSON.stringify(error)}`,
+      );
     }
   }
 
@@ -486,6 +493,12 @@ export class TasksService {
     };
 
     this.logger.log(`Received OrderPriceChanged Event: ${JSON.stringify(eventInfo)}`);
+
+    await this.tokenDataQueue.add('update-token-price', {
+      blockNumber: event.blockNumber,
+      orderId: eventInfo.orderId,
+      orderPrice: eventInfo.newPrice,
+    });
 
     const [txInfo, blockInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
