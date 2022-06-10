@@ -19,7 +19,7 @@ import { Queue } from 'bull';
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger('TasksService');
-  private readonly step = 10000;
+  private readonly step = 5000;
 
   constructor(
     private subTasksService: SubTasksService,

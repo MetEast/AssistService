@@ -48,6 +48,9 @@ export class SubTasksService {
       blockNumber,
       createTime: parseInt(String(tokenInfo.createTime)),
       category: ipfsTokenInfo.category,
+      name: ipfsTokenInfo.name,
+      description: ipfsTokenInfo.description,
+      royaltyOwner: tokenInfo.royaltyOwner,
     });
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
