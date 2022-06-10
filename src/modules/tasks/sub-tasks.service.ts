@@ -46,7 +46,7 @@ export class SubTasksService {
     await this.tokenDataQueue.add('token-create', {
       tokenId: tokenInfo.tokenId,
       blockNumber,
-      createTime: tokenInfo.createTime,
+      createTime: parseInt(String(tokenInfo.createTime)),
       category: ipfsTokenInfo.category,
     });
 

@@ -211,9 +211,9 @@ export class TasksService {
     await this.orderDataQueue.add('update-order-at-backend', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
-      orderId: eventInfo.orderId,
+      orderId: parseInt(eventInfo.orderId),
       orderType: OrderType.Auction,
-      orderPrice: eventInfo.minPrice,
+      orderPrice: parseInt(eventInfo.minPrice),
     });
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
@@ -300,8 +300,8 @@ export class TasksService {
 
     await this.orderDataQueue.add('update-order-price', {
       blockNumber: event.blockNumber,
-      orderId: eventInfo.orderId,
-      orderPrice: eventInfo.price,
+      orderId: parseInt(eventInfo.orderId),
+      orderPrice: parseInt(eventInfo.price),
     });
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
@@ -402,9 +402,9 @@ export class TasksService {
     await this.orderDataQueue.add('update-order-at-backend', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
-      orderId: eventInfo.orderId,
-      orderType: OrderType.Auction,
-      orderPrice: eventInfo.price,
+      orderId: parseInt(eventInfo.orderId),
+      orderType: OrderType.Sale,
+      orderPrice: parseInt(eventInfo.price),
     });
 
     try {
@@ -503,8 +503,8 @@ export class TasksService {
 
     await this.orderDataQueue.add('update-order-price', {
       blockNumber: event.blockNumber,
-      orderId: eventInfo.orderId,
-      orderPrice: eventInfo.newPrice,
+      orderId: parseInt(eventInfo.orderId),
+      orderPrice: parseInt(eventInfo.newPrice),
     });
 
     const [txInfo, blockInfo] = await this.web3Service.web3BatchRequest([
