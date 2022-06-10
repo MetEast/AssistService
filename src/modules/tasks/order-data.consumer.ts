@@ -14,8 +14,8 @@ export class OrderDataConsumer {
   ) {}
 
   @Process('update-order')
-  async tokenSale(job: Job<{ orderId: number; params: UpdateOrderParams }>) {
-    this.logger.log(`Processing job ['token-on-off-sale'] data: ${JSON.stringify(job.data)}`);
+  async updateOrder(job: Job<{ orderId: number; params: UpdateOrderParams }>) {
+    this.logger.log(`Processing job ['update-order'] data: ${JSON.stringify(job.data)}`);
     await this.subTasksService.updateOrder(job.data.orderId, job.data.params);
   }
 }

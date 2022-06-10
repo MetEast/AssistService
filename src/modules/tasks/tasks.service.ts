@@ -28,6 +28,7 @@ export class TasksService {
     private web3Service: Web3Service,
     @InjectConnection() private readonly connection: Connection,
     @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
+    @InjectQueue('order-data-queue') private orderDataQueue: Queue,
   ) {}
 
   private getBaseBatchRequestParam(event: any): CallOfBatch[] {
@@ -143,7 +144,7 @@ export class TasksService {
     }
   }
 
-  @Timeout('orderForAuction', 2000)
+  @Timeout('orderForAuction', 30 * 1000)
   async handleOrderForAuctionEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(OrderEventType.OrderForAuction);
@@ -207,7 +208,7 @@ export class TasksService {
 
     this.logger.log(`Received OrderForAuction Event: ${JSON.stringify(eventInfo)}`);
 
-    await this.tokenDataQueue.add('update-token', {
+    await this.orderDataQueue.add('update-order-at-backend', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: eventInfo.orderId,
@@ -238,7 +239,7 @@ export class TasksService {
     this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
-  @Timeout('orderBid', 5000)
+  @Timeout('orderBid', 60 * 1000)
   async handleOrderBidEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getBidOrderEventLastHeight();
@@ -297,6 +298,12 @@ export class TasksService {
 
     this.logger.log(`Received BidOrder Event: ${JSON.stringify(eventInfo)}`);
 
+    await this.orderDataQueue.add('update-order-price', {
+      blockNumber: event.blockNumber,
+      orderId: eventInfo.orderId,
+      orderPrice: eventInfo.price,
+    });
+
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
       {
@@ -330,7 +337,7 @@ export class TasksService {
     });
   }
 
-  @Timeout('orderForSale', 2000)
+  @Timeout('orderForSale', 30 * 1000)
   async handleOrderForSaleEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(OrderEventType.OrderForSale);
@@ -392,7 +399,7 @@ export class TasksService {
 
     this.logger.log(`Received OrderForSale Event: ${JSON.stringify(eventInfo)}`);
 
-    await this.tokenDataQueue.add('update-token', {
+    await this.orderDataQueue.add('update-order-at-backend', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: eventInfo.orderId,
@@ -428,7 +435,7 @@ export class TasksService {
     }
   }
 
-  @Timeout('orderPriceChanged', 5000)
+  @Timeout('orderPriceChanged', 60 * 1000)
   async handleOrderPriceChangedEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(
@@ -494,7 +501,7 @@ export class TasksService {
 
     this.logger.log(`Received OrderPriceChanged Event: ${JSON.stringify(eventInfo)}`);
 
-    await this.tokenDataQueue.add('update-token-price', {
+    await this.orderDataQueue.add('update-order-price', {
       blockNumber: event.blockNumber,
       orderId: eventInfo.orderId,
       orderPrice: eventInfo.newPrice,
@@ -520,7 +527,7 @@ export class TasksService {
     });
   }
 
-  @Timeout('orderFilled', 5000)
+  @Timeout('orderFilled', 60 * 1000)
   async handleOrderFilledEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(OrderEventType.OrderFilled);
@@ -617,7 +624,7 @@ export class TasksService {
     });
   }
 
-  @Timeout('orderCancelled', 5000)
+  @Timeout('orderCancelled', 60 * 1000)
   async handleOrderCancelledEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(OrderEventType.OrderCancelled);
@@ -698,7 +705,7 @@ export class TasksService {
     });
   }
 
-  @Timeout('orderTakenDown', 5000)
+  @Timeout('orderTakenDown', 60 * 1000)
   async handleOrderTakenDownEvent() {
     const nowHeight = await this.web3Service.web3RPC.eth.getBlockNumber();
     const lastHeight = await this.dbService.getOrderEventLastHeight(OrderEventType.OrderTakenDown);
