@@ -399,40 +399,35 @@ export class TasksService {
 
     this.logger.log(`Received OrderForSale Event: ${JSON.stringify(eventInfo)}`);
 
+    const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
+      ...this.getBaseBatchRequestParam(event),
+      {
+        method: this.web3Service.metMarketContractRPC.methods.getOrderById(
+          event.returnValues._orderId,
+        ).call,
+        params: {},
+      },
+    ]);
+
+    const OrderEventModel = getOrderEventModel(this.connection);
+    const orderEvent = new OrderEventModel({
+      ...eventInfo,
+      eventType: OrderEventType.OrderForSale,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      timestamp: blockInfo.timestamp,
+    });
+
+    await orderEvent.save();
+
     await this.orderDataQueue.add('update-order-at-backend', {
-      blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
       orderType: OrderType.Sale,
       orderPrice: parseInt(eventInfo.price),
+      createTime: parseInt(contractOrderInfo.createTime),
     });
 
-    try {
-      const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
-        ...this.getBaseBatchRequestParam(event),
-        {
-          method: this.web3Service.metMarketContractRPC.methods.getOrderById(
-            event.returnValues._orderId,
-          ).call,
-          params: {},
-        },
-      ]);
-
-      const OrderEventModel = getOrderEventModel(this.connection);
-      const orderEvent = new OrderEventModel({
-        ...eventInfo,
-        eventType: OrderEventType.OrderForSale,
-        gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
-        timestamp: blockInfo.timestamp,
-      });
-
-      await orderEvent.save();
-      this.subTasksService.dealWithNewOrder(contractOrderInfo);
-    } catch (error) {
-      this.logger.error(
-        `Get order ${event.returnValues._orderId} info failed: ${JSON.stringify(error)}`,
-      );
-    }
+    this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderPriceChanged', 60 * 1000)
