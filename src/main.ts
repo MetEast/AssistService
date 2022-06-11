@@ -6,6 +6,7 @@ import { AppService } from './modules/app/app.service';
 async function bootstrap() {
   const app = await NestFactory.create(MainModule);
 
+  app.setGlobalPrefix('/api/v1');
   //for testing
   const appService = app.get(AppService);
   await appService.test();

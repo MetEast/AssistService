@@ -1,27 +1,23 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Request } from 'express';
-import { ConfigService } from '@nestjs/config';
-
-interface Res {
-  test: string;
-}
+import { CommonResponse } from '../utils/interfaces';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('/check')
+  async check(): Promise<CommonResponse> {
+    return await this.appService.check();
   }
 
-  @Get('/hello')
-  test(@Req() req: Request): Res {
-    console.log(this.configService.get('MONGO_DB_HOST'));
-    return { test: 'test' };
+  @Get('/getCollectibleByTokenId')
+  async getCollectibleByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
+    return await this.appService.getCollectibleByTokenId(tokenId);
+  }
+
+  @Get('/getTransHistoryByTokenId')
+  async getTransHistoryByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
+    return await this.appService.getTransHistoryByTokenId(tokenId);
   }
 }

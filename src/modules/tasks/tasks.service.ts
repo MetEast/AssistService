@@ -314,14 +314,14 @@ export class TasksService {
       },
     ]);
 
-    const BidOrderEventModel = getBidOrderEventModel(this.connection);
-    const bidOrderEvent = new BidOrderEventModel({
+    const OrderEventModel = getOrderEventModel(this.connection);
+    const orderEvent = new OrderEventModel({
       ...eventInfo,
       gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
       timestamp: blockInfo.timestamp,
     });
 
-    await bidOrderEvent.save();
+    await orderEvent.save();
 
     this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),

@@ -5,6 +5,7 @@ export const OrderEventSchema = new mongoose.Schema(
     blockNumber: Number,
     transactionHash: String,
     seller: String,
+    buyer: String,
     orderId: Number,
     tokenId: String,
     quoteToken: String,

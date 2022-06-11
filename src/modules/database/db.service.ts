@@ -4,7 +4,6 @@ import { Connection } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { OrderEventType } from '../tasks/interfaces';
 import { UpdateOrderParams } from './interfaces';
-import { Sleep } from '../utils/utils.service';
 
 @Injectable()
 export class DbService {

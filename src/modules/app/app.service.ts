@@ -1,16 +1,64 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Web3Service } from '../utils/web3.service';
 import { ConfigService } from '@nestjs/config';
+import { DbService } from '../database/db.service';
+import { Constants } from '../../constants';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  constructor(private web3Service: Web3Service, private configService: ConfigService) {}
+  constructor(
+    private web3Service: Web3Service,
+    private configService: ConfigService,
+    private dbService: DbService,
+    @InjectConnection() private readonly connection: Connection,
+  ) {}
 
-  getHello(): string {
-    this.logger.log('Hello NestJS!');
-    return 'Hello World!';
+  async check() {
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS };
+  }
+
+  async getCollectibleByTokenId(tokenId: string) {
+    const data = await this.connection.collection('tokens').findOne({ tokenId });
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
+  }
+
+  async getTransHistoryByTokenId(tokenId: string) {
+    const data = await this.connection
+      .collection('orders')
+      .aggregate([
+        { $match: { tokenId } },
+        { $sort: { updateTime: -1 } },
+        {
+          $lookup: {
+            from: 'order_events',
+            localField: 'orderId',
+            foreignField: 'orderId',
+            as: 'events',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            'events._id': 0,
+            'events.tokenId': 0,
+            tokenId: 0,
+            quoteToken: 0,
+            royaltyOwner: 0,
+            royaltyFee: 0,
+            sellerUri: 0,
+            buyerUri: 0,
+            platformFee: 0,
+            platformAddr: 0,
+          },
+        },
+      ])
+      .toArray();
+
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
   }
 
   async test() {
