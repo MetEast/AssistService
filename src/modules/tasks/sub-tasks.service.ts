@@ -51,6 +51,7 @@ export class SubTasksService {
       name: ipfsTokenInfo.name,
       description: ipfsTokenInfo.description,
       royaltyOwner: tokenInfo.royaltyOwner,
+      thumbnail: ipfsTokenInfo.data.thumbnail,
     });
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
