@@ -10,7 +10,6 @@ import { ContractTokenInfo, OrderEventType, OrderState, OrderType } from './inte
 import { ConfigService } from '@nestjs/config';
 import { getOrderEventModel } from '../common/models/OrderEventModel';
 import { CallOfBatch } from '../utils/interfaces';
-import { getBidOrderEventModel } from '../common/models/BidOrderEventModel';
 import { Timeout } from '@nestjs/schedule';
 import { Sleep } from '../utils/utils.service';
 import { InjectQueue } from '@nestjs/bull';
@@ -213,6 +212,7 @@ export class TasksService {
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
       orderType: OrderType.Auction,
+      orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.minPrice),
     });
 
@@ -302,6 +302,7 @@ export class TasksService {
       blockNumber: event.blockNumber,
       orderId: parseInt(eventInfo.orderId),
       orderPrice: parseInt(eventInfo.price),
+      orderState: OrderState.Filled,
     });
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
@@ -423,6 +424,7 @@ export class TasksService {
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
       orderType: OrderType.Sale,
+      orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.price),
       createTime: parseInt(contractOrderInfo.createTime),
     });
@@ -608,6 +610,12 @@ export class TasksService {
 
     await orderEvent.save();
 
+    await this.orderDataQueue.add('update-order-state', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
+      orderState: OrderState.Filled,
+    });
+
     this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
@@ -694,6 +702,12 @@ export class TasksService {
 
     await orderEvent.save();
 
+    await this.orderDataQueue.add('update-order-state', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
+      orderState: OrderState.Cancelled,
+    });
+
     this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
       updateTime: orderEvent.timestamp,
@@ -774,6 +788,12 @@ export class TasksService {
     });
 
     await orderEvent.save();
+
+    await this.orderDataQueue.add('update-order-state', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
+      orderState: OrderState.TakenDown,
+    });
 
     this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,
