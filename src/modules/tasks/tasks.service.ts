@@ -231,6 +231,7 @@ export class TasksService {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
+      seller: eventInfo.seller,
       orderType: OrderType.Auction,
       orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.minPrice),
@@ -309,6 +310,12 @@ export class TasksService {
       blockNumber: event.blockNumber,
       orderId: parseInt(eventInfo.orderId),
       orderState: OrderState.Filled,
+    });
+
+    await this.orderDataQueue.add('update-order-buyer', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
+      buyer: eventInfo.buyer,
     });
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
@@ -430,6 +437,7 @@ export class TasksService {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
+      seller: eventInfo.seller,
       orderType: OrderType.Sale,
       orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.price),
@@ -621,6 +629,12 @@ export class TasksService {
       blockNumber: event.blockNumber,
       orderId: parseInt(eventInfo.orderId),
       orderState: OrderState.Filled,
+    });
+
+    await this.orderDataQueue.add('update-order-buyer', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
+      buyer: eventInfo.buyer,
     });
 
     this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
