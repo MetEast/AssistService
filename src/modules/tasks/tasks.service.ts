@@ -303,6 +303,11 @@ export class TasksService {
       blockNumber: event.blockNumber,
       orderId: parseInt(eventInfo.orderId),
       orderPrice: parseInt(eventInfo.price),
+    });
+
+    await this.orderDataQueue.add('update-order-state', {
+      blockNumber: event.blockNumber,
+      orderId: parseInt(eventInfo.orderId),
       orderState: OrderState.Filled,
     });
 
