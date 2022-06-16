@@ -51,6 +51,7 @@ export class SubTasksService {
       name: ipfsTokenInfo.name,
       description: ipfsTokenInfo.description,
       royaltyOwner: tokenInfo.royaltyOwner,
+      royaltyFee: parseInt(String(tokenInfo.royaltyFee)),
       thumbnail: ipfsTokenInfo.data.thumbnail,
     });
 
