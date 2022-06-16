@@ -442,6 +442,7 @@ export class TasksService {
       orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.price),
       createTime: parseInt(contractOrderInfo.createTime),
+      isBlindBox: contractOrderInfo.isBlindBox,
     });
 
     this.subTasksService.dealWithNewOrder(contractOrderInfo);
