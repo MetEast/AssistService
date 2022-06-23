@@ -26,7 +26,6 @@ export class TasksService {
     private dbService: DbService,
     private web3Service: Web3Service,
     @InjectConnection() private readonly connection: Connection,
-    @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
     @InjectQueue('order-data-queue') private orderDataQueue: Queue,
   ) {}
 
@@ -103,17 +102,6 @@ export class TasksService {
 
     this.logger.log(`Received Transfer Event: ${JSON.stringify(eventInfo)}`);
 
-    const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
-
-    if (eventInfo.from === CONTRACT_ADDRESS || eventInfo.to === CONTRACT_ADDRESS) {
-      await this.tokenDataQueue.add('token-on-off-sale', {
-        blockNumber: event.blockNumber,
-        from: event.returnValues._from,
-        to: event.returnValues._to,
-        tokenId: event.returnValues._tokenId,
-      });
-    }
-
     const [txInfo, blockInfo, contractTokenInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
       {
@@ -132,13 +120,14 @@ export class TasksService {
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
-      this.subTasksService.dealWithNewToken(
+      await this.subTasksService.dealWithNewToken(
         contractTokenInfo as ContractTokenInfo,
         eventInfo.blockNumber,
       );
     } else {
+      const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
       if (eventInfo.to !== CONTRACT_ADDRESS) {
-        this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
+        await this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
   }
@@ -238,7 +227,7 @@ export class TasksService {
       createTime: parseInt(contractOrderInfo.createTime),
     });
 
-    this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderBid', 60 * 1000)
@@ -337,7 +326,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
       buyerUri: contractOrderInfo.buyerUri,
@@ -445,7 +434,7 @@ export class TasksService {
       isBlindBox: contractOrderInfo.isBlindBox,
     });
 
-    this.subTasksService.dealWithNewOrder(contractOrderInfo);
+    await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
 
   @Timeout('orderPriceChanged', 60 * 1000)
@@ -534,7 +523,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       price: parseInt(eventInfo.newPrice),
       updateTime: orderEvent.timestamp,
     });
@@ -638,7 +627,7 @@ export class TasksService {
       buyer: eventInfo.buyer,
     });
 
-    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),
       buyerAddr: contractOrderInfo.buyerAddr,
       buyerUri: contractOrderInfo.buyerUri,
@@ -730,7 +719,7 @@ export class TasksService {
       orderState: OrderState.Cancelled,
     });
 
-    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
       updateTime: orderEvent.timestamp,
     });
@@ -817,7 +806,7 @@ export class TasksService {
       orderState: OrderState.TakenDown,
     });
 
-    this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
+    await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,
       updateTime: orderEvent.timestamp,
     });
