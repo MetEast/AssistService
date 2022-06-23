@@ -56,15 +56,17 @@ export class SubTasksService {
     });
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
-    // const tokenInfoDoc = new TokenInfoModel();
-    const obj = {
-      tokenIdHex: '0x' + BigInt(tokenInfo.tokenId).toString(16),
-      ...tokenInfo,
-      ...ipfsTokenInfo,
-    };
-    await TokenInfoModel.findOneAndUpdate({ tokenId: tokenInfo.tokenId }, obj, {
-      upsert: true,
-    });
+    await TokenInfoModel.findOneAndUpdate(
+      { tokenId: tokenInfo.tokenId },
+      {
+        tokenIdHex: '0x' + BigInt(tokenInfo.tokenId).toString(16),
+        ...tokenInfo,
+        ...ipfsTokenInfo,
+      },
+      {
+        upsert: true,
+      },
+    );
   }
 
   async dealWithNewOrder(orderInfo: ContractOrderInfo) {

@@ -57,9 +57,12 @@ export class DbService {
   }
 
   async updateTokenOwner(tokenId: string, to: string) {
-    return await this.connection
+    const result = await this.connection
       .collection('tokens')
       .updateOne({ tokenId: tokenId }, { $set: { tokenOwner: to } });
+    if (result.matchedCount === 0) {
+      this.logger.error(`Token ${tokenId} is not in database`);
+    }
   }
 
   async updateOrder(orderId: number, params: UpdateOrderParams) {
