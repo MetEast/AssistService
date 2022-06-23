@@ -56,12 +56,13 @@ export class SubTasksService {
     });
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
-    const tokenInfoDoc = new TokenInfoModel({
+    // const tokenInfoDoc = new TokenInfoModel();
+    const obj = {
       tokenIdHex: '0x' + BigInt(tokenInfo.tokenId).toString(16),
       ...tokenInfo,
       ...ipfsTokenInfo,
-    });
-    await tokenInfoDoc.findOneAndUpdate({ tokenId: tokenInfo.tokenId }, tokenInfoDoc, {
+    };
+    await TokenInfoModel.findOneAndUpdate({ tokenId: tokenInfo.tokenId }, obj, {
       upsert: true,
     });
   }
