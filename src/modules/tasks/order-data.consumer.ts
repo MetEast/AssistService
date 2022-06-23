@@ -14,5 +14,7 @@ export class OrderDataConsumer {
   async updateOrder(job: Job<{ orderId: number; params: UpdateOrderParams }>) {
     this.logger.log(`Processing job ['update-order'] data: ${JSON.stringify(job.data)}`);
     await this.subTasksService.updateOrder(job.data.orderId, job.data.params);
+
+    return true;
   }
 }

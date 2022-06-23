@@ -216,17 +216,21 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('new-order', {
-      blockNumber: event.blockNumber,
-      tokenId: eventInfo.tokenId,
-      orderId: parseInt(eventInfo.orderId),
-      seller: eventInfo.seller,
-      orderType: OrderType.Auction,
-      orderState: OrderState.Created,
-      orderPrice: parseInt(eventInfo.minPrice),
-      createTime: parseInt(contractOrderInfo.createTime),
-      isBlindBox: contractOrderInfo.isBlindBox,
-    });
+    await this.orderDataQueue.add(
+      'new-order',
+      {
+        blockNumber: event.blockNumber,
+        tokenId: eventInfo.tokenId,
+        orderId: parseInt(eventInfo.orderId),
+        seller: eventInfo.seller,
+        orderType: OrderType.Auction,
+        orderState: OrderState.Created,
+        orderPrice: parseInt(eventInfo.minPrice),
+        createTime: parseInt(contractOrderInfo.createTime),
+        isBlindBox: contractOrderInfo.isBlindBox,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
@@ -290,23 +294,35 @@ export class TasksService {
 
     this.logger.log(`Received BidOrder Event: ${JSON.stringify(eventInfo)}`);
 
-    await this.orderDataQueue.add('update-order-price', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderPrice: parseInt(eventInfo.price),
-    });
+    await this.orderDataQueue.add(
+      'update-order-price',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderPrice: parseInt(eventInfo.price),
+      },
+      { removeOnComplete: true },
+    );
 
-    await this.orderDataQueue.add('update-order-state', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderState: OrderState.Filled,
-    });
+    await this.orderDataQueue.add(
+      'update-order-state',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderState: OrderState.Filled,
+      },
+      { removeOnComplete: true },
+    );
 
-    await this.orderDataQueue.add('update-order-buyer', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      buyer: eventInfo.buyer,
-    });
+    await this.orderDataQueue.add(
+      'update-order-buyer',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        buyer: eventInfo.buyer,
+      },
+      { removeOnComplete: true },
+    );
 
     const [txInfo, blockInfo, contractOrderInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
@@ -423,17 +439,21 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('new-order', {
-      blockNumber: event.blockNumber,
-      tokenId: eventInfo.tokenId,
-      orderId: parseInt(eventInfo.orderId),
-      seller: eventInfo.seller,
-      orderType: OrderType.Sale,
-      orderState: OrderState.Created,
-      orderPrice: parseInt(eventInfo.price),
-      createTime: parseInt(contractOrderInfo.createTime),
-      isBlindBox: contractOrderInfo.isBlindBox,
-    });
+    await this.orderDataQueue.add(
+      'new-order',
+      {
+        blockNumber: event.blockNumber,
+        tokenId: eventInfo.tokenId,
+        orderId: parseInt(eventInfo.orderId),
+        seller: eventInfo.seller,
+        orderType: OrderType.Sale,
+        orderState: OrderState.Created,
+        orderPrice: parseInt(eventInfo.price),
+        createTime: parseInt(contractOrderInfo.createTime),
+        isBlindBox: contractOrderInfo.isBlindBox,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.subTasksService.dealWithNewOrder(contractOrderInfo);
   }
@@ -504,11 +524,15 @@ export class TasksService {
 
     this.logger.log(`Received OrderPriceChanged Event: ${JSON.stringify(eventInfo)}`);
 
-    await this.orderDataQueue.add('update-order-price', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderPrice: parseInt(eventInfo.newPrice),
-    });
+    await this.orderDataQueue.add(
+      'update-order-price',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderPrice: parseInt(eventInfo.newPrice),
+      },
+      { removeOnComplete: true },
+    );
 
     const [txInfo, blockInfo] = await this.web3Service.web3BatchRequest([
       ...this.getBaseBatchRequestParam(event),
@@ -616,17 +640,25 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('update-order-state', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderState: OrderState.Filled,
-    });
+    await this.orderDataQueue.add(
+      'update-order-state',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderState: OrderState.Filled,
+      },
+      { removeOnComplete: true },
+    );
 
-    await this.orderDataQueue.add('update-order-buyer', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      buyer: eventInfo.buyer,
-    });
+    await this.orderDataQueue.add(
+      'update-order-buyer',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        buyer: eventInfo.buyer,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: parseInt(contractOrderInfo.orderState),
@@ -714,11 +746,15 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('update-order-state', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderState: OrderState.Cancelled,
-    });
+    await this.orderDataQueue.add(
+      'update-order-state',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderState: OrderState.Cancelled,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.Cancelled,
@@ -801,11 +837,15 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('update-order-state', {
-      blockNumber: event.blockNumber,
-      orderId: parseInt(eventInfo.orderId),
-      orderState: OrderState.TakenDown,
-    });
+    await this.orderDataQueue.add(
+      'update-order-state',
+      {
+        blockNumber: event.blockNumber,
+        orderId: parseInt(eventInfo.orderId),
+        orderState: OrderState.TakenDown,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.subTasksService.updateOrder(parseInt(eventInfo.orderId), {
       orderState: OrderState.TakenDown,

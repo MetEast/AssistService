@@ -43,17 +43,21 @@ export class SubTasksService {
   async dealWithNewToken(tokenInfo: ContractTokenInfo, blockNumber: number) {
     const ipfsTokenInfo = (await this.getInfoByIpfsUri(tokenInfo.tokenUri)) as IPFSTokenInfo;
 
-    await this.tokenDataQueue.add('token-create', {
-      tokenId: tokenInfo.tokenId,
-      blockNumber,
-      createTime: parseInt(String(tokenInfo.createTime)),
-      category: ipfsTokenInfo.category,
-      name: ipfsTokenInfo.name,
-      description: ipfsTokenInfo.description,
-      royaltyOwner: tokenInfo.royaltyOwner,
-      royaltyFee: parseInt(String(tokenInfo.royaltyFee)),
-      thumbnail: ipfsTokenInfo.data.thumbnail,
-    });
+    await this.tokenDataQueue.add(
+      'token-create',
+      {
+        tokenId: tokenInfo.tokenId,
+        blockNumber,
+        createTime: parseInt(String(tokenInfo.createTime)),
+        category: ipfsTokenInfo.category,
+        name: ipfsTokenInfo.name,
+        description: ipfsTokenInfo.description,
+        royaltyOwner: tokenInfo.royaltyOwner,
+        royaltyFee: parseInt(String(tokenInfo.royaltyFee)),
+        thumbnail: ipfsTokenInfo.data.thumbnail,
+      },
+      { removeOnComplete: true },
+    );
 
     const TokenInfoModel = getTokenInfoModel(this.connection);
     await TokenInfoModel.findOneAndUpdate(
@@ -91,7 +95,11 @@ export class SubTasksService {
     if (result.matchedCount === 0) {
       this.logger.warn(`Order ${orderId} is not exist yet, put the operation into the queue`);
       await Sleep(1000);
-      await this.orderDataQueueLocal.add('update-order', { orderId, params });
+      await this.orderDataQueueLocal.add(
+        'update-order',
+        { orderId, params },
+        { removeOnComplete: true },
+      );
     }
   }
 }
