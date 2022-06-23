@@ -216,7 +216,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('update-order-at-backend', {
+    await this.orderDataQueue.add('new-order', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
@@ -225,6 +225,7 @@ export class TasksService {
       orderState: OrderState.Created,
       orderPrice: parseInt(eventInfo.minPrice),
       createTime: parseInt(contractOrderInfo.createTime),
+      isBlindBox: contractOrderInfo.isBlindBox,
     });
 
     await this.subTasksService.dealWithNewOrder(contractOrderInfo);
@@ -422,7 +423,7 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('update-order-at-backend', {
+    await this.orderDataQueue.add('new-order', {
       blockNumber: event.blockNumber,
       tokenId: eventInfo.tokenId,
       orderId: parseInt(eventInfo.orderId),
