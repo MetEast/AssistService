@@ -17,6 +17,9 @@ import { BullModule } from '@nestjs/bull';
         name: 'token-data-queue',
       },
       {
+        name: 'order-data-queue-local',
+      },
+      {
         name: 'order-data-queue',
       },
     ),

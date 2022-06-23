@@ -1,17 +1,14 @@
-import { Processor, Process, InjectQueue } from '@nestjs/bull';
-import { Job, Queue } from 'bull';
+import { Processor, Process } from '@nestjs/bull';
+import { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { UpdateOrderParams } from '../database/interfaces';
 import { SubTasksService } from './sub-tasks.service';
 
-@Processor('order-data-queue')
+@Processor('order-data-queue-local')
 export class OrderDataConsumer {
   private readonly logger = new Logger('OrderDataConsumer');
 
-  constructor(
-    @InjectQueue('order-data-queue') private orderDataQueue: Queue,
-    private subTasksService: SubTasksService,
-  ) {}
+  constructor(private subTasksService: SubTasksService) {}
 
   @Process('update-order')
   async updateOrder(job: Job<{ orderId: number; params: UpdateOrderParams }>) {

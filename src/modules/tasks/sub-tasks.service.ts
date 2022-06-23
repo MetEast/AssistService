@@ -25,7 +25,7 @@ export class SubTasksService {
     private configService: ConfigService,
     private dbService: DbService,
     @InjectConnection() private readonly connection: Connection,
-    @InjectQueue('order-data-queue') private orderDataQueue: Queue,
+    @InjectQueue('order-data-queue-local') private orderDataQueueLocal: Queue,
     @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
   ) {}
 
@@ -86,7 +86,7 @@ export class SubTasksService {
     if (result.modifiedCount === 0) {
       this.logger.warn(`Order ${orderId} is not exist yet, put the operation into the queue`);
       await Sleep(1000);
-      await this.orderDataQueue.add('update-order', { orderId, params });
+      await this.orderDataQueueLocal.add('update-order', { orderId, params });
     }
   }
 }
