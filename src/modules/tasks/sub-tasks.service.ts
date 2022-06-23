@@ -61,7 +61,9 @@ export class SubTasksService {
       ...tokenInfo,
       ...ipfsTokenInfo,
     });
-    await tokenInfoDoc.save();
+    await tokenInfoDoc.findOneAndUpdate({ tokenId: tokenInfo.tokenId }, tokenInfoDoc, {
+      upsert: true,
+    });
   }
 
   async dealWithNewOrder(orderInfo: ContractOrderInfo) {
@@ -83,7 +85,7 @@ export class SubTasksService {
     }
 
     const result = await this.dbService.updateOrder(orderId, params);
-    if (result.modifiedCount === 0) {
+    if (result.matchedCount === 0) {
       this.logger.warn(`Order ${orderId} is not exist yet, put the operation into the queue`);
       await Sleep(1000);
       await this.orderDataQueueLocal.add('update-order', { orderId, params });
