@@ -20,4 +20,19 @@ export class AppController {
   async getTransHistoryByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
     return await this.appService.getTransHistoryByTokenId(tokenId);
   }
+
+  @Get('/getEarnedByAddress')
+  async getEarnedByAddress(@Query('address') address: string): Promise<CommonResponse> {
+    return await this.appService.getEarnedByAddress(address, false, false);
+  }
+
+  @Get('/getTodayEarnedByAddress')
+  async getTodayEarnedByAddress(@Query('address') address: string): Promise<CommonResponse> {
+    return await this.appService.getEarnedByAddress(address, true, false);
+  }
+
+  @Get('/getEarnedListByAddress')
+  async getEarnedListByAddress(@Query('address') address: string): Promise<CommonResponse> {
+    return await this.appService.getEarnedByAddress(address, false, true);
+  }
 }

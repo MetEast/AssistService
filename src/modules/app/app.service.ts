@@ -5,6 +5,7 @@ import { DbService } from '../database/db.service';
 import { Constants } from '../../constants';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { OrderState } from '../tasks/interfaces';
 
 @Injectable()
 export class AppService {
@@ -57,6 +58,50 @@ export class AppService {
         },
       ])
       .toArray();
+
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
+  }
+
+  async getEarnedByAddress(address: string, isToday: boolean, isReturnList: boolean) {
+    const match = { orderState: OrderState.Filled };
+
+    if (isToday) {
+      match['updateTime'] = { $gte: new Date(new Date().setHours(0, 0, 0, 0)) };
+      match['updateTime'] = { $lte: new Date(new Date().setHours(23, 59, 59, 999)) };
+    }
+
+    const items = await this.connection
+      .collection('orders')
+      .aggregate([
+        { $match: match },
+        {
+          $lookup: {
+            from: 'tokens',
+            localField: 'tokenId',
+            foreignField: 'tokenId',
+            as: 'token',
+          },
+        },
+        { $match: { $or: [{ 'token.royaltyOwner': address }, { seller: address }] } },
+      ])
+      .toArray();
+
+    if (isReturnList) {
+      return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data: items };
+    }
+
+    let data = 0;
+    items.forEach((item) => {
+      if (item.token.royaltyOwner === address) {
+        if (item.seller === address) {
+          data += item.price;
+        } else {
+          data += (item.price * item.token.royaltyFee) / Constants.ROYALTY_FEE_RATE;
+        }
+      } else {
+        data += item.price - item.platformFee - item.token.royaltyFee / Constants.ROYALTY_FEE_RATE;
+      }
+    });
 
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
   }
