@@ -63,7 +63,10 @@ export class AppService {
   }
 
   async getEarnedByAddress(address: string, isToday: boolean, isReturnList: boolean) {
-    const match = { orderState: OrderState.Filled };
+    const match = {
+      orderState: OrderState.Filled,
+      $or: [{ royaltyOwner: address }, { seller: address }],
+    };
 
     if (isToday) {
       match['updateTime'] = { $gte: new Date(new Date().setHours(0, 0, 0, 0)) };
@@ -83,7 +86,22 @@ export class AppService {
           },
         },
         { $unwind: { path: '$token' } },
-        { $match: { $or: [{ 'token.royaltyOwner': address }, { seller: address }] } },
+        {
+          $project: {
+            _id: 0,
+            orderType: 1,
+            orderState: 1,
+            price: 1,
+            sellerAddr: 1,
+            filled: 1,
+            royaltyOwner: 1,
+            royaltyFee: 1,
+            platformFee: 1,
+            updateTime: 1,
+            'token.name': 1,
+            'token.data.thumbnail': 1,
+          },
+        },
       ])
       .toArray();
 
@@ -93,14 +111,14 @@ export class AppService {
 
     let data = 0;
     items.forEach((item) => {
-      if (item.token.royaltyOwner === address) {
-        if (item.seller === address) {
+      if (item.royaltyOwner === address) {
+        if (item.sellerAddr === address) {
           data += item.price;
         } else {
-          data += (item.price * item.token.royaltyFee) / Constants.ROYALTY_FEE_RATE;
+          data += item.royaltyFee;
         }
       } else {
-        data += item.price - item.platformFee - item.token.royaltyFee / Constants.ROYALTY_FEE_RATE;
+        data += item.price - item.platformFee - item.royaltyFee;
       }
     });
 
