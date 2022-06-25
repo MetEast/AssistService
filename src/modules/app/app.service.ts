@@ -82,6 +82,7 @@ export class AppService {
             as: 'token',
           },
         },
+        { $unwind: { path: '$token' } },
         { $match: { $or: [{ 'token.royaltyOwner': address }, { seller: address }] } },
       ])
       .toArray();
