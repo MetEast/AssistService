@@ -227,6 +227,7 @@ export class TasksService {
         orderState: OrderState.Created,
         orderPrice: parseInt(eventInfo.minPrice),
         createTime: parseInt(contractOrderInfo.createTime),
+        endTime: parseInt(eventInfo.endTime),
         isBlindBox: contractOrderInfo.isBlindBox,
       },
       { removeOnComplete: true },
