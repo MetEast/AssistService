@@ -26,6 +26,7 @@ export class SubTasksService {
     private dbService: DbService,
     @InjectConnection() private readonly connection: Connection,
     @InjectQueue('order-data-queue-local') private orderDataQueueLocal: Queue,
+    @InjectQueue('token-data-queue-local') private tokenDataQueueLocal: Queue,
     @InjectQueue('token-data-queue') private tokenDataQueue: Queue,
   ) {}
 
@@ -93,7 +94,7 @@ export class SubTasksService {
     if (result.matchedCount === 0) {
       this.logger.warn(`Token ${tokenId} is not in database`);
       await Sleep(1000);
-      await this.tokenDataQueue.add(
+      await this.tokenDataQueueLocal.add(
         'update-token-owner',
         { tokenId, to },
         { removeOnComplete: true },

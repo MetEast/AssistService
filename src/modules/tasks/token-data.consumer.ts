@@ -3,7 +3,7 @@ import { Job } from 'bull';
 import { Logger } from '@nestjs/common';
 import { SubTasksService } from './sub-tasks.service';
 
-@Processor('token-data-queue')
+@Processor('token-data-queue-local')
 export class TokenDataConsumer {
   private readonly logger = new Logger('TokenDataConsumer');
 

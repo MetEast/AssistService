@@ -14,6 +14,9 @@ import { BullModule } from '@nestjs/bull';
     UtilsModule,
     BullModule.registerQueue(
       {
+        name: 'token-data-queue-local',
+      },
+      {
         name: 'token-data-queue',
       },
       {
