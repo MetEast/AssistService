@@ -98,14 +98,14 @@ export class SubTasksService {
         { tokenId, to, blockNumber },
         { removeOnComplete: true },
       );
-      return;
+    } else {
+      await this.connection
+        .collection('tokens')
+        .updateOne(
+          { tokenId: tokenId, blockNumber: { $lt: blockNumber } },
+          { $set: { tokenOwner: to, blockNumber } },
+        );
     }
-    await this.connection
-      .collection('tokens')
-      .updateOne(
-        { tokenId: tokenId, blockNumber: { $lt: blockNumber } },
-        { $set: { tokenOwner: to } },
-      );
   }
 
   async updateOrder(orderId: number, params: UpdateOrderParams) {
