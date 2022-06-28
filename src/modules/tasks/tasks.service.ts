@@ -127,7 +127,7 @@ export class TasksService {
     } else {
       const CONTRACT_ADDRESS = this.configService.get('CONTRACT_MARKET');
       if (eventInfo.to !== CONTRACT_ADDRESS) {
-        await this.dbService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
+        await this.subTasksService.updateTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
   }

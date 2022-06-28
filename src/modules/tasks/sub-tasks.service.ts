@@ -86,6 +86,21 @@ export class SubTasksService {
     await orderInfoDoc.save();
   }
 
+  async updateTokenOwner(tokenId: string, to: string) {
+    const result = await this.connection
+      .collection('tokens')
+      .updateOne({ tokenId: tokenId }, { $set: { tokenOwner: to } });
+    if (result.matchedCount === 0) {
+      this.logger.warn(`Token ${tokenId} is not in database`);
+      await Sleep(1000);
+      await this.tokenDataQueue.add(
+        'update-token-owner',
+        { tokenId, to },
+        { removeOnComplete: true },
+      );
+    }
+  }
+
   async updateOrder(orderId: number, params: UpdateOrderParams) {
     if (params.buyerUri) {
       params.buyerInfo = (await this.getInfoByIpfsUri(params.buyerUri)) as ContractUserInfo;
