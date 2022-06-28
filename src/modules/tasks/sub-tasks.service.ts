@@ -67,6 +67,7 @@ export class SubTasksService {
         tokenIdHex: '0x' + BigInt(tokenInfo.tokenId).toString(16),
         ...tokenInfo,
         ...ipfsTokenInfo,
+        tokenOwner: tokenInfo.royaltyOwner,
         blockNumber,
       },
       {
@@ -99,14 +100,12 @@ export class SubTasksService {
         { removeOnComplete: true },
       );
     } else {
-      const result = await this.connection
+      await this.connection
         .collection('tokens')
         .updateOne(
           { tokenId: tokenId, blockNumber: { $lt: blockNumber } },
           { $set: { tokenOwner: to, blockNumber } },
         );
-
-      this.logger.warn(`${result.matchedCount} ===> ${result.modifiedCount}`);
     }
   }
 
