@@ -16,6 +16,11 @@ export class AppController {
     return await this.appService.getCollectibleByTokenId(tokenId);
   }
 
+  @Get('/getTokenOrderByTokenId')
+  async getTokenOrderByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
+    return await this.appService.getTokenOrderByTokenId(tokenId);
+  }
+
   @Get('/getTransHistoryByTokenId')
   async getTransHistoryByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
     return await this.appService.getTransHistoryByTokenId(tokenId);
