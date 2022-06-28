@@ -6,6 +6,8 @@ import { UtilsModule } from '../utils/utils.module';
 import { SubTasksService } from './sub-tasks.service';
 import { DataCheckService } from './data-check.service';
 import { BullModule } from '@nestjs/bull';
+import { TokenDataConsumer } from './token-data.consumer';
+import { OrderDataConsumer } from './order-data.consumer';
 
 @Module({
   imports: [
@@ -27,6 +29,12 @@ import { BullModule } from '@nestjs/bull';
       },
     ),
   ],
-  providers: [TasksService, SubTasksService, DataCheckService],
+  providers: [
+    TasksService,
+    SubTasksService,
+    DataCheckService,
+    TokenDataConsumer,
+    OrderDataConsumer,
+  ],
 })
 export class TasksModule {}
