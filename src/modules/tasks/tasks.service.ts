@@ -18,7 +18,9 @@ import { Queue } from 'bull';
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger('TasksService');
+
   private readonly step = 5000;
+  private readonly stepInterval = 1000 * 10;
 
   constructor(
     private subTasksService: SubTasksService,
@@ -69,7 +71,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -102,24 +104,27 @@ export class TasksService {
 
     this.logger.log(`Received Transfer Event: ${JSON.stringify(eventInfo)}`);
 
-    const [txInfo, blockInfo, contractTokenInfo] = await this.web3Service.web3BatchRequest([
-      ...this.getBaseBatchRequestParam(event),
-      {
-        method: this.web3Service.metContractRPC.methods.tokenInfo(event.returnValues._tokenId).call,
-        params: {},
-      },
-    ]);
+    // const [txInfo, blockInfo, contractTokenInfo] = await this.web3Service.web3BatchRequest([
+    //   ...this.getBaseBatchRequestParam(event),
+    //   {
+    //     method: this.web3Service.metContractRPC.methods.tokenInfo(event.returnValues._tokenId).call,
+    //     params: {},
+    //   },
+    // ]);
 
     const TokenEventModel = getTokenEventModel(this.connection);
     const tokenEvent = new TokenEventModel({
       ...eventInfo,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
-      timestamp: blockInfo.timestamp,
+      // gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
+      // timestamp: blockInfo.timestamp,
     });
 
     await tokenEvent.save();
 
     if (eventInfo.from === Constants.BURN_ADDRESS) {
+      const contractTokenInfo = await this.web3Service.metContractRPC.methods
+        .tokenInfo(event.returnValues._tokenId)
+        .call();
       await this.subTasksService.dealWithNewToken(
         contractTokenInfo as ContractTokenInfo,
         eventInfo.blockNumber,
@@ -162,7 +167,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -214,7 +219,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderForAuction,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -266,7 +271,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -342,7 +347,7 @@ export class TasksService {
     const OrderEventModel = getOrderEventModel(this.connection);
     const orderEvent = new OrderEventModel({
       ...eventInfo,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -389,7 +394,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -438,7 +443,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderForSale,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -493,7 +498,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -547,7 +552,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderPriceChanged,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -587,7 +592,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -639,7 +644,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderFilled,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -704,7 +709,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -745,7 +750,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderCancelled,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 
@@ -795,7 +800,7 @@ export class TasksService {
           });
         fromBlock = toBlock + 1;
         toBlock = fromBlock + this.step > nowHeight ? nowHeight : toBlock + this.step;
-        await Sleep(1000 * 20);
+        await Sleep(this.stepInterval);
       }
 
       this.logger.log(
@@ -836,7 +841,7 @@ export class TasksService {
     const orderEvent = new OrderEventModel({
       ...eventInfo,
       eventType: OrderEventType.OrderTakenDown,
-      gasFee: (txInfo.gas * txInfo.gasPrice) / 10 ** 18,
+      gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
 

@@ -67,6 +67,7 @@ export class SubTasksService {
         tokenIdHex: '0x' + BigInt(tokenInfo.tokenId).toString(16),
         ...tokenInfo,
         ...ipfsTokenInfo,
+        blockNumber,
       },
       {
         upsert: true,
