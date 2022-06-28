@@ -99,12 +99,14 @@ export class SubTasksService {
         { removeOnComplete: true },
       );
     } else {
-      await this.connection
+      const result = await this.connection
         .collection('tokens')
         .updateOne(
           { tokenId: tokenId, blockNumber: { $lt: blockNumber } },
           { $set: { tokenOwner: to, blockNumber } },
         );
+
+      this.logger.warn(`${result.matchedCount} ===> ${result.modifiedCount}`);
     }
   }
 
