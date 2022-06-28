@@ -10,9 +10,13 @@ export class TokenDataConsumer {
   constructor(private subTasksService: SubTasksService) {}
 
   @Process('update-token-owner')
-  async updateOrder(job: Job<{ tokenId: string; to: string }>) {
+  async updateOrder(job: Job<{ tokenId: string; to: string; blockNumber: number }>) {
     this.logger.log(`Processing job ['update-token-owner'] data: ${JSON.stringify(job.data)}`);
-    await this.subTasksService.updateTokenOwner(job.data.tokenId, job.data.to);
+    await this.subTasksService.updateTokenOwner(
+      job.data.tokenId,
+      job.data.to,
+      job.data.blockNumber,
+    );
 
     return true;
   }
