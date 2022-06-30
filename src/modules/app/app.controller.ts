@@ -1,6 +1,7 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CommonResponse } from '../utils/interfaces';
+import { QueryLatestBidsDTO } from './dto/QueryLatestBidsDTO';
 
 @Controller()
 export class AppController {
@@ -24,6 +25,11 @@ export class AppController {
   @Get('/getTransHistoryByTokenId')
   async getTransHistoryByTokenId(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
     return await this.appService.getTransHistoryByTokenId(tokenId);
+  }
+
+  @Post('/getLatestBids')
+  async getLatestBids(@Body() dto: QueryLatestBidsDTO): Promise<CommonResponse> {
+    return await this.appService.getLatestBids(dto);
   }
 
   @Get('/getEarnedByAddress')

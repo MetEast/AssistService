@@ -1,11 +1,12 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Web3Service } from '../utils/web3.service';
 import { ConfigService } from '@nestjs/config';
 import { DbService } from '../database/db.service';
 import { Constants } from '../../constants';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { OrderState } from '../tasks/interfaces';
+import { OrderEventType, OrderState, OrderType } from '../tasks/interfaces';
+import { QueryLatestBidsDTO } from './dto/QueryLatestBidsDTO';
 
 @Injectable()
 export class AppService {
@@ -51,6 +52,37 @@ export class AppService {
       .toArray();
 
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data: data[0] };
+  }
+
+  async getLatestBids(dto: QueryLatestBidsDTO) {
+    const order = await this.connection
+      .collection('orders')
+      .findOne(
+        { tokenId: dto.tokenId, orderType: OrderType.Auction },
+        { sort: { createTime: -1 } },
+      );
+
+    if (!order) {
+      throw new BadRequestException('No auction order found');
+    }
+
+    const filter = { orderId: order.orderId, event: OrderEventType.OrderBid };
+
+    const total = await this.connection.collection('order_events').count(filter);
+    let data = [];
+
+    if (total > 0) {
+      data = await this.connection
+        .collection('order_events')
+        .find(filter)
+        .sort({ blockNumber: -1 })
+        .project({ _id: 0, transactionHash: 0 })
+        .skip((dto.pageNum - 1) * dto.pageSize)
+        .limit(dto.pageSize)
+        .toArray();
+    }
+
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data: { total, data } };
   }
 
   async getTransHistoryByTokenId(tokenId: string) {
