@@ -315,16 +315,6 @@ export class TasksService {
     );
 
     await this.orderDataQueue.add(
-      'update-order-state',
-      {
-        blockNumber: event.blockNumber,
-        orderId: parseInt(eventInfo.orderId),
-        orderState: OrderState.Filled,
-      },
-      { removeOnComplete: true },
-    );
-
-    await this.orderDataQueue.add(
       'update-order-buyer',
       {
         blockNumber: event.blockNumber,
@@ -657,7 +647,6 @@ export class TasksService {
         blockNumber: event.blockNumber,
         orderId: parseInt(eventInfo.orderId),
         orderState: OrderState.Filled,
-        filled: contractOrderInfo.filled,
       },
       { removeOnComplete: true },
     );
