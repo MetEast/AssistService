@@ -347,6 +347,7 @@ export class TasksService {
     const OrderEventModel = getOrderEventModel(this.connection);
     const orderEvent = new OrderEventModel({
       ...eventInfo,
+      eventType: OrderEventType.OrderBid,
       gasFee: (txInfo.gas * txInfo.gasPrice) / Constants.ELA_ESC_PRECISION,
       timestamp: blockInfo.timestamp,
     });
