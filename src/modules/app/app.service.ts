@@ -66,7 +66,7 @@ export class AppService {
       throw new BadRequestException('No auction order found');
     }
 
-    const filter = { orderId: order.orderId, event: OrderEventType.OrderBid };
+    const filter = { orderId: order.orderId, eventType: OrderEventType.OrderBid };
 
     const total = await this.connection.collection('order_events').count(filter);
     let data = [];

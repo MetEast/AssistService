@@ -657,6 +657,7 @@ export class TasksService {
         blockNumber: event.blockNumber,
         orderId: parseInt(eventInfo.orderId),
         orderState: OrderState.Filled,
+        filled: contractOrderInfo.filled,
       },
       { removeOnComplete: true },
     );
