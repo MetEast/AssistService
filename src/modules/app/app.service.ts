@@ -127,8 +127,8 @@ export class AppService {
     };
 
     if (isToday) {
-      match['updateTime'] = { $gte: new Date(new Date().setHours(0, 0, 0, 0)) };
-      match['updateTime'] = { $lte: new Date(new Date().setHours(23, 59, 59, 999)) };
+      match['updateTime'] = { $gte: new Date().setHours(0, 0, 0, 0) / 1000 };
+      match['updateTime'] = { $lte: new Date().setHours(23, 59, 59, 999) / 1000 };
     }
 
     const items = await this.connection
