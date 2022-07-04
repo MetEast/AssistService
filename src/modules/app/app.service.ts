@@ -174,12 +174,15 @@ export class AppService {
     items.forEach((item) => {
       if (item.royaltyOwner === address) {
         if (item.sellerAddr === address) {
-          data += item.price - item.platformFee;
+          data += (item.orderType === OrderType.Sale ? item.price : item.filled) - item.platformFee;
         } else {
           data += item.royaltyFee;
         }
       } else {
-        data += item.price - item.platformFee - item.royaltyFee;
+        data +=
+          (item.orderType === OrderType.Sale ? item.price : item.filled) -
+          item.platformFee -
+          item.royaltyFee;
       }
     });
 
