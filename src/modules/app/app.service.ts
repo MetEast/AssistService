@@ -123,12 +123,14 @@ export class AppService {
   async getEarnedByAddress(address: string, isToday: boolean, isReturnList: boolean) {
     const match = {
       orderState: OrderState.Filled,
-      $or: [{ royaltyOwner: address }, { seller: address }],
+      $or: [{ royaltyOwner: address }, { sellerAddr: address }],
     };
 
     if (isToday) {
-      match['updateTime'] = { $gte: new Date().setHours(0, 0, 0, 0) / 1000 };
-      match['updateTime'] = { $lte: new Date().setHours(23, 59, 59, 999) / 1000 };
+      match['updateTime'] = {
+        $gte: new Date().setHours(0, 0, 0) / 1000,
+        $lte: new Date().setHours(23, 59, 59) / 1000,
+      };
     }
 
     const items = await this.connection
