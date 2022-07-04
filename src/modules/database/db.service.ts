@@ -44,8 +44,8 @@ export class DbService {
 
   async getBidOrderEventLastHeight(): Promise<number> {
     const results = await this.connection
-      .collection('bid_order_events')
-      .find({})
+      .collection('order_events')
+      .find({ eventType: OrderEventType.OrderBid })
       .sort({ blockNumber: -1 })
       .limit(1)
       .toArray();

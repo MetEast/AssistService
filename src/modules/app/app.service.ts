@@ -162,6 +162,7 @@ export class AppService {
             'token.data.thumbnail': 1,
           },
         },
+        { $sort: { updateTime: -1 } },
       ])
       .toArray();
 
