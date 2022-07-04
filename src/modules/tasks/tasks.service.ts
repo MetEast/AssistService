@@ -355,6 +355,7 @@ export class TasksService {
       bids: parseInt(contractOrderInfo.bids),
       lastBid: parseInt(contractOrderInfo.lastBid),
       lastBidder: contractOrderInfo.lastBidder,
+      price: contractOrderInfo.price,
     });
   }
 

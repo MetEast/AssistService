@@ -174,7 +174,7 @@ export class AppService {
     items.forEach((item) => {
       if (item.royaltyOwner === address) {
         if (item.sellerAddr === address) {
-          data += item.price;
+          data += item.price - item.platformFee;
         } else {
           data += item.royaltyFee;
         }
