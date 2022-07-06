@@ -191,8 +191,8 @@ export class AppService {
     const data = await this.connection
       .collection('orders')
       .find({ tokenId, orderState: OrderState.Filled })
-      .sort({ createTime: -1 })
-      .project({ _id: 0, updateTime: 1, price: 1 })
+      .sort({ updateTime: 1 })
+      .project({ _id: 0, updateTime: 1, price: '$filled' })
       .toArray();
 
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
