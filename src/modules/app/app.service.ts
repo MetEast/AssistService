@@ -1,4 +1,4 @@
-import { BadRequestException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { Web3Service } from '../utils/web3.service';
 import { ConfigService } from '@nestjs/config';
 import { DbService } from '../database/db.service';
