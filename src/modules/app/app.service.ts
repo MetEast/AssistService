@@ -10,8 +10,6 @@ import { QueryLatestBidsDTO } from './dto/QueryLatestBidsDTO';
 
 @Injectable()
 export class AppService {
-  private readonly logger = new Logger(AppService.name);
-
   constructor(
     private web3Service: Web3Service,
     private configService: ConfigService,
@@ -185,6 +183,17 @@ export class AppService {
           item.royaltyFee;
       }
     });
+
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
+  }
+
+  async getTokenPriceHistory(tokenId: string) {
+    const data = await this.connection
+      .collection('orders')
+      .find({ tokenId, orderState: OrderState.Filled })
+      .sort({ createTime: -1 })
+      .project({ _id: 0, updateTime: 1, price: 1 })
+      .toArray();
 
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
   }

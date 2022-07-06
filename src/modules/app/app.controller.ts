@@ -46,4 +46,9 @@ export class AppController {
   async getEarnedListByAddress(@Query('address') address: string): Promise<CommonResponse> {
     return await this.appService.getEarnedByAddress(address, false, true);
   }
+
+  @Get('/getTokenPriceHistory')
+  async getTokenPriceHistory(@Query('tokenId') tokenId: string): Promise<CommonResponse> {
+    return await this.appService.getTokenPriceHistory(tokenId);
+  }
 }
