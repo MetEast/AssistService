@@ -642,15 +642,19 @@ export class TasksService {
 
     await orderEvent.save();
 
-    await this.orderDataQueue.add('notification', {
-      orderId: parseInt(eventInfo.orderId),
-      address: eventInfo.seller,
-      price: parseInt(eventInfo.price),
-      royaltyOwner: eventInfo.royaltyOwner,
-      royaltyFee: parseInt(eventInfo.royaltyFee),
-      buyer: eventInfo.buyer,
-      timestamp: orderEvent.timestamp,
-    });
+    await this.orderDataQueue.add(
+      'notification',
+      {
+        orderId: parseInt(eventInfo.orderId),
+        address: eventInfo.seller,
+        price: parseInt(eventInfo.price),
+        royaltyOwner: eventInfo.royaltyOwner,
+        royaltyFee: parseInt(eventInfo.royaltyFee),
+        buyer: eventInfo.buyer,
+        timestamp: orderEvent.timestamp,
+      },
+      { removeOnComplete: true },
+    );
 
     await this.orderDataQueue.add(
       'update-order-state',
