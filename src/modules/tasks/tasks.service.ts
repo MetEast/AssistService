@@ -684,6 +684,8 @@ export class TasksService {
       platformAddr: contractOrderInfo.platformAddr,
       platformFee: parseInt(contractOrderInfo.platformFee),
       updateTime: parseInt(contractOrderInfo.updateTime),
+      royaltyOwner: eventInfo.royaltyOwner,
+      royaltyFee: parseInt(eventInfo.royaltyFee),
     });
   }
 

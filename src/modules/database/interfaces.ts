@@ -13,4 +13,6 @@ export interface UpdateOrderParams {
   bids?: number;
   lastBid?: number;
   lastBidder?: string;
+  royaltyOwner?: string;
+  royaltyFee?: number;
 }
