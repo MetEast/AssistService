@@ -33,6 +33,23 @@ export class AppService {
         { $match: { tokenId } },
         {
           $lookup: {
+            from: 'token_events',
+            let: { tokenId: '$tokenId' },
+            pipeline: [
+              {
+                $match: { $expr: { $eq: ['$tokenId', '$$tokenId'] }, from: Constants.BURN_ADDRESS },
+              },
+              { $sort: { blockNumber: -1 } },
+              { $group: { _id: '$tokenId', doc: { $first: '$$ROOT' } } },
+              { $replaceRoot: { newRoot: '$doc' } },
+              { $project: { _id: 0, transactionHash: 1 } },
+            ],
+            as: 'tokenEvent',
+          },
+        },
+        { $unwind: { path: '$tokenEvent', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
             from: 'orders',
             let: { tokenId: '$tokenId' },
             pipeline: [
