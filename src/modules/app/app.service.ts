@@ -1,10 +1,11 @@
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Web3Service } from '../utils/web3.service';
 import { ConfigService } from '@nestjs/config';
 import { DbService } from '../database/db.service';
 import { Constants } from '../../constants';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { Cache } from 'cache-manager';
 import { OrderEventType, OrderState, OrderType } from '../tasks/interfaces';
 import { QueryLatestBidsDTO } from './dto/QueryLatestBidsDTO';
 
@@ -15,6 +16,7 @@ export class AppService {
     private configService: ConfigService,
     private dbService: DbService,
     @InjectConnection() private readonly connection: Connection,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async check() {
@@ -23,6 +25,19 @@ export class AppService {
 
   async getCollectibleByTokenId(tokenId: string) {
     const data = await this.connection.collection('tokens').findOne({ tokenId });
+
+    if (data) {
+      const authorData = await this.cacheManager.get(data.royaltyOwner);
+      if (authorData) {
+        data.authorAvatar = JSON.parse(authorData as string).avatar;
+      }
+
+      const ownerData = await this.cacheManager.get(data.tokenOwner);
+      if (ownerData) {
+        data.holderName = JSON.parse(ownerData as string).name;
+      }
+    }
+
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
   }
 
@@ -95,6 +110,13 @@ export class AppService {
         .skip((dto.pageNum - 1) * dto.pageSize)
         .limit(dto.pageSize)
         .toArray();
+
+      for (const item of data) {
+        const userData = await this.cacheManager.get(item.buyer);
+        if (userData) {
+          item.buyerName = JSON.parse(userData as string).name;
+        }
+      }
     }
 
     return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data: { total, data } };
