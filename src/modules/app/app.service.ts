@@ -27,12 +27,12 @@ export class AppService {
     const data = await this.connection.collection('tokens').findOne({ tokenId });
 
     if (data) {
-      const authorData = await this.cacheManager.get(data.royaltyOwner);
+      const authorData = await this.cacheManager.get(data.royaltyOwner.toLowerCase());
       if (authorData) {
         data.authorAvatar = JSON.parse(authorData as string).avatar;
       }
 
-      const ownerData = await this.cacheManager.get(data.tokenOwner);
+      const ownerData = await this.cacheManager.get(data.tokenOwner.toLowerCase());
       if (ownerData) {
         data.holderName = JSON.parse(ownerData as string).name;
       }
@@ -112,7 +112,7 @@ export class AppService {
         .toArray();
 
       for (const item of data) {
-        const userData = await this.cacheManager.get(item.buyer);
+        const userData = await this.cacheManager.get(item.buyer.toLowerCase());
         if (userData) {
           item.buyerName = JSON.parse(userData as string).name;
         }

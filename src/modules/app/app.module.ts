@@ -15,11 +15,12 @@ import * as redisStore from 'cache-manager-redis-store';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        isGlobal: true,
         store: redisStore,
         host: configService.get<string>('REDIS_HOST'),
         port: configService.get<number>('REDIS_PORT'),
+        ttl: 0,
       }),
+      isGlobal: true,
     }),
   ],
   controllers: [AppController],
