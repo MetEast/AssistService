@@ -42,7 +42,7 @@ export class AppService {
   }
 
   async getTokenOrderByTokenId(tokenId: string) {
-    const data = await this.connection
+    const result = await this.connection
       .collection('tokens')
       .aggregate([
         { $match: { tokenId } },
@@ -81,7 +81,18 @@ export class AppService {
       ])
       .toArray();
 
-    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data: data[0] };
+    let data;
+    if (result.length > 0) {
+      data = result[0];
+      const authorData = await this.cacheManager.get(data.royaltyOwner.toLowerCase());
+      if (authorData) {
+        data.authorAvatar = JSON.parse(authorData as string).avatar;
+      }
+    } else {
+      data = {} as any;
+    }
+
+    return { status: HttpStatus.OK, message: Constants.MSG_SUCCESS, data };
   }
 
   async getLatestBids(dto: QueryLatestBidsDTO) {
