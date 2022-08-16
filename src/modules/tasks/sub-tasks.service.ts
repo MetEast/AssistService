@@ -76,6 +76,14 @@ export class SubTasksService {
     );
   }
 
+  async updateBackendTokenOwner(tokenId: string, to: string) {
+    await this.tokenDataQueue.add(
+      'update-token-owner',
+      { tokenId, to },
+      { removeOnComplete: true },
+    );
+  }
+
   async dealWithNewOrder(orderInfo: ContractOrderInfo) {
     const ipfsUserInfo = await this.getInfoByIpfsUri(orderInfo.sellerUri);
 

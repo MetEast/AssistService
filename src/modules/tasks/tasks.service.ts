@@ -137,6 +137,8 @@ export class TasksService {
           eventInfo.to,
           eventInfo.blockNumber,
         );
+
+        await this.subTasksService.updateBackendTokenOwner(eventInfo.tokenId, eventInfo.to);
       }
     }
   }
